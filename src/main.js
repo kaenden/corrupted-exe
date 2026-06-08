@@ -43,6 +43,14 @@ const config = {
 
 const game = new Phaser.Game(config);
 
+// TEMP diagnostic — report renderer + sizes once the game is ready (read on mobile screen).
+game.events.once('ready', () => {
+  try {
+    const r = game.renderer && game.renderer.type === Phaser.WEBGL ? 'WebGL' : 'Canvas';
+    window.__diag?.(`b6 ${r} | cvs ${game.canvas.width}x${game.canvas.height} | win ${window.innerWidth}x${window.innerHeight} dpr${window.devicePixelRatio}`);
+  } catch (_) { /* noop */ }
+});
+
 // Mobile: on the first tap, enter fullscreen + lock landscape (Android Chrome). iOS blocks
 // fullscreen / orientation lock → it gracefully falls back to the rotate prompt + FIT.
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
