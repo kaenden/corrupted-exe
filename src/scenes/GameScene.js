@@ -46,8 +46,8 @@ export class GameScene extends Phaser.Scene {
       scale: { start: 0.18, end: 0 }, alpha: { start: 0, end: 0.25, ease: 'Sine.out' },
       tint: this.chapterColor, frequency: 300, quantity: 1, blendMode: 'ADD',
     }).setDepth(-8);
-    // Global neon bloom — makes every outline glow (WebGL)
-    this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1, 1.15, 6);
+    // Global neon bloom — makes every outline glow (WebGL only; guarded for flaky mobile GPUs)
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1, 1.15, 6); } catch (_) { /* no bloom */ }
 
     // Tricks (register the first-encounter hint listener BEFORE build, which emits them)
     this.tricks = new TrickSystem(this);

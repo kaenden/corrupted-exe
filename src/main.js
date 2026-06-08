@@ -56,3 +56,7 @@ if (isTouch) {
   };
   window.addEventListener('pointerdown', goFull);
 }
+
+// Force the FIT scaler to recompute after an orientation flip (mobile reports new dims late).
+window.addEventListener('orientationchange', () => setTimeout(() => game.scale?.refresh(), 250));
+window.addEventListener('resize', () => game.scale?.refresh());

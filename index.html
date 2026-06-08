@@ -17,10 +17,10 @@
       #game { width: 100vw; height: 100vh; }
       canvas { display: block; }
 
-      /* Portrait on touch devices → ask the player to rotate (the game is landscape) */
+      /* Portrait on touch devices → cover the game with a rotate prompt (do NOT hide #game,
+         or the WebGL canvas boots at 0×0 and stays black after rotating). */
       #rotate { display: none; }
       @media (orientation: portrait) and (pointer: coarse) {
-        #game { display: none; }
         #rotate {
           display: flex; position: fixed; inset: 0; z-index: 9999;
           flex-direction: column; align-items: center; justify-content: center; gap: 14px;
