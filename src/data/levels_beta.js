@@ -27,9 +27,9 @@ const lvl = (o) => {
 
 export const LEVELS_BETA = [
   lvl({ name: 'REENTRY', par: 1, hint: 'DAHA HIZLI', exit: { x: 660, y: 250 },
-    platforms: [floor(0, 200), plat(260, 320, 'fake'), plat(260, 320), plat(400, 290, 'fake'), plat(400, 290), plat(540, 250)], exitShift: null }),
+    platforms: [floor(0, 200), plat(260, 340, 'fake'), plat(260, 300), plat(400, 310, 'fake'), plat(400, 270), plat(540, 250)], exitShift: null }),
   lvl({ name: 'FAST_LIES', par: 2, exit: { x: 660, y: 260 },
-    platforms: [floor(0, 160), { x: 240, y: 320, w: 96, h: 16, type: 'shifting' }, plat(420, 290, 'fake'), plat(420, 290), plat(550, 260)],
+    platforms: [floor(0, 160), { x: 240, y: 320, w: 96, h: 16, type: 'shifting', pathIndex: 0 }, plat(420, 310, 'fake'), plat(420, 270), plat(550, 260)],
     paths: [{ axis: 'h', from: { x: 220, y: 320 }, to: { x: 360, y: 320 }, speed: FAST }] }),
   lvl({ name: 'PRESSURE', par: 2, exit: { x: 660, y: 300 },
     platforms: [floor(0, 160), plat(240, 320, 'falling'), plat(380, 300, 'falling'), floor(520, 200)],
@@ -65,7 +65,7 @@ export const LEVELS_BETA = [
     platforms: [floor(0, 220), { x: 300, y: 330, type: 'inverse', w: 160 }, plat(540, 260)],
     hazards: [{ x: 360, y: 180, type: 'text_trap', message: 'EXIT VERIFIED', w: 130, h: 24 }, sr(250), ss(274)] }),
   lvl({ name: 'TWO_FACED', par: 2, exit: { x: 660, y: 250 },
-    platforms: [floor(0, 200), plat(280, 320, 'fake'), plat(280, 320), { x: 420, y: 290, type: 'inverse', w: 96 }, plat(560, 250)],
+    platforms: [floor(0, 200), plat(280, 340, 'fake'), plat(280, 300), { x: 420, y: 290, type: 'inverse', w: 96 }, plat(560, 250)],
     hazards: [{ x: 300, y: 180, type: 'text_trap', message: 'THIS PLATFORM IS STABLE', w: 180, h: 24 }] }),
   lvl({ name: 'PHASE', par: 3, hint: 'KAPIYI BUL', bounds: { width: 1120, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
@@ -89,7 +89,7 @@ export const LEVELS_BETA = [
     paths: [{ axis: 'h', from: { x: 200, y: 320 }, to: { x: 320, y: 320 }, speed: FAST }, { axis: 'v', from: { x: 400, y: 300 }, to: { x: 400, y: 200 }, speed: FAST }],
     hazards: [hidden(170)] }),
   lvl({ name: 'CHAOS_1', par: 4, exit: { x: 670, y: 300 },
-    platforms: [floor(0, 140), plat(200, 330, 'fake'), plat(200, 330), plat(340, 300, 'falling'), plat(480, 280, 'ghost'), floor(580, 140)],
+    platforms: [floor(0, 140), plat(200, 350, 'fake'), plat(200, 310), plat(340, 300, 'falling'), plat(480, 280, 'ghost'), floor(580, 140)],
     hazards: [hidden(160), { x: 440, y: 70, type: 'ceiling_trap', dropDistance: 50, armProximity: 55 }, ss(500, 264)] }),
   lvl({ name: 'CHAOS_2', par: 4, exit: { x: 670, y: 120 },
     platforms: [floor(0, 160), { x: 240, y: 320, w: 96, h: 16, type: 'shifting' }, plat(420, 110), plat(560, 110)],
@@ -101,7 +101,7 @@ export const LEVELS_BETA = [
     hazards: [sr(180, 374), sr(230, 374), sr(280, 374), sr(330, 374), hidden(560, 364)] }),
 
   lvl({ name: 'TOTAL_CORRUPTION', par: 5, hint: 'TEŞHİS: SİSTEM SANA YALAN SÖYLÜYOR', exit: { x: 670, y: 250 }, // BOSS_120
-    platforms: [floor(0, 140), plat(200, 330, 'fake'), plat(200, 330), plat(340, 300, 'falling'), plat(470, 270, 'ghost'), { x: 560, y: 250, w: 96, h: 16, type: 'solid' }],
+    platforms: [floor(0, 140), plat(200, 350, 'fake'), plat(200, 310), plat(340, 300, 'falling'), plat(470, 270, 'ghost'), { x: 560, y: 250, w: 96, h: 16, type: 'solid' }],
     hazards: [hidden(160), sr(310, 374), ss(334, 374), { x: 300, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 60 }],
     env: [{ type: 'gravity_pulse', zone: { x: 240, y: 130, w: 60, h: 200 }, duration: 1300, arrowDir: 'up' }],
     exitShift: { dir: 'left', tiles: 3, triggerX: 600 } }),

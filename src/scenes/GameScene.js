@@ -186,13 +186,23 @@ export class GameScene extends Phaser.Scene {
     const v = this.cameras.main.worldView;
     const cx = v.centerX, cy = v.centerY;
     const c = this.add.container(0, 0).setDepth(60);
-    c.add(neonPanel(this, cx, cy, 360, 200, COLORS.green));
-    c.add(this.add.text(cx, cy - 50, 'LEVEL COMPLETE', { fontFamily: 'monospace', fontSize: '20px', color: '#00ff88' }).setOrigin(0.5));
-    c.add(this.add.text(cx, cy - 18, 'PROCESS VERIFIED', { fontFamily: 'monospace', fontSize: '11px', color: '#5b8a93' }).setOrigin(0.5));
-    const btn = this.add.text(cx, cy + 40, '[ CONTINUE ▶ ]', { fontFamily: 'monospace', fontSize: '16px', backgroundColor: '#0a3a44', padding: { x: 12, y: 6 } })
+    // Deliberately GLITCHY / corrupt-looking so the player can read it as fake (a "tell").
+    c.add(neonPanel(this, cx, cy, 360, 200, 0xff2e63));
+    const title = this.add.text(cx, cy - 50, 'LEVEL C0MPLETE', { fontFamily: 'monospace', fontSize: '20px', color: '#ff5a7a' }).setOrigin(0.5);
+    c.add(title);
+    c.add(this.add.text(cx, cy - 18, 'PR0CESS VERIFIED?', { fontFamily: 'monospace', fontSize: '11px', color: '#9b6bff' }).setOrigin(0.5));
+    const btn = this.add.text(cx, cy + 42, '[ C0NTINUE ▶ ]', { fontFamily: 'monospace', fontSize: '16px', color: '#ffd24a', backgroundColor: '#3a0a1e', padding: { x: 12, y: 6 } })
       .setOrigin(0.5).setInteractive({ useHandCursor: true });
-    btn.on('pointerdown', () => { c.destroy(); this.physics.resume(); this.die(); });
+    btn.on('pointerdown', () => { this._fakeGlitch?.remove(); c.destroy(); this.physics.resume(); this.die(); });
     c.add(btn);
+    // jitter + flicker + corrupted title swaps
+    const swaps = ['LEVEL C0MPLETE', 'L3VEL C0MPL3TE', '1EVEL C0RRUPT', 'LEVEL C0MP???E', 'L£VEL C0MPLETE'];
+    this._fakeGlitch = this.time.addEvent({ delay: 130, loop: true, callback: () => {
+      if (!c.active) return;
+      c.setPosition(Phaser.Math.Between(-3, 3), Phaser.Math.Between(-2, 2));
+      c.setAlpha(Phaser.Math.FloatBetween(0.8, 1));
+      if (Math.random() < 0.45) title.setText(swaps[Phaser.Math.Between(0, swaps.length - 1)]);
+    } });
   }
 
   complete() {
