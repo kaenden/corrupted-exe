@@ -4,7 +4,7 @@ import { GameState } from '../state/GameState.js';
 import { getLevels, isBossIndex, WORLD_META } from '../data/levels.js';
 import { backButton, shardBadge, hdCamera, FONT } from '../ui/widgets.js';
 
-const COLS = 5, CELL_W = 120, CELL_H = 80, GAP = 10;
+const COLS = 6, CELL_W = 104, CELL_H = 60, GAP = 8;  // 6×5 grid fits 30 levels in 720×405
 
 export class LevelSelectScene extends Phaser.Scene {
   constructor() { super('LevelSelectScene'); }
@@ -26,7 +26,7 @@ export class LevelSelectScene extends Phaser.Scene {
 
     const gridW = COLS * CELL_W + (COLS - 1) * GAP;
     const x0 = (CONFIG.WIDTH - gridW) / 2 + CELL_W / 2;
-    const y0 = 80 + CELL_H / 2;
+    const y0 = 50 + CELL_H / 2;
 
     levels.forEach((lvl, i) => {
       const col = i % COLS, row = Math.floor(i / COLS);
@@ -41,19 +41,19 @@ export class LevelSelectScene extends Phaser.Scene {
     const accent = boss ? 0xff3344 : (unlocked ? COLORS.cyan : 0x3a3a3a);
 
     const box = this.add.rectangle(x, y, CELL_W, CELL_H, unlocked ? 0x081820 : 0x0a0a0e, 0.95).setStrokeStyle(2, accent);
-    this.add.text(x, y - 22, lvl.code, { fontFamily: FONT, fontSize: '13px', color: unlocked ? '#dffcff' : '#555', resolution: 3 }).setOrigin(0.5);
+    this.add.text(x, y - 15, lvl.code, { fontFamily: FONT, fontSize: '12px', color: unlocked ? '#dffcff' : '#555', resolution: 3 }).setOrigin(0.5);
 
     if (!unlocked) {
-      this.add.text(x, y + 8, '🔒', { fontSize: '20px' }).setOrigin(0.5);
+      this.add.text(x, y + 8, '🔒', { fontSize: '18px' }).setOrigin(0.5);
       return;
     }
 
-    if (boss) this.add.text(x + CELL_W / 2 - 12, y - CELL_H / 2 + 12, '☠', { fontSize: '14px', color: '#ff6677' }).setOrigin(0.5);
+    if (boss) this.add.text(x + CELL_W / 2 - 10, y - CELL_H / 2 + 10, '☠', { fontSize: '13px', color: '#ff6677' }).setOrigin(0.5);
 
     const shown = Math.max(0, stars);
     for (let i = 0; i < 3; i++) {
       const key = i < shown ? 'icon_star' : 'icon_star_empty';
-      this.add.image(x - 17 + i * 17, y + 11, key).setDisplaySize(14, 14);
+      this.add.image(x - 15 + i * 15, y + 13, key).setDisplaySize(12, 12);
     }
 
     box.setInteractive({ useHandCursor: true })

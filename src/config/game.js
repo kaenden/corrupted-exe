@@ -45,7 +45,7 @@ export const CONFIG = {
   MOCKERY_SOFTEN_AFTER: 8,
 
   // World layout (single source of truth)
-  LEVELS_PER_WORLD: 20,
+  LEVELS_PER_WORLD: 30,
 
   // Per-chapter neon color (each 5-level chapter gets its own vivid accent — "Q Neon" reference)
   CHAPTER_COLORS: [0x00ffff, 0xff3df0, 0x8cff3d, 0xffb13d, 0x9b6bff, 0xff5a4d, 0x3df0ff, 0xffe24a],

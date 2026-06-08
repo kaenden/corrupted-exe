@@ -129,8 +129,8 @@ export const LEVELS_ALPHA = [
       { x: 588, y: 110, w: 96, h: 12, type: 'shifting', pathIndex: 0 }],
     paths: [{ axis: 'h', from: { x: 560, y: 110 }, to: { x: 660, y: 110 }, speed: 110 }],
     env: [{ type: 'gravity_pulse', zone: { x: 235, y: 60, w: 58, h: 340 }, arrowDir: 'up' }] }),
-  // 20 — FINAL BOSS (SIDE-SCROLL): every trick, a portal, a FAKE finish, then the shifting real exit
-  lvl({ name: 'KERNEL_PANIC', par: 5, hint: 'SON SINAV :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1400, height: 405 },
+  // 20 — BOSS (SIDE-SCROLL): every trick, a portal, a FAKE finish, then the shifting real exit
+  lvl({ name: 'KERNEL_PANIC', par: 5, hint: 'ÇEKİRDEK PANİĞİ :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1400, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1340, y: 250 },
     platforms: [floor(0, 300),
       plat(200, 320, 'fake', 56), plat(200, 284, 'solid', 56), plat(330, 300, 'falling', 56),
@@ -140,4 +140,73 @@ export const LEVELS_ALPHA = [
     portals: [{ a: { x: 600, y: 374 }, b: { x: 860, y: 374 } }],
     env: [{ type: 'level_complete_fake', triggerX: 1250 }],
     exitShift: { dir: 'left', tiles: 3, triggerX: 1300 } }),
+
+  // ── CHAPTER 5 (violet) ── advanced combinations
+  // 21 — ride a moving platform across the gap; a hidden spike waits on the landing
+  lvl({ name: 'DRIFT', par: 2, hint: 'BİN VE BEKLE', exit: { x: 662, y: 390 },
+    platforms: [floor(0, 250), { x: 270, y: 315, w: 96, h: 12, type: 'shifting', pathIndex: 0 }, floor(560, 160)],
+    paths: [{ axis: 'h', from: { x: 270, y: 315 }, to: { x: 470, y: 315 }, speed: 120 }],
+    hazards: [hidden(610)] }),
+  // 22 — ghost stepping-stones, then a portal across an unjumpable gap (side-scroll)
+  lvl({ name: 'SPECTER_GATE', par: 3, bounds: { width: 1120, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
+    platforms: [floor(0, 200), plat(250, 322, 'ghost', 70), plat(392, 300, 'ghost', 70), plat(524, 322, 'ghost', 70),
+      floor(640, 220), floor(1000, 120)],
+    portals: [{ a: { x: 800, y: 374 }, b: { x: 1040, y: 374 } }] }),
+  // 23 — float up the gravity column, drift onto a falling platform → solid before it drops
+  lvl({ name: 'PLUNGE', par: 3, hint: 'ZEMİN ÇÖKMEDEN GEÇ', exit: { x: 640, y: 116 },
+    platforms: [floor(0, 280), plat(350, 150, 'falling', 90), plat(500, 116, 'solid', 200)],
+    env: [{ type: 'gravity_pulse', zone: { x: 290, y: 60, w: 58, h: 340 }, arrowDir: 'up' }] }),
+  // 24 — spiky-LOOKING safe bar over a real pit + a hidden spike + a ceiling trap on the climb
+  lvl({ name: 'BARBED', par: 3, hint: 'GÖRÜNEN HER ZAMAN GERÇEK DEĞİL', exit: { x: 662, y: 390 },
+    platforms: [floor(0, 190), floor(540, 180), plat(330, 250, 'solid', 80)],
+    hazards: [{ x: 250, y: 330, type: 'inverse', w: 190 }, sr(300, 374), sr(348, 374), sr(396, 374),
+      { x: 340, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 }, hidden(560)] }),
+  // 25 — BOSS: shifting + fake + portal + ceiling, side-scroll gauntlet
+  lvl({ name: 'OVERCLOCK', par: 4, bounds: { width: 1300, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1250, y: 390 },
+    platforms: [floor(0, 300),
+      plat(220, 320, 'fake', 56), plat(220, 284, 'solid', 56),
+      { x: 360, y: 300, w: 90, h: 12, type: 'shifting', pathIndex: 0 },
+      floor(640, 240), plat(900, 300, 'solid', 80), plat(1030, 268, 'falling', 60), floor(1120, 180)],
+    paths: [{ axis: 'h', from: { x: 360, y: 300 }, to: { x: 500, y: 300 }, speed: 120 }],
+    hazards: [sr(320, 374), hidden(700), { x: 940, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 }],
+    portals: [{ a: { x: 600, y: 374 }, b: { x: 840, y: 374 } }] }),
+
+  // ── CHAPTER 6 (red) ── hardest + finale
+  // 26 — two portals + a moving-platform relay (side-scroll)
+  lvl({ name: 'RELAY_RUN', par: 3, bounds: { width: 1300, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1250, y: 390 },
+    platforms: [floor(0, 360), floor(520, 200), { x: 800, y: 300, w: 90, h: 12, type: 'shifting', pathIndex: 0 }, floor(1080, 220)],
+    paths: [{ axis: 'h', from: { x: 800, y: 300 }, to: { x: 940, y: 300 }, speed: 130 }],
+    portals: [{ a: { x: 300, y: 374 }, b: { x: 600, y: 374 } }, { a: { x: 660, y: 374 }, b: { x: 1120, y: 374 } }] }),
+  // 27 — falling-platform chain over a death pit (side-scroll, no mistakes)
+  lvl({ name: 'FREEFALL_2', par: 3, bounds: { width: 1320, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1270, y: 390 },
+    platforms: [floor(0, 200),
+      plat(280, 318, 'falling', 54), plat(420, 304, 'falling', 54), plat(560, 318, 'falling', 54),
+      plat(700, 304, 'falling', 54), plat(840, 318, 'falling', 54), floor(960, 360)],
+    hazards: [hidden(1040)] }),
+  // 28 — gravity up, portal across, a safe/real spike mix on the landing
+  lvl({ name: 'ANTIGRAV', par: 4, bounds: { width: 1120, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
+    platforms: [floor(0, 300), plat(360, 130, 'solid', 160), floor(640, 200), floor(1000, 120)],
+    env: [{ type: 'gravity_pulse', zone: { x: 300, y: 60, w: 56, h: 340 }, arrowDir: 'up' }],
+    portals: [{ a: { x: 800, y: 374 }, b: { x: 1040, y: 374 } }],
+    hazards: [ss(700, 374), sr(724, 374), ss(748, 374)] }),
+  // 29 — precision: fake + vertical shifting + a hidden spike, tight
+  lvl({ name: 'NEEDLE', par: 4, exit: { x: 644, y: 250 },
+    platforms: [floor(0, 170), plat(220, 320, 'fake', 48), plat(220, 284, 'solid', 48),
+      { x: 350, y: 280, w: 80, h: 12, type: 'shifting', pathIndex: 0 }, plat(520, 250, 'solid', 64), plat(600, 250, 'solid', 70)],
+    paths: [{ axis: 'v', from: { x: 350, y: 300 }, to: { x: 350, y: 224 }, speed: 90 }],
+    hazards: [hidden(150)] }),
+  // 30 — FINAL BOSS: long side-scroll, every trick, a portal, a FAKE finish, then the shifting real exit
+  lvl({ name: 'SYSTEM_HALT', par: 6, hint: 'SİSTEM ÇÖKÜYOR :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1600, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1540, y: 250 },
+    platforms: [floor(0, 280),
+      plat(200, 320, 'fake', 56), plat(200, 284, 'solid', 56), plat(330, 300, 'falling', 56),
+      floor(440, 200), plat(720, 300, 'ghost', 70),
+      floor(860, 260), { x: 1140, y: 300, w: 90, h: 12, type: 'shifting', pathIndex: 0 }, floor(1300, 300),
+      plat(1460, 252, 'solid', 96)],
+    paths: [{ axis: 'h', from: { x: 1140, y: 300 }, to: { x: 1260, y: 300 }, speed: 120 }],
+    hazards: [sr(360, 374), hidden(540), { x: 920, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 },
+      sr(1340, 374), sr(1364, 374)],
+    portals: [{ a: { x: 600, y: 374 }, b: { x: 900, y: 374 } }],
+    env: [{ type: 'level_complete_fake', triggerX: 1400 }],
+    exitShift: { dir: 'left', tiles: 3, triggerX: 1500 } }),
 ];
