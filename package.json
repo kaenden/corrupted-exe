@@ -1,0 +1,18 @@
+{
+  "name": "corrupted-exe",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CORRUPTED.EXE — a deceptive trick platformer (Phaser 3, CrazyGames/Poki)",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "phaser": "^3.80.1"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}
