@@ -41,5 +41,18 @@ const config = {
   scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene],
 };
 
-// eslint-disable-next-line no-new
-new Phaser.Game(config);
+const game = new Phaser.Game(config);
+
+// Mobile: on the first tap, enter fullscreen + lock landscape (Android Chrome). iOS blocks
+// fullscreen / orientation lock → it gracefully falls back to the rotate prompt + FIT.
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+if (isTouch) {
+  const goFull = async () => {
+    window.removeEventListener('pointerdown', goFull);
+    try {
+      if (game.scale && !game.scale.isFullscreen) game.scale.startFullscreen();
+      await window.screen?.orientation?.lock?.('landscape');
+    } catch (_) { /* unsupported — rotate prompt handles it */ }
+  };
+  window.addEventListener('pointerdown', goFull);
+}

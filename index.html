@@ -2,30 +2,44 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" href="data:," />
     <title>CORRUPTED.EXE</title>
     <style>
       html, body {
-        margin: 0;
-        padding: 0;
-        background: #000;
-        overflow: hidden;
-        width: 100%;
-        height: 100%;
-        touch-action: none;
-        -webkit-user-select: none;
-        user-select: none;
+        margin: 0; padding: 0; background: #02030a; overflow: hidden;
+        width: 100%; height: 100%; touch-action: none;
+        -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
       }
-      #game {
-        width: 100vw;
-        height: 100vh;
-      }
+      #game { width: 100vw; height: 100vh; }
       canvas { display: block; }
+
+      /* Portrait on touch devices → ask the player to rotate (the game is landscape) */
+      #rotate { display: none; }
+      @media (orientation: portrait) and (pointer: coarse) {
+        #game { display: none; }
+        #rotate {
+          display: flex; position: fixed; inset: 0; z-index: 9999;
+          flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+          background: #02030a; color: #2affff; font-family: monospace; text-align: center;
+          text-shadow: 0 0 10px #00ffff;
+        }
+        #rotate .ico { font-size: 56px; animation: spin 2.4s ease-in-out infinite; }
+        #rotate small { color: #5b8a93; }
+        @keyframes spin { 0%,60%,100% { transform: rotate(0); } 80% { transform: rotate(-90deg); } }
+      }
     </style>
   </head>
   <body>
     <div id="game"></div>
+    <div id="rotate">
+      <div class="ico">⟳</div>
+      <div>TELEFONU YATAY ÇEVİR</div>
+      <small>rotate your device</small>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

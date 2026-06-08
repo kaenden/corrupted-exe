@@ -30,7 +30,16 @@ export class SettingsScene extends Phaser.Scene {
       }, { size: '14px', originX: 1 });
     });
 
-    this.add.text(cx, CONFIG.HEIGHT - 30, 'değişiklikler otomatik kaydedilir', {
+    // Manual fullscreen toggle (mobile-friendly; auto-fullscreen also fires on first tap)
+    const fy = 110 + rows.length * 50;
+    this.add.text(cx - 140, fy, 'TAM EKRAN', { fontFamily: FONT, fontSize: '16px', color: '#9fd6df' }).setOrigin(0, 0.5);
+    const fbtn = textButton(this, cx + 120, fy, this.scale.isFullscreen ? '[ AÇIK ]' : '[ KAPALI ]', () => {
+      if (this.scale.isFullscreen) this.scale.stopFullscreen();
+      else { this.scale.startFullscreen(); window.screen?.orientation?.lock?.('landscape').catch(() => {}); }
+      this.time.delayedCall(60, () => fbtn.setText(this.scale.isFullscreen ? '[ AÇIK ]' : '[ KAPALI ]'));
+    }, { size: '14px', originX: 1 });
+
+    this.add.text(cx, CONFIG.HEIGHT - 24, 'değişiklikler otomatik kaydedilir', {
       fontFamily: FONT, fontSize: '11px', color: '#3a5a62',
     }).setOrigin(0.5);
   }
