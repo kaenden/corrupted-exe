@@ -181,8 +181,11 @@ export class GameScene extends Phaser.Scene {
   showFakeComplete() {
     if (this.dying || this.finished) return;
     this.physics.pause();
-    const cx = CONFIG.WIDTH / 2, cy = CONFIG.HEIGHT / 2;
-    const c = this.add.container(0, 0).setDepth(60).setScrollFactor(0);
+    // Center on the camera's CURRENT view (side-scroll levels scroll the camera right);
+    // a fixed world/scrollFactor-0 position would land off-screen under the HD zoom.
+    const v = this.cameras.main.worldView;
+    const cx = v.centerX, cy = v.centerY;
+    const c = this.add.container(0, 0).setDepth(60);
     c.add(neonPanel(this, cx, cy, 360, 200, COLORS.green));
     c.add(this.add.text(cx, cy - 50, 'LEVEL COMPLETE', { fontFamily: 'monospace', fontSize: '20px', color: '#00ff88' }).setOrigin(0.5));
     c.add(this.add.text(cx, cy - 18, 'PROCESS VERIFIED', { fontFamily: 'monospace', fontSize: '11px', color: '#5b8a93' }).setOrigin(0.5));
