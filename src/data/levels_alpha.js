@@ -29,11 +29,12 @@ export const LEVELS_ALPHA = [
   lvl({ name: 'BOOT_SEQUENCE', par: 0, hint: 'TRUST NOTHING', exit: { x: 632, y: 252 },
     platforms: [floor(),
       plat(180, 338, 'solid', 64), plat(320, 298, 'solid', 56), plat(452, 300, 'solid', 56), plat(572, 252, 'solid', 84)] }),
-  // 2 — pure: varied widths, a small step-down, raised exit
-  lvl({ name: 'WARM_RESET', par: 0, exit: { x: 652, y: 250 },
+  // 2 — tiered VERTICAL climb: serpentine up the platforms to a high exit (uses the full height)
+  lvl({ name: 'WARM_RESET', par: 1, hint: 'YUKARI TIRMAN', exit: { x: 195, y: 124 },
     platforms: [floor(),
-      plat(150, 340, 'solid', 56), plat(272, 300, 'solid', 44), plat(388, 332, 'solid', 56),
-      plat(508, 288, 'solid', 44), plat(606, 250, 'solid', 84)] }),
+      plat(160, 336, 'solid', 64), plat(300, 300, 'solid', 56), plat(440, 264, 'solid', 56),
+      plat(560, 228, 'solid', 80),
+      plat(430, 192, 'solid', 56), plat(290, 158, 'solid', 56), plat(150, 124, 'solid', 90)] }),
   // 3 — FAKE intro: fake sits in the obvious step (over the safe floor); real path just above
   lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'YALAN ZEMİN :: GÜVENME', exit: { x: 632, y: 256 },
     platforms: [floor(),
@@ -82,10 +83,14 @@ export const LEVELS_ALPHA = [
   lvl({ name: 'INVERSION', par: 1, hint: 'TEHLİKELİ GÖRÜNEN GÜVENLİ', exit: { x: 662, y: 300 },
     platforms: [floor(0, 200), floor(540, 180)],
     hazards: [{ x: 250, y: 330, type: 'inverse', w: 200 }, sr(300, 374), sr(348, 374), sr(396, 374), sr(444, 374)] }),
-  // 12 — TEXT_TRAP: a reassuring label that kills if touched; platform around it
-  lvl({ name: 'GASLIGHT', par: 1, exit: { x: 662, y: 256 },
-    platforms: [floor(), plat(190, 326, 'solid', 60), plat(360, 286, 'solid', 56), plat(520, 252, 'solid', 70)],
-    hazards: [{ x: 320, y: 196, type: 'text_trap', message: 'SAFE ZONE DETECTED', w: 150, h: 24 }] }),
+  // 12 — TEXT_TRAP + vertical tiers: serpentine climb; a reassuring label floats as a tempting
+  // mid-air "ledge" that kills if you step on it
+  lvl({ name: 'GASLIGHT', par: 1, hint: 'ETİKETE GÜVENME', exit: { x: 590, y: 130 },
+    platforms: [floor(),
+      plat(170, 330, 'solid', 60), plat(310, 292, 'solid', 56),
+      plat(180, 252, 'solid', 56), plat(330, 214, 'solid', 56),
+      plat(470, 176, 'solid', 60), plat(560, 134, 'solid', 90)],
+    hazards: [{ x: 430, y: 250, type: 'text_trap', message: 'GÜVENLİ BÖLGE', w: 130, h: 22 }] }),
   // 13 — GRAVITY_PULSE intro: float up the column, drift right onto the wide ledge
   lvl({ name: 'UPSIDE', par: 2, hint: 'YÖN BOZULDU :: ↑ SÜZÜL', exit: { x: 624, y: 110 },
     platforms: [floor(0, 320), plat(360, 110, 'solid', 320)],

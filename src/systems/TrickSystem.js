@@ -19,6 +19,7 @@ export class TrickSystem {
     this.env = [];
     this.portals = [];
     this._portalCD = 0;
+    this._portalArmed = true;
     this.exitShift = null;
     this._fakeCompleteUsed = false;
     this.accent = scene.chapterColor || COLORS.cyan;
@@ -46,10 +47,16 @@ export class TrickSystem {
   }
 
   _updatePortals(time, px, py, player) {
-    if (time < this._portalCD || !this.portals.length) return;
+    if (!this.portals.length) return;
+    const d = (p) => Phaser.Math.Distance.Between(px, py, p.x, p.y);
+    // After a jump, stay DISARMED until the player has physically left every portal AND 1.5s
+    // has passed — stops the back-and-forth oscillation bug.
+    if (!this._portalArmed) {
+      if (time >= this._portalCD && this.portals.every((pt) => d(pt.a) > 36 && d(pt.b) > 36)) this._portalArmed = true;
+      return;
+    }
     for (const pt of this.portals) {
-      const toB = Phaser.Math.Distance.Between(px, py, pt.a.x, pt.a.y) < 22;
-      const toA = Phaser.Math.Distance.Between(px, py, pt.b.x, pt.b.y) < 22;
+      const toB = d(pt.a) < 22, toA = d(pt.b) < 22;
       if (toB || toA) {
         const dest = toB ? pt.b : pt.a;
         const burst = this.scene.add.particles(px, py, 'particle_spark', {
@@ -59,7 +66,8 @@ export class TrickSystem {
         burst.explode(14); this.scene.time.delayedCall(350, () => burst.destroy());
         player.sprite.setPosition(dest.x, dest.y);
         player.sprite.body.setVelocity(0, 0);
-        this._portalCD = time + 600;
+        this._portalArmed = false;
+        this._portalCD = time + 1500;
         return;
       }
     }
@@ -353,5 +361,6 @@ export class TrickSystem {
     }
     for (const e of this.env) { e.active = false; e.fired = false; }
     this._portalCD = 0;
+    this._portalArmed = true;
   }
 }

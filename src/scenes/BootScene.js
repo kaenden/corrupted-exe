@@ -102,9 +102,10 @@ export class BootScene extends Phaser.Scene {
     g.lineStyle(2, 0xffffff, 0.5).lineBetween(0, 0, 128, 0).lineBetween(0, 0, 0, 128);
     g.generateTexture('grid', 128, 128);
 
-    // Neon spike (red triangle outline) — used at natural 16×16 for all spike hazards
+    // Neon spike — FILLED triangle (a stroked sharp apex leaves a miter "whisker" above the tip).
+    // Bloom supplies the glow. Used at natural 16×16 for all spike hazards.
     g.clear();
-    g.lineStyle(2, 0xff3b3b, 1).strokePoints([{ x: 1, y: 16 }, { x: 8, y: 1 }, { x: 15, y: 16 }], true, true);
+    g.fillStyle(0xff3b3b, 1).fillPoints([{ x: 1.5, y: 15.5 }, { x: 8, y: 1.5 }, { x: 14.5, y: 15.5 }], true);
     g.generateTexture('spike_neon', 16, 16);
 
     // Neon exit gate (green double-outline) 32×48
