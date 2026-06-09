@@ -40,11 +40,13 @@ export const LEVELS_ALPHA = [
     platforms: [floor(),
       plat(160, 336, 'solid', 52), plat(286, 300, 'fake', 52), plat(286, 262, 'solid', 52),
       plat(412, 290, 'solid', 50), plat(528, 256, 'solid', 56), plat(612, 256, 'solid', 72)] }),
-  // 4 — two fakes among reals: read which step holds
-  lvl({ name: 'MIRAGE', par: 1, exit: { x: 650, y: 246 },
+  // 4 — fakes on a VERTICAL climb: aim for the higher (real) tier; a top-right decoy tempts you
+  lvl({ name: 'MIRAGE', par: 1, hint: 'YÜKSEK OLAN GERÇEK', exit: { x: 205, y: 148 },
     platforms: [floor(),
-      plat(150, 336, 'solid', 52), plat(270, 300, 'fake', 50), plat(388, 300, 'solid', 50),
-      plat(508, 282, 'fake', 50), plat(508, 246, 'solid', 50), plat(606, 246, 'solid', 80)] }),
+      plat(170, 332, 'solid', 58),
+      plat(310, 294, 'fake', 52), plat(310, 256, 'solid', 52),
+      plat(450, 220, 'solid', 56), plat(310, 184, 'solid', 56),
+      plat(450, 156, 'fake', 52), plat(170, 148, 'solid', 80)] }),
   // 5 — BOSS: fake + falling over a spike pit → land on the right ledge
   lvl({ name: 'COLLAPSE', par: 2, exit: { x: 662, y: 300 },
     platforms: [floor(0, 230),

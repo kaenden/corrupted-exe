@@ -49,6 +49,8 @@ export class GameScene extends Phaser.Scene {
     // Global neon bloom — makes every outline glow (WebGL only; guarded for flaky mobile GPUs)
     try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1, 1.15, 6); } catch (_) { /* no bloom */ }
 
+    this._startGlitchFx(); // atmospheric "the system is watching/lying" background glitches
+
     // Tricks (register the first-encounter hint listener BEFORE build, which emits them)
     this.tricks = new TrickSystem(this);
     this._pendingHints = [];
@@ -178,6 +180,52 @@ export class GameScene extends Phaser.Scene {
   }
 
   // Fake LEVEL COMPLETE overlay (level_complete_fake, §6.3). CONTINUE kills. Whole-game max 1.
+  // ---- atmospheric background glitches (cosmetic; rendered BEHIND gameplay, never interactive) ----
+  _startGlitchFx() {
+    const tick = () => {
+      if (!this.scene.isActive()) return;
+      if (!this.finished && !this.dying) this._spawnGlitch();
+      this.time.delayedCall(Phaser.Math.Between(3500, 8000), tick);
+    };
+    this.time.delayedCall(Phaser.Math.Between(2200, 4500), tick);
+  }
+
+  _spawnGlitch() {
+    const v = this.cameras.main.worldView;
+    const roll = Math.random();
+    if (roll < 0.55) this._glitchText(v);
+    else if (roll < 0.82) this._glitchBar(v);
+    else this._colorSurge();
+  }
+
+  _glitchText(v) {
+    const msgs = ['TRUST_THE_FLOOR', 'SAFE?', 'ERR0R', '0110_1001', 'FOLLOW', 'LIE', 'REBOOT…',
+      "DON'T_FALL", 'NULL_REF', 'VERIFIED?', 'HELP_ME', 'WATCHING', '↑ ?', 'NO_EXIT', 'GÜVEN_BANA'];
+    const m = msgs[Phaser.Math.Between(0, msgs.length - 1)];
+    const x = Phaser.Math.Between(v.x + 70, v.right - 70);
+    const y = Phaser.Math.Between(v.y + 50, v.bottom - 70);
+    const color = Math.random() < 0.4 ? '#ff3b6b' : '#' + this.chapterColor.toString(16).padStart(6, '0');
+    const t = this.add.text(x, y, m, { fontFamily: 'monospace', fontSize: '24px', color })
+      .setOrigin(0.5).setDepth(-7).setAlpha(0).setBlendMode('ADD');
+    this.tweens.add({ targets: t, alpha: 0.3, duration: 110, yoyo: true, hold: 240, repeat: 1, onComplete: () => t.destroy() });
+    this.time.addEvent({ delay: 55, repeat: 7, callback: () => { if (t.active) t.x = x + Phaser.Math.Between(-5, 5); } });
+  }
+
+  _glitchBar(v) {
+    const y = Phaser.Math.Between(v.y + 40, v.bottom - 40);
+    const bar = this.add.rectangle(v.centerX, y, v.width, Phaser.Math.Between(2, 5), 0xffffff, 0.4)
+      .setDepth(-7).setBlendMode('ADD');
+    this.tweens.add({ targets: bar, alpha: 0, scaleY: 3, duration: 200, onComplete: () => bar.destroy() });
+  }
+
+  _colorSurge() {
+    if (!this.grid) return;
+    const palette = [0xff3df0, 0x00ffff, 0x8cff3d, 0xffb13d, 0x9b6bff, 0xff5a4d];
+    this.grid.setTint(palette[Phaser.Math.Between(0, palette.length - 1)]);
+    this.tweens.add({ targets: this.grid, alpha: 0.72, duration: 180, yoyo: true, hold: 220,
+      onComplete: () => { if (this.grid) { this.grid.setAlpha(0.45); this.grid.setTint(this.chapterColor); } } });
+  }
+
   showFakeComplete() {
     if (this.dying || this.finished) return;
     this.physics.pause();
