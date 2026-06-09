@@ -24,61 +24,57 @@ const lvl = (o) => {
 };
 
 export const LEVELS_ALPHA = [
-  // ── CHAPTER 1 (cyan) ── basics → first deception
-  // 1 — pure: platform → jump → platform → jump → raised exit
-  lvl({ name: 'BOOT_SEQUENCE', par: 0, hint: 'TRUST NOTHING', exit: { x: 632, y: 252 },
+  // ── CHAPTER 1 (cyan) ── single trick, gaps near the jump limit (~170px); forgiving floors
+  // 1 — pure: real ~175px jumps; the full floor catches misses
+  lvl({ name: 'BOOT_SEQUENCE', par: 0, hint: 'TRUST NOTHING', exit: { x: 660, y: 256 },
     platforms: [floor(),
-      plat(180, 338, 'solid', 64), plat(320, 298, 'solid', 56), plat(452, 300, 'solid', 56), plat(572, 252, 'solid', 84)] }),
-  // 2 — tiered VERTICAL climb: serpentine up the platforms to a high exit (uses the full height)
-  lvl({ name: 'WARM_RESET', par: 1, hint: 'YUKARI TIRMAN', exit: { x: 195, y: 124 },
+      plat(200, 338, 'solid', 54), plat(378, 300, 'solid', 50), plat(556, 300, 'solid', 50), plat(626, 256, 'solid', 70)] }),
+  // 2 — VERTICAL climb: alternate long-flat and steep-up jumps to a high exit
+  lvl({ name: 'WARM_RESET', par: 1, hint: 'YUKARI TIRMAN', exit: { x: 335, y: 130 },
     platforms: [floor(),
-      plat(160, 336, 'solid', 64), plat(300, 300, 'solid', 56), plat(440, 264, 'solid', 56),
-      plat(560, 228, 'solid', 80),
-      plat(430, 192, 'solid', 56), plat(290, 158, 'solid', 56), plat(150, 124, 'solid', 90)] }),
-  // 3 — FAKE intro: fake sits in the obvious step (over the safe floor); real path just above
-  lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'YALAN ZEMİN :: GÜVENME', exit: { x: 632, y: 256 },
+      plat(170, 338, 'solid', 56), plat(345, 302, 'solid', 50), plat(440, 246, 'solid', 48),
+      plat(575, 212, 'solid', 60), plat(455, 162, 'solid', 48), plat(300, 130, 'solid', 70)] }),
+  // 3 — FAKE (single): the obvious low step is fake; the real sits just above, then a long jump
+  lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'YALAN ZEMİN :: GÜVENME', exit: { x: 660, y: 258 },
     platforms: [floor(),
-      plat(160, 336, 'solid', 52), plat(286, 300, 'fake', 52), plat(286, 262, 'solid', 52),
-      plat(412, 290, 'solid', 50), plat(528, 256, 'solid', 56), plat(612, 256, 'solid', 72)] }),
-  // 4 — fakes on a VERTICAL climb: aim for the higher (real) tier; a top-right decoy tempts you
-  lvl({ name: 'MIRAGE', par: 1, hint: 'YÜKSEK OLAN GERÇEK', exit: { x: 205, y: 148 },
+      plat(180, 336, 'solid', 52), plat(340, 326, 'fake', 50), plat(340, 290, 'solid', 50),
+      plat(505, 290, 'solid', 50), plat(625, 258, 'solid', 64)] }),
+  // 4 — FAKE on a climb: fake decoy vs real at each tier — pick correctly while climbing
+  lvl({ name: 'MIRAGE', par: 2, hint: 'YÜKSEK OLAN GERÇEK', exit: { x: 355, y: 134 },
     platforms: [floor(),
-      plat(170, 332, 'solid', 58),
-      plat(310, 294, 'fake', 52), plat(310, 256, 'solid', 52),
-      plat(450, 220, 'solid', 56), plat(310, 184, 'solid', 56),
-      plat(450, 156, 'fake', 52), plat(170, 148, 'solid', 80)] }),
-  // 5 — BOSS: fake + falling over a spike pit → land on the right ledge
-  lvl({ name: 'COLLAPSE', par: 2, exit: { x: 662, y: 300 },
-    platforms: [floor(0, 230),
-      plat(250, 322, 'solid', 56), plat(372, 300, 'falling', 56), plat(496, 296, 'fake', 56), plat(496, 260, 'solid', 56),
-      floor(560, 160)],
-    hazards: [sr(300), sr(324), sr(348)] }),
+      plat(175, 336, 'solid', 56), plat(345, 300, 'solid', 50),
+      plat(220, 250, 'fake', 48), plat(440, 250, 'solid', 50),
+      plat(330, 200, 'solid', 50),
+      plat(180, 162, 'fake', 48), plat(470, 162, 'solid', 50),
+      plat(330, 134, 'solid', 64)] }),
+  // 5 — BOSS (single = falling): a collapsing-platform sprint over a death pit
+  lvl({ name: 'COLLAPSE', par: 3, hint: 'ZEMİN ÇÖKÜYOR :: HIZLI', exit: { x: 662, y: 390 },
+    platforms: [floor(0, 180),
+      plat(250, 330, 'falling', 54), plat(410, 314, 'falling', 54), plat(560, 296, 'falling', 54), floor(640, 80)] }),
 
-  // ── CHAPTER 2 (magenta) ── deadly-looking-safe spikes, falling/timing, ghosts
-  // 6 — SPIKE_SAFE intro: a field that LOOKS lethal but is safe to walk; one real spike to read
+  // ── CHAPTER 2 (magenta) ── single trick, medium-wide gaps, less forgiving (pits)
+  // 6 — SPIKE_SAFE (single): a deadly-LOOKING field that's safe; one real spike to read
   lvl({ name: 'RED_HERRING', par: 1, hint: 'HER DİKEN ÖLDÜRMEZ', exit: { x: 662, y: 390 },
-    platforms: [floor()], hazards: [ss(280), ss(304), ss(328), ss(352), sr(470), ss(560), ss(584)] }),
-  // 7 — safe/real mix over a pit: pick the safe stepping spikes
-  lvl({ name: 'SHARP_LIES', par: 2, exit: { x: 662, y: 320 },
-    platforms: [floor(0, 250), plat(300, 326, 'solid', 64), plat(440, 296, 'solid', 56), floor(520, 200)],
-    hazards: [sr(266), ss(290), sr(314), ss(452, 280)] }),
-  // 8 — SIDE-SCROLL: falling platforms timing across a death gap
+    platforms: [floor()], hazards: [ss(250), ss(274), ss(298), ss(322), sr(470), ss(560), ss(584), ss(608)] }),
+  // 7 — SPIKE mix (single): read the safe stepping spikes, then long jumps over a pit
+  lvl({ name: 'SHARP_LIES', par: 2, hint: 'HANGİSİ GERÇEK?', exit: { x: 662, y: 390 },
+    platforms: [floor(0, 230), plat(320, 322, 'solid', 60), plat(480, 296, 'solid', 56), floor(560, 160)],
+    hazards: [sr(120, 374), ss(144, 374), sr(168, 374), ss(192, 374)] }),
+  // 8 — SIDE-SCROLL falling (single): time the collapsing platforms across the gap
   lvl({ name: 'TIMING', par: 2, hint: 'ZEMİN ÇÖKÜYOR :: HIZLI OL', bounds: { width: 1120, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
-    platforms: [floor(0, 250),
-      plat(310, 326, 'falling', 60), plat(452, 312, 'falling', 60), plat(594, 326, 'falling', 60),
-      floor(720, 200), plat(960, 300, 'solid', 80), floor(1010, 110)] }),
-  // 9 — SIDE-SCROLL: a longer falling-platform chain
-  lvl({ name: 'FREEFALL', par: 2, bounds: { width: 1200, height: 405 },
-    spawn: { x: 56, y: 330 }, exit: { x: 1150, y: 390 },
-    platforms: [floor(0, 220),
-      plat(290, 318, 'falling', 56), plat(428, 304, 'falling', 56), plat(566, 316, 'falling', 56), plat(704, 300, 'falling', 56),
-      floor(820, 180), plat(1010, 300, 'solid', 90), floor(1090, 110)],
-    hazards: [hidden(880)] }),
-  // 10 — BOSS: ghost platforms (appear on approach) + a hidden spike on the start floor
-  lvl({ name: 'PHANTOM', par: 3, hint: 'HAVADA BİR ŞEY VAR', exit: { x: 668, y: 250 },
-    platforms: [floor(0, 210), plat(268, 322, 'ghost', 64), plat(404, 284, 'ghost', 64), plat(540, 250, 'solid', 84)],
-    hazards: [hidden(150), sr(566, 374)] }),
+    platforms: [floor(0, 230),
+      plat(310, 322, 'falling', 56), plat(470, 312, 'falling', 56), plat(630, 322, 'falling', 56),
+      floor(740, 380)] }),
+  // 9 — SIDE-SCROLL falling chain (single): longer, no rest
+  lvl({ name: 'FREEFALL', par: 3, bounds: { width: 1280, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1230, y: 390 },
+    platforms: [floor(0, 200),
+      plat(290, 320, 'falling', 54), plat(450, 306, 'falling', 54), plat(610, 320, 'falling', 54), plat(770, 306, 'falling', 54),
+      floor(880, 400)] }),
+  // 10 — BOSS (single = ghost): ghost stepping-stones with wide gaps over a pit
+  lvl({ name: 'PHANTOM', par: 3, hint: 'HAVADA BİR ŞEY VAR', exit: { x: 660, y: 258 },
+    platforms: [floor(0, 200), plat(290, 326, 'ghost', 58), plat(455, 300, 'ghost', 56), plat(600, 258, 'solid', 80)] }),
 
   // ── CHAPTER 3 (lime) ── visual lies + gravity
   // 11 — INVERSE: a spiky-LOOKING bar that is actually the safe path over a real spike pit
