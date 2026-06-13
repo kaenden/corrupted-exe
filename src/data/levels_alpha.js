@@ -1,6 +1,21 @@
-// SIM_ALPHA — 20-level teaching arc (GDD §8.3) with DELIBERATE beat composition + dynamic
-// elements (side-scroll, moving platforms, teleport portals, varied terrain). No screen-wrap.
-// Physics: jump ≈105px up / ≈190px across → keep gaps ≤170, height steps ≤90. Tuned via playtest.
+// SIM_ALPHA — 30-level campaign. Difficulty-WEIGHTED, tier-based design (genre research:
+// Cat Mario / Trap Adventure 2 / IWBTG / Celeste / Super Meat Boy). Goal: hook → challenge → WOW.
+//
+// JUMP ENVELOPE (max horizontal reach at a given RISE): Δy0→180 · Δy40→175 · Δy70→155 ·
+//   Δy90→135 · Δy100→120 · Δy>105 IMPOSSIBLE. Going DOWN reaches further. Floor top y=390.
+//
+// TRAP WEIGHTS (mental + execution load, 1 trivial → 5 brutal):
+//   solid/spike_real 1 · inverse/spike_safe/falling/gravity_pulse 2 · shifting/ghost/scroll_fake/fake 3
+//   · spike_hidden/ceiling_trap/portal/exitShift 4 · level_complete_fake 5
+//   (two traps that INTERACT count as +bonus, not just sum.)
+// TIERS (sum of weights per level):
+//   A 1-11  "fun warm-up"      sum 3-7,  max 2-3, 1-2 distinct, ~no combos (teach→test, difficulty-saw)
+//   B 12-20 "maddening doubles" sum 8-14, max 4,  3-4 distinct, 2 linked sequences
+//   C 21-30 "hard thinkers"    sum 15-22, max 5,  4-6 distinct, 3 linked; the goal itself can be a trap
+// VARIETY: no trap type in >2 consecutive levels; every level mixes BOTH axes (looks-safe-isn't +
+//   looks-deadly-isn't); ration signatures (level_complete_fake ≤2 total, exitShift ≤1/5 levels).
+// NEW-TRAP BACKLOG (engine work, not yet built): Mimic Exit, Reverse-Gravity Lip, Decay Spikes,
+//   Lure Coin, Echo Platform, Slow Floor. Finale (30) = "Liar's Gauntlet": every trick flipped.
 const SZ = [{ x: 0, y: 305, w: 150, h: 100 }, { x: 570, y: 305, w: 150, h: 100 }];
 const floor = (x = 0, w = 720) => ({ x, y: 390, w, h: 12, type: 'solid' });
 const plat = (x, y, type = 'solid', w = 96) => ({ x, y, w, h: 12, type });
@@ -146,18 +161,20 @@ export const LEVELS_ALPHA = [
 
   // ── CHAPTER 5 (violet) ── advanced combinations
   // 21 — ride a moving platform across the gap; a hidden spike waits on the landing
-  lvl({ name: 'DRIFT', par: 2, hint: 'BİN VE BEKLE', exit: { x: 662, y: 390 },
-    platforms: [floor(0, 250), { x: 270, y: 315, w: 96, h: 12, type: 'shifting', pathIndex: 0 }, floor(560, 160)],
+  lvl({ name: 'DRIFT', par: 3, hint: 'BİN VE BEKLE', exit: { x: 662, y: 390 },
+    platforms: [floor(0, 250), { x: 270, y: 315, w: 96, h: 12, type: 'shifting', pathIndex: 0 }, plat(390, 296, 'fake', 60), floor(560, 160)],
     paths: [{ axis: 'h', from: { x: 270, y: 315 }, to: { x: 470, y: 315 }, speed: 120 }],
     hazards: [hidden(610)] }),
   // 22 — ghost stepping-stones, then a portal across an unjumpable gap (side-scroll)
   lvl({ name: 'SPECTER_GATE', par: 3, bounds: { width: 1120, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
     platforms: [floor(0, 200), plat(250, 322, 'ghost', 70), plat(392, 300, 'ghost', 70), plat(524, 322, 'ghost', 70),
       floor(640, 220), floor(1000, 120)],
+    hazards: [hidden(720)],
     portals: [{ a: { x: 800, y: 374 }, b: { x: 1040, y: 374 } }] }),
   // 23 — float up the gravity column, drift onto a falling platform → solid before it drops
-  lvl({ name: 'PLUNGE', par: 3, hint: 'ZEMİN ÇÖKMEDEN GEÇ', exit: { x: 640, y: 116 },
+  lvl({ name: 'PLUNGE', par: 3, hint: 'YUKARI SÜZÜLÜRKEN TAVANA DİKKAT', exit: { x: 640, y: 116 },
     platforms: [floor(0, 280), plat(350, 150, 'falling', 90), plat(500, 116, 'solid', 200)],
+    hazards: [hidden(200), { x: 360, y: 70, type: 'ceiling_trap', dropDistance: 50, armProximity: 56 }],
     env: [{ type: 'gravity_pulse', zone: { x: 290, y: 60, w: 58, h: 340 }, arrowDir: 'up' }] }),
   // 24 — spiky-LOOKING safe bar over a real pit + a hidden spike + a ceiling trap on the climb
   lvl({ name: 'BARBED', par: 3, hint: 'GÖRÜNEN HER ZAMAN GERÇEK DEĞİL', exit: { x: 662, y: 390 },
@@ -179,19 +196,20 @@ export const LEVELS_ALPHA = [
   lvl({ name: 'RELAY_RUN', par: 3, bounds: { width: 1300, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1250, y: 390 },
     platforms: [floor(0, 360), floor(520, 200), { x: 800, y: 300, w: 90, h: 12, type: 'shifting', pathIndex: 0 }, floor(1080, 220)],
     paths: [{ axis: 'h', from: { x: 800, y: 300 }, to: { x: 940, y: 300 }, speed: 130 }],
+    hazards: [hidden(1140)],
     portals: [{ a: { x: 300, y: 374 }, b: { x: 600, y: 374 } }, { a: { x: 660, y: 374 }, b: { x: 1120, y: 374 } }] }),
   // 27 — falling-platform chain over a death pit (side-scroll, no mistakes)
   lvl({ name: 'FREEFALL_2', par: 3, bounds: { width: 1320, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1270, y: 390 },
     platforms: [floor(0, 200),
       plat(280, 318, 'falling', 54), plat(420, 304, 'falling', 54), plat(560, 318, 'falling', 54),
       plat(700, 304, 'falling', 54), plat(840, 318, 'falling', 54), floor(960, 360)],
-    hazards: [hidden(1040)] }),
+    hazards: [hidden(1040), { x: 560, y: 70, type: 'ceiling_trap', dropDistance: 50, armProximity: 60 }] }),
   // 28 — gravity up, portal across, a safe/real spike mix on the landing
   lvl({ name: 'ANTIGRAV', par: 4, bounds: { width: 1120, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
     platforms: [floor(0, 300), plat(360, 130, 'solid', 160), floor(640, 200), floor(1000, 120)],
     env: [{ type: 'gravity_pulse', zone: { x: 300, y: 60, w: 56, h: 340 }, arrowDir: 'up' }],
     portals: [{ a: { x: 800, y: 374 }, b: { x: 1040, y: 374 } }],
-    hazards: [ss(700, 374), sr(724, 374), ss(748, 374)] }),
+    hazards: [ss(700, 374), sr(724, 374), ss(748, 374), hidden(680)] }),
   // 29 — precision: fake + vertical shifting + a hidden spike, tight
   lvl({ name: 'NEEDLE', par: 4, exit: { x: 644, y: 250 },
     platforms: [floor(0, 170), plat(220, 336, 'fake', 48), plat(220, 300, 'solid', 48),
