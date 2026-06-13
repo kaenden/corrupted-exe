@@ -244,7 +244,15 @@ export class TrickSystem {
         const path = obj.getData('path');
         if (path) {
           const t = (Math.sin(time / 1000 * (path.speed || CONFIG.SHIFT_PLATFORM_SPEED) / 80) + 1) / 2;
-          obj.body.reset(Phaser.Math.Linear(path.from.x, path.to.x, t), Phaser.Math.Linear(path.from.y, path.to.y, t));
+          const nx = Phaser.Math.Linear(path.from.x, path.to.x, t);
+          const ny = Phaser.Math.Linear(path.from.y, path.to.y, t);
+          // carry the rider: if the player is standing on this platform, move them by the same delta
+          const pb = player.sprite.body;
+          const onTop = (pb.blocked.down || pb.touching.down) &&
+            pb.bottom <= obj.y + 6 && pb.bottom >= obj.y - 14 &&
+            pb.right > obj.x && pb.left < obj.x + obj.width;
+          if (onTop) { player.sprite.x += nx - obj.x; player.sprite.y += ny - obj.y; }
+          obj.body.reset(nx, ny);
         }
       }
     }

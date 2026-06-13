@@ -140,13 +140,6 @@ export class GameScene extends Phaser.Scene {
       });
     }
 
-    // Screen wrap trick: exit one edge → reappear (on the floor) at the opposite edge (§ "WRONG_WAY")
-    if (this.levelData.wrap) {
-      const w = this.levelData.bounds.width;
-      if (this.player.sprite.x < -14) this.player.sprite.x = w - 20;
-      else if (this.player.sprite.x > w + 14) this.player.sprite.x = 20;
-    }
-
     // Death floor
     if (this.player.sprite.y > this.levelData.deathFloorY) this.die();
 

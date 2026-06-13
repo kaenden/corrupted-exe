@@ -4,3 +4,5 @@ dist/
 .DS_Store
 .vite/
 tools/art-gen/
+
+tools/__pycache__/

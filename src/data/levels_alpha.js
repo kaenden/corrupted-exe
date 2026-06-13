@@ -108,7 +108,7 @@ export const LEVELS_ALPHA = [
   lvl({ name: 'SLIDE', par: 2, exit: { x: 670, y: 250 },
     platforms: [floor(0, 200), { x: 260, y: 300, w: 96, h: 12, type: 'shifting', pathIndex: 0 }, plat(540, 250, 'solid', 96)],
     paths: [{ axis: 'h', from: { x: 260, y: 300 }, to: { x: 440, y: 300 }, speed: 120 }],
-    hazards: [hidden(360), sr(420, 374)] }),
+    hazards: [sr(420, 374)] }),
   // 17 — PORTAL intro (SIDE-SCROLL): an unjumpable gap; walk into the portal to cross
   lvl({ name: 'GATEWAY', par: 2, hint: 'KAPI SENİ DİĞER TARAFA TAŞIR', bounds: { width: 1120, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
@@ -136,7 +136,7 @@ export const LEVELS_ALPHA = [
   lvl({ name: 'KERNEL_PANIC', par: 5, hint: 'ÇEKİRDEK PANİĞİ :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1400, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1340, y: 250 },
     platforms: [floor(0, 300),
-      plat(200, 320, 'fake', 56), plat(200, 284, 'solid', 56), plat(330, 300, 'falling', 56),
+      plat(200, 336, 'fake', 56), plat(200, 300, 'solid', 56), plat(330, 300, 'falling', 56),
       floor(440, 200), floor(820, 580), plat(700, 300, 'ghost', 70),
       plat(1080, 296, 'solid', 80), plat(1210, 252, 'solid', 96)],
     hazards: [hidden(540), { x: 980, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 60 }],
@@ -167,12 +167,12 @@ export const LEVELS_ALPHA = [
   // 25 — BOSS: shifting + fake + portal + ceiling, side-scroll gauntlet
   lvl({ name: 'OVERCLOCK', par: 4, bounds: { width: 1300, height: 405 }, spawn: { x: 56, y: 330 }, exit: { x: 1250, y: 390 },
     platforms: [floor(0, 300),
-      plat(220, 320, 'fake', 56), plat(220, 284, 'solid', 56),
+      plat(220, 336, 'fake', 56), plat(220, 300, 'solid', 56),
       { x: 360, y: 300, w: 90, h: 12, type: 'shifting', pathIndex: 0 },
       floor(640, 240), plat(900, 300, 'solid', 80), plat(1030, 268, 'falling', 60), floor(1120, 180)],
     paths: [{ axis: 'h', from: { x: 360, y: 300 }, to: { x: 500, y: 300 }, speed: 120 }],
-    hazards: [sr(320, 374), hidden(700), { x: 940, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 }],
-    portals: [{ a: { x: 600, y: 374 }, b: { x: 840, y: 374 } }] }),
+    hazards: [hidden(700), { x: 940, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 }],
+    portals: [{ a: { x: 240, y: 374 }, b: { x: 720, y: 374 } }] }),
 
   // ── CHAPTER 6 (red) ── hardest + finale
   // 26 — two portals + a moving-platform relay (side-scroll)
@@ -194,7 +194,7 @@ export const LEVELS_ALPHA = [
     hazards: [ss(700, 374), sr(724, 374), ss(748, 374)] }),
   // 29 — precision: fake + vertical shifting + a hidden spike, tight
   lvl({ name: 'NEEDLE', par: 4, exit: { x: 644, y: 250 },
-    platforms: [floor(0, 170), plat(220, 320, 'fake', 48), plat(220, 284, 'solid', 48),
+    platforms: [floor(0, 170), plat(220, 336, 'fake', 48), plat(220, 300, 'solid', 48),
       { x: 350, y: 280, w: 80, h: 12, type: 'shifting', pathIndex: 0 }, plat(520, 250, 'solid', 64), plat(600, 250, 'solid', 70)],
     paths: [{ axis: 'v', from: { x: 350, y: 300 }, to: { x: 350, y: 224 }, speed: 90 }],
     hazards: [hidden(150)] }),
@@ -202,12 +202,12 @@ export const LEVELS_ALPHA = [
   lvl({ name: 'SYSTEM_HALT', par: 6, hint: 'SİSTEM ÇÖKÜYOR :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1600, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1540, y: 250 },
     platforms: [floor(0, 280),
-      plat(200, 320, 'fake', 56), plat(200, 284, 'solid', 56), plat(330, 300, 'falling', 56),
+      plat(200, 336, 'fake', 56), plat(200, 300, 'solid', 56), plat(330, 300, 'falling', 56),
       floor(440, 200), plat(720, 300, 'ghost', 70),
       floor(860, 260), { x: 1140, y: 300, w: 90, h: 12, type: 'shifting', pathIndex: 0 }, floor(1300, 300),
       plat(1460, 252, 'solid', 96)],
     paths: [{ axis: 'h', from: { x: 1140, y: 300 }, to: { x: 1260, y: 300 }, speed: 120 }],
-    hazards: [sr(360, 374), hidden(540), { x: 920, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 },
+    hazards: [hidden(540), { x: 920, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 },
       sr(1340, 374), sr(1364, 374)],
     portals: [{ a: { x: 600, y: 374 }, b: { x: 900, y: 374 } }],
     env: [{ type: 'level_complete_fake', triggerX: 1400 }],
