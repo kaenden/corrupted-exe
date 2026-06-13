@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
+import { SoundSystem } from './SoundSystem.js';
 
 // Neon line-art trick engine. Platforms are glowing OUTLINE rectangles (shapes, crisp at any
 // size); spikes/ceiling use a neon-triangle texture. Camera bloom (GameScene) does the glow.
@@ -64,6 +65,7 @@ export class TrickSystem {
           tint: 0xbb6bff, quantity: 14, blendMode: 'ADD', emitting: false,
         });
         burst.explode(14); this.scene.time.delayedCall(350, () => burst.destroy());
+        SoundSystem.play('sfx_portal');
         player.sprite.setPosition(dest.x, dest.y);
         player.sprite.body.setVelocity(0, 0);
         this._portalArmed = false;
