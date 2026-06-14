@@ -47,12 +47,14 @@ const game = new Phaser.Game(config);
 // fullscreen / orientation lock → it gracefully falls back to the rotate prompt + FIT.
 const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 if (isTouch) {
-  const goFull = async () => {
-    window.removeEventListener('pointerdown', goFull);
+  // Retry on every tap until fullscreen sticks (one attempt can be dropped). Once in
+  // fullscreen the guard makes further taps no-ops. iOS ignores it → the dvh CSS still fits.
+  const goFull = () => {
     try {
       if (game.scale && !game.scale.isFullscreen) game.scale.startFullscreen();
-      await window.screen?.orientation?.lock?.('landscape');
-    } catch (_) { /* unsupported — rotate prompt handles it */ }
+      window.screen?.orientation?.lock?.('landscape').catch(() => {});
+    } catch (_) { /* unsupported */ }
+    setTimeout(() => game.scale?.refresh(), 300); // re-fit after the viewport changes
   };
   window.addEventListener('pointerdown', goFull);
 }

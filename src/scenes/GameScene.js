@@ -220,21 +220,20 @@ export class GameScene extends Phaser.Scene {
   }
 
   showFakeComplete() {
-    if (this.dying || this.finished) return;
-    this.physics.pause();
-    // Center on the camera's CURRENT view (side-scroll levels scroll the camera right);
-    // a fixed world/scrollFactor-0 position would land off-screen under the HD zoom.
+    if (this.dying || this.finished || this._fakePanel) return;
+    // Does NOT pause the game. IGNORE it and keep walking to the REAL exit — it auto-dismisses.
+    // Only TAPPING [CONTINUE] is the trap (it kills you). The lesson: never trust the win screen.
     const v = this.cameras.main.worldView;
     const cx = v.centerX, cy = v.centerY;
     const c = this.add.container(0, 0).setDepth(60);
-    // Deliberately GLITCHY / corrupt-looking so the player can read it as fake (a "tell").
+    this._fakePanel = c;
     c.add(neonPanel(this, cx, cy, 360, 200, 0xff2e63));
     const title = this.add.text(cx, cy - 50, 'LEVEL C0MPLETE', { fontFamily: 'monospace', fontSize: '20px', color: '#ff5a7a' }).setOrigin(0.5);
     c.add(title);
     c.add(this.add.text(cx, cy - 18, 'PR0CESS VERIFIED?', { fontFamily: 'monospace', fontSize: '11px', color: '#9b6bff' }).setOrigin(0.5));
     const btn = this.add.text(cx, cy + 42, '[ C0NTINUE ▶ ]', { fontFamily: 'monospace', fontSize: '16px', color: '#ffd24a', backgroundColor: '#3a0a1e', padding: { x: 12, y: 6 } })
       .setOrigin(0.5).setInteractive({ useHandCursor: true });
-    btn.on('pointerdown', () => { this._fakeGlitch?.remove(); c.destroy(); this.physics.resume(); this.die(); });
+    btn.on('pointerdown', () => { this._dismissFake(); this.die(); });
     c.add(btn);
     // jitter + flicker + corrupted title swaps
     const swaps = ['LEVEL C0MPLETE', 'L3VEL C0MPL3TE', '1EVEL C0RRUPT', 'LEVEL C0MP???E', 'L£VEL C0MPLETE'];
@@ -244,6 +243,12 @@ export class GameScene extends Phaser.Scene {
       c.setAlpha(Phaser.Math.FloatBetween(0.8, 1));
       if (Math.random() < 0.45) title.setText(swaps[Phaser.Math.Between(0, swaps.length - 1)]);
     } });
+    this.time.delayedCall(2500, () => this._dismissFake()); // didn't take the bait → it glitches away
+  }
+
+  _dismissFake() {
+    this._fakeGlitch?.remove(); this._fakeGlitch = null;
+    this._fakePanel?.destroy(); this._fakePanel = null;
   }
 
   complete() {
