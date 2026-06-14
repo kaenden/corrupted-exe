@@ -24,16 +24,23 @@ export const SoundSystem = {
   },
 
   unlock() {
-    if (this.unlocked) return;
+    if (this.unlocked || this._unlocking) return;
     const ctx = this.game?.sound?.context;
     if (!ctx) return; // NoAudio fallback → silent
     this.ctx = ctx;
-    if (ctx.state === 'suspended') ctx.resume();
-    this.sfxGain = ctx.createGain(); this.sfxGain.gain.value = 0.5; this.sfxGain.connect(ctx.destination);
-    this.musicGain = ctx.createGain(); this.musicGain.gain.value = 0; this.musicGain.connect(ctx.destination);
-    this.unlocked = true;
-    this.applySettings();
-    if (this._musicKey) this.playMusic(this._musicKey);
+    this._unlocking = true;
+    const finish = () => {
+      this._unlocking = false;
+      if (this.unlocked) return;
+      this.sfxGain = ctx.createGain(); this.sfxGain.gain.value = 0.5; this.sfxGain.connect(ctx.destination);
+      this.musicGain = ctx.createGain(); this.musicGain.gain.value = 0; this.musicGain.connect(ctx.destination);
+      this.unlocked = true;
+      this.applySettings();
+      if (this._musicKey) this.playMusic(this._musicKey);
+    };
+    // Resume must complete before we route nodes, or the first sounds fire into a dead context.
+    if (ctx.state === 'suspended') ctx.resume().then(finish).catch(finish);
+    else finish();
   },
 
   // One oscillator note with an attack/decay envelope.
