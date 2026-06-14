@@ -18,14 +18,19 @@ export const AdSystem = {
 
   async init(sound) {
     this.sound = sound;
-    const choice = import.meta.env?.VITE_AD_PROVIDER ?? 'crazygames';
+    // Only load a portal SDK when explicitly built for it (VITE_AD_PROVIDER=crazygames|poki).
+    // Otherwise (GitHub Pages test build, local dev) stay ad-free so no SDK errors fire off-portal.
+    const choice = import.meta.env?.VITE_AD_PROVIDER ?? 'none';
+    if (choice !== 'crazygames' && choice !== 'poki') {
+      this.provider = import.meta.env?.DEV ? new DevProvider() : new AdProvider();
+      return;
+    }
     const P = choice === 'poki' ? PokiProvider : CrazyGamesProvider;
     try {
       const p = new P(sound);
       await p.init();
       this.provider = p;
     } catch {
-      // No SDK (local dev / portal preview). Use DevProvider in dev, NullProvider in prod.
       this.provider = import.meta.env?.DEV ? new DevProvider() : new AdProvider();
     }
   },
