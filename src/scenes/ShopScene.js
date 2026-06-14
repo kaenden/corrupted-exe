@@ -12,7 +12,7 @@ export class ShopScene extends Phaser.Scene {
     hdCamera(this);
     this.add.image(0, 0, 'bg_menu').setOrigin(0, 0).setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(-10);
     backButton(this, () => this.scene.start('MenuScene'));
-    this.add.text(CONFIG.WIDTH / 2, 22, 'DÜKKAN', { fontFamily: FONT, fontSize: '18px', color: '#dffcff' }).setOrigin(0.5);
+    this.add.text(CONFIG.WIDTH / 2, 22, 'SHOP', { fontFamily: FONT, fontSize: '18px', color: '#dffcff' }).setOrigin(0.5);
     this.badge = shardBadge(this, CONFIG.WIDTH - 14, 22);
 
     this.activeTab = 'skin';
@@ -64,9 +64,9 @@ export class ShopScene extends Phaser.Scene {
 
     let line2, action, cb, disabled = false;
     if (achievement) { line2 = '🔒'; action = item.hint || '???'; disabled = true; }
-    else if (equipped) { line2 = ''; action = '[ AKTİF ]'; disabled = true; }
-    else if (owned) { line2 = ''; action = '[ KULLAN ]'; cb = () => { GameState.equipItem(slot, item.id); this._render(); }; }
-    else { line2 = `${item.cost}◈`; action = '[ AL ]'; disabled = !affordable; cb = () => this._buy(item, slot); }
+    else if (equipped) { line2 = ''; action = '[ ACTIVE ]'; disabled = true; }
+    else if (owned) { line2 = ''; action = '[ EQUIP ]'; cb = () => { GameState.equipItem(slot, item.id); this._render(); }; }
+    else { line2 = `${item.cost}◈`; action = '[ BUY ]'; disabled = !affordable; cb = () => this._buy(item, slot); }
 
     if (line2) this.grid.add(this.add.text(x, y - 6, line2, { fontFamily: FONT, fontSize: '14px', color: affordable || owned ? '#ffe27a' : '#a55' }).setOrigin(0.5));
 

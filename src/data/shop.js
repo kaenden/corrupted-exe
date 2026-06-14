@@ -2,18 +2,18 @@
 // unlock: 'always' | 'purchase' | 'achievement' (achievement items are earned, not bought).
 export const SHOP = {
   skin: {
-    slot: 'skin', label: 'ROBOT SKİN',
+    slot: 'skin', label: 'SKIN',
     items: [
       { id: 'skin_default', name: 'MODEL_00', cost: 0,   unlock: 'always' },
       { id: 'skin_gold',    name: 'MODEL_AU', cost: 300, unlock: 'purchase' },
       { id: 'skin_glitch',  name: 'MODEL_GL', cost: 500, unlock: 'purchase' },
       { id: 'skin_red',     name: 'MODEL_CR', cost: 400, unlock: 'purchase' },
       { id: 'skin_ghost',   name: 'MODEL_GH', cost: 800, unlock: 'purchase' },
-      { id: 'skin_void',    name: 'MODEL_VD', cost: 0,   unlock: 'achievement', hint: '0 ölümle bir ALPHA bölümü' },
+      { id: 'skin_void',    name: 'MODEL_VD', cost: 0,   unlock: 'achievement', hint: 'clear an ALPHA level deathless' },
     ],
   },
   deathFx: {
-    slot: 'deathFx', label: 'ÖLÜM EFEKTİ',
+    slot: 'deathFx', label: 'DEATH FX',
     items: [
       { id: 'fx_default', name: 'SCATTER',        cost: 0,   unlock: 'always' },
       { id: 'fx_melt',    name: 'MELT',           cost: 200, unlock: 'purchase' },

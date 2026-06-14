@@ -103,16 +103,16 @@ export class GameScene extends Phaser.Scene {
 
   _hintFor(type) {
     const map = {
-      fake: 'YALAN ZEMİN :: GÜVENME',
-      falling: 'ZEMİN ÇÖKÜYOR :: HIZLI OL',
-      spike_safe: 'HER DİKEN ÖLDÜRMEZ',
-      spike_hidden: 'DURAKSA :: GÖRÜNMEYEN TEHLİKE',
-      ghost: 'HAVADA BİR ŞEY VAR',
-      inverse: 'TEHLİKELİ GÖRÜNEN GÜVENLİ OLABİLİR',
-      shifting: 'ZAMANLAMAN ÖNEMLİ',
-      portal: 'KAPI SENİ DİĞER TARAFA TAŞIR',
+      fake: 'FALSE FLOOR :: DO NOT TRUST',
+      falling: 'FLOOR COLLAPSING :: BE QUICK',
+      spike_safe: 'NOT EVERY SPIKE KILLS',
+      spike_hidden: 'DO NOT PAUSE :: HIDDEN DANGER',
+      ghost: 'SOMETHING IS IN THE AIR',
+      inverse: 'WHAT LOOKS DEADLY MAY BE SAFE',
+      shifting: 'TIMING MATTERS',
+      portal: 'THE GATE CARRIES YOU ACROSS',
     };
-    return map[type] || 'BOZULMA TESPİT EDİLDİ';
+    return map[type] || 'CORRUPTION DETECTED';
   }
 
   update(time) {
@@ -193,7 +193,7 @@ export class GameScene extends Phaser.Scene {
 
   _glitchText(v) {
     const msgs = ['TRUST_THE_FLOOR', 'SAFE?', 'ERR0R', '0110_1001', 'FOLLOW', 'LIE', 'REBOOT…',
-      "DON'T_FALL", 'NULL_REF', 'VERIFIED?', 'HELP_ME', 'WATCHING', '↑ ?', 'NO_EXIT', 'GÜVEN_BANA'];
+      "DON'T_FALL", 'NULL_REF', 'VERIFIED?', 'HELP_ME', 'WATCHING', '↑ ?', 'NO_EXIT', 'TRUST_ME'];
     const m = msgs[Phaser.Math.Between(0, msgs.length - 1)];
     const x = Phaser.Math.Between(v.x + 70, v.right - 70);
     const y = Phaser.Math.Between(v.y + 50, v.bottom - 70);

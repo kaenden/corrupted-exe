@@ -48,7 +48,7 @@ export const LEVELS_BETA = [
   lvl({ name: 'OVERHEAD', par: 2, exit: { x: 660, y: 260 },
     platforms: [floor(0, 200), plat(280, 320), plat(440, 280), plat(560, 250)],
     hazards: [{ x: 300, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 60 }, { x: 470, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 60 }] }),
-  lvl({ name: 'DOUBLE_DOWN', par: 3, hint: 'YERÇEKİMİ İSTİFLENDİ', exit: { x: 660, y: 120 },
+  lvl({ name: 'DOUBLE_DOWN', par: 3, hint: 'GRAVITY STACKED', exit: { x: 660, y: 120 },
     platforms: [floor(0, 200), plat(300, 110), plat(440, 110), plat(580, 110)],
     env: [{ type: 'gravity_pulse', zone: { x: 230, y: 130, w: 60, h: 260 }, duration: 1400, arrowDir: 'up' }, { type: 'gravity_pulse', zone: { x: 470, y: 130, w: 60, h: 260 }, duration: 1400, arrowDir: 'up' }] }),
   lvl({ name: 'STACKED', par: 3, exit: { x: 660, y: 120 },
@@ -76,12 +76,12 @@ export const LEVELS_BETA = [
   lvl({ name: 'NULL_SPACE', par: 3, exit: { x: 670, y: 250 },
     platforms: [floor(0, 200), plat(300, 320, 'ghost'), plat(450, 290, 'ghost'), plat(560, 250)],
     hazards: [],
-    env: [{ type: 'scroll_fake', wallX: 200, hint: 'GEÇERSİZ KOORDİNAT — ATLA' }] }),
+    env: [{ type: 'scroll_fake', wallX: 200, hint: 'INVALID COORDINATE — JUMP' }] }),
 
   lvl({ name: 'EVENT_HORIZON', par: 4, exit: { x: 670, y: 120 }, // BOSS_115
     platforms: [floor(0, 150), { x: 230, y: 320, w: 96, h: 16, type: 'shifting', pathIndex: 0 }, plat(420, 110), plat(560, 110)],
     paths: [{ axis: 'h', from: { x: 210, y: 320 }, to: { x: 320, y: 320 }, speed: FAST }],
-    env: [{ type: 'scroll_fake', wallX: 160, hint: 'GEÇERSİZ KOORDİNAT — ATLA' }, { type: 'gravity_pulse', zone: { x: 360, y: 130, w: 60, h: 260 }, duration: 1400, arrowDir: 'up' }],
+    env: [{ type: 'scroll_fake', wallX: 160, hint: 'INVALID COORDINATE — JUMP' }, { type: 'gravity_pulse', zone: { x: 360, y: 130, w: 60, h: 260 }, duration: 1400, arrowDir: 'up' }],
     exitShift: { dir: 'left', tiles: 3, triggerX: 600 } }),
 
   lvl({ name: 'OVERCLOCK', par: 3, exit: { x: 670, y: 250 },
@@ -95,19 +95,19 @@ export const LEVELS_BETA = [
     platforms: [floor(0, 160), { x: 240, y: 320, w: 96, h: 16, type: 'shifting', pathIndex: 0 }, plat(420, 110), plat(560, 110)],
     paths: [{ axis: 'h', from: { x: 220, y: 320 }, to: { x: 340, y: 320 }, speed: FAST }],
     hazards: [],
-    env: [{ type: 'gravity_pulse', zone: { x: 360, y: 130, w: 60, h: 260 }, duration: 1300, arrowDir: 'up' }, { type: 'scroll_fake', wallX: 180, hint: 'GEÇERSİZ KOORDİNAT — ATLA' }] }),
+    env: [{ type: 'gravity_pulse', zone: { x: 360, y: 130, w: 60, h: 260 }, duration: 1300, arrowDir: 'up' }, { type: 'scroll_fake', wallX: 180, hint: 'INVALID COORDINATE — JUMP' }] }),
   lvl({ name: 'ENDURANCE', par: 4, exit: { x: 670, y: 250 },
     platforms: [floor(0, 140), plat(200, 330, 'falling'), plat(330, 300, 'falling'), plat(460, 280, 'falling'), plat(580, 250)],
     hazards: [sr(180, 374), sr(230, 374), sr(280, 374), sr(330, 374)] }),
 
-  lvl({ name: 'TOTAL_CORRUPTION', par: 5, hint: 'TEŞHİS: SİSTEM SANA YALAN SÖYLÜYOR', exit: { x: 670, y: 250 }, // BOSS_120
+  lvl({ name: 'TOTAL_CORRUPTION', par: 5, hint: 'DIAGNOSIS: THE SYSTEM IS LYING TO YOU', exit: { x: 670, y: 250 }, // BOSS_120
     platforms: [floor(0, 140), plat(200, 350, 'fake'), plat(200, 310), plat(340, 300, 'falling'), plat(470, 270, 'ghost'), { x: 560, y: 250, w: 96, h: 16, type: 'solid' }],
     hazards: [sr(310, 374), ss(334, 374), { x: 300, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 60 }],
     env: [{ type: 'gravity_pulse', zone: { x: 240, y: 130, w: 60, h: 200 }, duration: 1300, arrowDir: 'up' }],
     exitShift: { dir: 'left', tiles: 3, triggerX: 600 } }),
 
   // ── CHAPTER 5 (violet) ── advanced combinations, beta-hard
-  lvl({ name: 'DRIFT_X', par: 3, hint: 'BİN, BEKLE, ATLA', exit: { x: 662, y: 390 },
+  lvl({ name: 'DRIFT_X', par: 3, hint: 'RIDE, WAIT, JUMP', exit: { x: 662, y: 390 },
     platforms: [floor(0, 230), { x: 260, y: 315, w: 90, h: 16, type: 'shifting', pathIndex: 0 }, floor(560, 160)],
     paths: [{ axis: 'h', from: { x: 260, y: 315 }, to: { x: 480, y: 315 }, speed: FAST }],
     hazards: [hidden(600), sr(620, 374)] }),
@@ -121,7 +121,7 @@ export const LEVELS_BETA = [
       plat(260, 318, 'falling', 50), plat(400, 304, 'falling', 50), plat(540, 318, 'falling', 50), plat(680, 304, 'falling', 50),
       floor(800, 480)],
     hazards: [hidden(880), sr(1000, 374)], exitShift: null }),
-  lvl({ name: 'BARBED_X', par: 4, hint: 'GÖRÜNEN GÜVENLİ, GÖRÜNMEYEN ÖLDÜRÜR', exit: { x: 662, y: 390 },
+  lvl({ name: 'BARBED_X', par: 4, hint: 'SEEN IS SAFE, UNSEEN KILLS', exit: { x: 662, y: 390 },
     platforms: [floor(0, 180), floor(540, 180), plat(320, 250, 'solid', 70)],
     hazards: [{ x: 240, y: 330, type: 'inverse', w: 200 }, sr(290, 374), sr(338, 374), sr(386, 374), sr(434, 374),
       { x: 330, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 }, hidden(560), hidden(600)] }),
@@ -155,7 +155,7 @@ export const LEVELS_BETA = [
     paths: [{ axis: 'h', from: { x: 740, y: 300 }, to: { x: 860, y: 300 }, speed: FAST }],
     hazards: [hidden(540), { x: 560, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 }],
     portals: [{ a: { x: 540, y: 374 }, b: { x: 960, y: 374 } }], exitShift: null }),
-  lvl({ name: 'KERNEL_DEATH', par: 6, hint: 'SİMÜLASYON SONA ERİYOR :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1600, height: 405 },
+  lvl({ name: 'KERNEL_DEATH', par: 6, hint: 'SIMULATION ENDING :: TRUST NOTHING', bounds: { width: 1600, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1540, y: 250 }, // BOSS_130 (final)
     platforms: [floor(0, 280),
       plat(200, 336, 'fake'), plat(200, 300, 'solid', 56), plat(330, 300, 'falling', 56),

@@ -175,7 +175,7 @@ export class TrickSystem {
       const wallH = 56;
       const wall = this._rect(e.wallX, groundY - wallH, 12, wallH, this.accent, true);
       wall.setStrokeStyle(2.5, this.accent, 0); wall.setFillStyle(0x03101c, 0); // invisible until contact
-      wall.setData({ type: 'scroll_wall', hint: e.hint || 'GEÇERSİZ KOORDİNAT — ATLA', tellShown: false, baseStroke: this.accent });
+      wall.setData({ type: 'scroll_wall', hint: e.hint || 'INVALID COORDINATE — JUMP', tellShown: false, baseStroke: this.accent });
       this.solids.push(wall);
       this.platforms.push(wall);
       this._maybeHint('scroll_fake');

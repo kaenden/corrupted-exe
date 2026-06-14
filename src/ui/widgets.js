@@ -42,7 +42,7 @@ export function textButton(scene, x, y, label, cb, opts = {}) {
 }
 
 export function backButton(scene, cb) {
-  return textButton(scene, 14, 22, '← GERİ', cb, { size: '14px', originX: 0, originY: 0.5, padX: 10, padY: 5 });
+  return textButton(scene, 14, 22, '← BACK', cb, { size: '14px', originX: 0, originY: 0.5, padX: 10, padY: 5 });
 }
 
 // Top-right shard badge with the crystal icon. Returns { text, icon, update }.

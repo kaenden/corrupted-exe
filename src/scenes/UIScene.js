@@ -7,7 +7,7 @@ import { neonPanel, hdCamera } from '../ui/widgets.js';
 const FONT = { fontFamily: 'monospace', color: '#dffcff', resolution: 3 };
 const ERR_CODES = ['SEGMENTATION_FAULT', 'NULL_REFERENCE', 'STACK_OVERFLOW', 'ACCESS_VIOLATION',
   'DIVIDE_BY_ZERO', 'KERNEL_PANIC', 'ILLEGAL_INSTRUCTION', 'BUS_ERROR', 'TIMEOUT_EXCEEDED'];
-const ENCOURAGE = ['ANALİZ EDİLİYOR… devam', 'NEREDEYSE :: tekrar dene', 'KALIBI ÇÖZ :: yine', 'ÖĞRENİYORSUN :: devam et'];
+const ENCOURAGE = ['ANALYZING... keep going', 'SO CLOSE :: try again', 'CRACK THE PATTERN :: again', 'YOU ARE LEARNING :: continue'];
 
 // Parallel HUD overlay (GDD §10.6). No physics. Reads/writes simple state for GameScene.
 export class UIScene extends Phaser.Scene {
@@ -27,9 +27,9 @@ export class UIScene extends Phaser.Scene {
       .on('pointerdown', () => this._togglePause());
     this.add.text(40, 11, `${worldName} · ${lvl.code}${lvl.name ? ' · ' + lvl.name : ''}`, { ...FONT, fontSize: '12px' });
     if (CONFIG.DEV_UNLOCK_ALL) {
-      this.add.text(8, CONFIG.HEIGHT - 12, 'DEV: N→sonraki  P→önceki  R→yeniden', { ...FONT, fontSize: '10px', color: '#3a6a72' }).setOrigin(0, 1);
+      this.add.text(8, CONFIG.HEIGHT - 12, 'DEV: N→next  P→prev  R→restart', { ...FONT, fontSize: '10px', color: '#3a6a72' }).setOrigin(0, 1);
     }
-    this.deathText = this.add.text(CONFIG.WIDTH / 2, 11, 'ÖLÜM: 0', { ...FONT, fontSize: '13px' }).setOrigin(0.5, 0);
+    this.deathText = this.add.text(CONFIG.WIDTH / 2, 11, 'DEATHS: 0', { ...FONT, fontSize: '13px' }).setOrigin(0.5, 0);
 
     // Progress bar (top-right)
     this.add.rectangle(CONFIG.WIDTH - 122, 16, 110, 8, 0x000000).setOrigin(0, 0.5).setStrokeStyle(1, COLORS.cyanDim);
@@ -86,7 +86,7 @@ export class UIScene extends Phaser.Scene {
     this.mobileInput.jumpJustPressed = false;
   }
 
-  setDeaths(n) { this.deathText.setText(`ÖLÜM: ${n}`); }
+  setDeaths(n) { this.deathText.setText(`DEATHS: ${n}`); }
   setProgress(p) { this.progFill.width = 108 * p; }
 
   // Death feedback: snarky error code, softening to encouragement at 8+; paid-hint off-ramp at 10.
@@ -105,12 +105,12 @@ export class UIScene extends Phaser.Scene {
 
   _showHintButton() {
     const cost = CONFIG.HINT_PURCHASE_COST;
-    this._hintBtn = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT - 18, `[ İPUCU AL — ${cost}◈ ]`, {
+    this._hintBtn = this.add.text(CONFIG.WIDTH / 2, CONFIG.HEIGHT - 18, `[ BUY HINT — ${cost}◈ ]`, {
       ...FONT, fontSize: '13px', color: '#ffd24a', backgroundColor: '#3a2e06', padding: { x: 10, y: 5 },
     }).setOrigin(0.5).setDepth(40).setInteractive({ useHandCursor: true });
     this._hintBtn.on('pointerup', () => {
-      if (GameState.spendShards(cost)) { this.gameScene.tricks.revealOneTrick(); this._flash('1 TUZAK AÇIĞA ÇIKTI', '#00ffff'); }
-      else this._flash('YETERSİZ SHARD', '#ff6a8a');
+      if (GameState.spendShards(cost)) { this.gameScene.tricks.revealOneTrick(); this._flash('1 TRAP REVEALED', '#00ffff'); }
+      else this._flash('NOT ENOUGH SHARDS', '#ff6a8a');
     });
   }
 
@@ -126,10 +126,10 @@ export class UIScene extends Phaser.Scene {
     this.scene.pause('GameScene');
     AdSystem.gameplayStop();
     this._pausePanel = this._panel(
-      ['DEVAM ET', () => this._togglePause()],
-      ['YENİDEN BAŞLAT', () => { this.scene.stop(); gs.scene.start('GameScene', { world: gs.world, levelIndex: gs.levelIndex }); }],
-      ['LEVEL SEÇ', () => { this.scene.resume('GameScene'); gs.goLevelSelect(); }],
-      ['ANA MENÜ', () => { this.scene.stop(); gs.scene.stop(); gs.scene.start('MenuScene'); }],
+      ['RESUME', () => this._togglePause()],
+      ['RESTART', () => { this.scene.stop(); gs.scene.start('GameScene', { world: gs.world, levelIndex: gs.levelIndex }); }],
+      ['LEVELS', () => { this.scene.resume('GameScene'); gs.goLevelSelect(); }],
+      ['MAIN MENU', () => { this.scene.stop(); gs.scene.stop(); gs.scene.start('MenuScene'); }],
     );
   }
 
@@ -139,7 +139,7 @@ export class UIScene extends Phaser.Scene {
     const panel = this.add.container(0, 0).setDepth(50);
     panel.add(neonPanel(this, cx, cy, 360, 280, COLORS.green));
     panel.add(this.add.text(cx, cy - 100, 'PROCESS_TERMINATED', { ...FONT, fontSize: '12px', color: '#5b8a93' }).setOrigin(0.5));
-    panel.add(this.add.text(cx, cy - 80, `${lvl.code} — GEÇİLDİ`, { ...FONT, fontSize: '16px', color: '#00ff88' }).setOrigin(0.5));
+    panel.add(this.add.text(cx, cy - 80, `${lvl.code} — CLEARED`, { ...FONT, fontSize: '16px', color: '#00ff88' }).setOrigin(0.5));
 
     this._animStars(panel, cx, cy - 40, r.stars);
 
@@ -148,24 +148,24 @@ export class UIScene extends Phaser.Scene {
 
     let row = cy + 36;
     if (CONFIG.SHARD_2X_AD && r.shardsEarned > 0) {
-      const ad = this.add.text(cx, row, '[ 2× SHARD İÇİN İZLE ]', { ...FONT, fontSize: '13px', color: '#ffd24a', backgroundColor: '#3a2e06', padding: { x: 10, y: 5 } })
+      const ad = this.add.text(cx, row, '[ WATCH FOR 2× SHARDS ]', { ...FONT, fontSize: '13px', color: '#ffd24a', backgroundColor: '#3a2e06', padding: { x: 10, y: 5 } })
         .setOrigin(0.5).setInteractive({ useHandCursor: true });
       ad.on('pointerup', () => {
         ad.disableInteractive().setAlpha(0.6);
         Promise.resolve(onReward?.()).then((watched) => {
-          if (watched) { shardLabel.setText(`◈ +${r.shardsEarned * 2} CORE SHARD`); ad.setText('[ 2× ALINDI ✓ ]'); }
-          else ad.setText('[ REKLAM YOK ]');
+          if (watched) { shardLabel.setText(`◈ +${r.shardsEarned * 2} CORE SHARD`); ad.setText('[ 2× CLAIMED ✓ ]'); }
+          else ad.setText('[ NO AD ]');
         });
       });
       panel.add(ad);
       row += 38;
     }
 
-    panel.add(this.add.text(cx, row, '[ DEVAM ▶ ]', { ...FONT, fontSize: '16px', backgroundColor: '#0a3a44', padding: { x: 12, y: 6 } })
+    panel.add(this.add.text(cx, row, '[ CONTINUE ▶ ]', { ...FONT, fontSize: '16px', backgroundColor: '#0a3a44', padding: { x: 12, y: 6 } })
       .setOrigin(0.5).setInteractive({ useHandCursor: true })
       .on('pointerup', () => { panel.destroy(); onContinue(); }));
 
-    panel.add(this.add.text(cx, row + 34, 'LEVEL SEÇ', { ...FONT, fontSize: '12px', color: '#7fb8c2' })
+    panel.add(this.add.text(cx, row + 34, 'LEVELS', { ...FONT, fontSize: '12px', color: '#7fb8c2' })
       .setOrigin(0.5).setInteractive({ useHandCursor: true })
       .on('pointerup', () => { panel.destroy(); this.gameScene.goLevelSelect(); }));
   }

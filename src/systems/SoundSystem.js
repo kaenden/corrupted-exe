@@ -15,8 +15,12 @@ export const SoundSystem = {
 
   init(scene) {
     this.game = scene.game;
-    scene.input.once('pointerdown', () => this.unlock());
-    scene.input.keyboard?.once('keydown', () => this.unlock());
+    // Window-level (not scene-level): BootScene transitions away before it ever gets a gesture,
+    // so a scene listener would never fire and the AudioContext would stay suspended (silent).
+    const unlock = () => this.unlock();
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    window.addEventListener('touchstart', unlock, { once: true });
   },
 
   unlock() {

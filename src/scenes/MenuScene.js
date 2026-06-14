@@ -33,17 +33,17 @@ export class MenuScene extends Phaser.Scene {
     this.title = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#dffcff', resolution: 3 }).setOrigin(0.5);
     this.titleR = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#ff2a55', resolution: 3 }).setOrigin(0.5).setAlpha(0);
     this.titleB = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#2affff', resolution: 3 }).setOrigin(0.5).setAlpha(0);
-    this.add.text(cx, 152, 'bir simülasyon sana yalan söylüyor', { fontFamily: FONT, fontSize: '12px', color: '#5b8a93', resolution: 3 }).setOrigin(0.5);
+    this.add.text(cx, 152, 'a simulation is lying to you', { fontFamily: FONT, fontSize: '12px', color: '#5b8a93', resolution: 3 }).setOrigin(0.5);
     this._scheduleGlitch();
 
     // Main buttons
-    textButton(this, cx, 210, '▶  BAŞLAT', () => this._go(), { size: '22px', padX: 28, padY: 12 });
-    textButton(this, cx, 258, 'DÜNYALAR', () => this.scene.start('WorldSelectScene'), { size: '16px' });
-    textButton(this, cx, 298, 'DÜKKAN', () => this.scene.start('ShopScene'), { size: '16px' });
+    textButton(this, cx, 210, '▶  START', () => this._go(), { size: '22px', padX: 28, padY: 12 });
+    textButton(this, cx, 258, 'WORLDS', () => this.scene.start('WorldSelectScene'), { size: '16px' });
+    textButton(this, cx, 298, 'SHOP', () => this.scene.start('ShopScene'), { size: '16px' });
 
     // Audio toggles + settings gear (bottom)
-    this.sesBtn = textButton(this, cx - 70, 360, this._lbl('SES', 'soundEnabled'), () => this._toggle('soundEnabled', this.sesBtn, 'SES'), { size: '13px' });
-    this.muzBtn = textButton(this, cx, 360, this._lbl('MÜZİK', 'musicEnabled'), () => this._toggle('musicEnabled', this.muzBtn, 'MÜZİK'), { size: '13px' });
+    this.sesBtn = textButton(this, cx - 70, 360, this._lbl('SOUND', 'soundEnabled'), () => this._toggle('soundEnabled', this.sesBtn, 'SOUND'), { size: '13px' });
+    this.muzBtn = textButton(this, cx, 360, this._lbl('MUSIC', 'musicEnabled'), () => this._toggle('musicEnabled', this.muzBtn, 'MUSIC'), { size: '13px' });
     textButton(this, cx + 80, 360, '⚙', () => this.scene.start('SettingsScene'), { size: '16px', padX: 10 });
 
     this.add.text(CONFIG.WIDTH - 8, CONFIG.HEIGHT - 6, 'v0.1', { fontFamily: FONT, fontSize: '10px', color: '#2a4a52' }).setOrigin(1, 1);
@@ -52,7 +52,7 @@ export class MenuScene extends Phaser.Scene {
     SoundSystem.playMusic('mus_menu');
   }
 
-  _lbl(name, key) { return `${name}: ${GameState.getSetting(key) ? 'AÇIK' : 'KAPALI'}`; }
+  _lbl(name, key) { return `${name}: ${GameState.getSetting(key) ? 'ON' : 'OFF'}`; }
   _toggle(key, btn, name) {
     GameState.setSetting(key, !GameState.getSetting(key));
     btn.setText(this._lbl(name, key));

@@ -20,7 +20,7 @@ export class LevelSelectScene extends Phaser.Scene {
 
     const levels = getLevels(this.world);
     if (!levels.length) {
-      this.add.text(CONFIG.WIDTH / 2, 200, 'bölümler yakında...', { fontFamily: FONT, fontSize: '14px', color: '#5b8a93' }).setOrigin(0.5);
+      this.add.text(CONFIG.WIDTH / 2, 200, 'levels coming soon...', { fontFamily: FONT, fontSize: '14px', color: '#5b8a93' }).setOrigin(0.5);
       return;
     }
 

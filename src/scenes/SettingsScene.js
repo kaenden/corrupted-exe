@@ -13,12 +13,12 @@ export class SettingsScene extends Phaser.Scene {
     hdCamera(this);
     this.add.image(0, 0, 'bg_menu').setOrigin(0, 0).setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(-10);
     backButton(this, () => this.scene.start(this.returnTo));
-    this.add.text(cx, 40, 'AYARLAR', { fontFamily: FONT, fontSize: '22px', color: '#dffcff' }).setOrigin(0.5);
+    this.add.text(cx, 40, 'SETTINGS', { fontFamily: FONT, fontSize: '22px', color: '#dffcff' }).setOrigin(0.5);
 
     const rows = [
-      ['SES', 'soundEnabled'],
-      ['MÜZİK', 'musicEnabled'],
-      ['SÜRE (speedrun)', 'showSpeedrunTimer'],
+      ['SOUND', 'soundEnabled'],
+      ['MUSIC', 'musicEnabled'],
+      ['TIMER (speedrun)', 'showSpeedrunTimer'],
     ];
     rows.forEach(([label, key], i) => {
       const y = 110 + i * 50;
@@ -32,17 +32,17 @@ export class SettingsScene extends Phaser.Scene {
 
     // Manual fullscreen toggle (mobile-friendly; auto-fullscreen also fires on first tap)
     const fy = 110 + rows.length * 50;
-    this.add.text(cx - 140, fy, 'TAM EKRAN', { fontFamily: FONT, fontSize: '16px', color: '#9fd6df' }).setOrigin(0, 0.5);
-    const fbtn = textButton(this, cx + 120, fy, this.scale.isFullscreen ? '[ AÇIK ]' : '[ KAPALI ]', () => {
+    this.add.text(cx - 140, fy, 'FULLSCREEN', { fontFamily: FONT, fontSize: '16px', color: '#9fd6df' }).setOrigin(0, 0.5);
+    const fbtn = textButton(this, cx + 120, fy, this.scale.isFullscreen ? '[ ON ]' : '[ OFF ]', () => {
       if (this.scale.isFullscreen) this.scale.stopFullscreen();
       else { this.scale.startFullscreen(); window.screen?.orientation?.lock?.('landscape').catch(() => {}); }
-      this.time.delayedCall(60, () => fbtn.setText(this.scale.isFullscreen ? '[ AÇIK ]' : '[ KAPALI ]'));
+      this.time.delayedCall(60, () => fbtn.setText(this.scale.isFullscreen ? '[ ON ]' : '[ OFF ]'));
     }, { size: '14px', originX: 1 });
 
-    this.add.text(cx, CONFIG.HEIGHT - 24, 'değişiklikler otomatik kaydedilir', {
+    this.add.text(cx, CONFIG.HEIGHT - 24, 'changes save automatically', {
       fontFamily: FONT, fontSize: '11px', color: '#3a5a62',
     }).setOrigin(0.5);
   }
 
-  _lbl(key) { return `[ ${GameState.getSetting(key) ? 'AÇIK' : 'KAPALI'} ]`; }
+  _lbl(key) { return `[ ${GameState.getSetting(key) ? 'ON' : 'OFF'} ]`; }
 }

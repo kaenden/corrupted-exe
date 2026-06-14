@@ -14,6 +14,8 @@
 //   C 21-30 "hard thinkers"    sum 15-22, max 5,  4-6 distinct, 3 linked; the goal itself can be a trap
 // VARIETY: no trap type in >2 consecutive levels; every level mixes BOTH axes (looks-safe-isn't +
 //   looks-deadly-isn't); ration signatures (level_complete_fake ≤2 total, exitShift ≤1/5 levels).
+// PLAYTEST CALIBRATION: portal / fake / gravity_pulse / exitShift read as LOW alone — never ship
+//   them solo; pair each with ≥1 companion trap. Float levels want an upper-ground hazard (stress).
 // NEW-TRAP BACKLOG (engine work, not yet built): Mimic Exit, Reverse-Gravity Lip, Decay Spikes,
 //   Lure Coin, Echo Platform, Slow Floor. Finale (30) = "Liar's Gauntlet": every trick flipped.
 const SZ = [{ x: 0, y: 305, w: 150, h: 100 }, { x: 570, y: 305, w: 150, h: 100 }];
@@ -50,12 +52,12 @@ export const LEVELS_ALPHA = [
       plat(170, 338, 'solid', 56), plat(345, 302, 'solid', 50), plat(440, 246, 'solid', 48),
       plat(575, 212, 'solid', 60), plat(455, 162, 'solid', 48), plat(300, 130, 'solid', 70)] }),
   // 3 — FAKE (single): the obvious low step is fake; the real sits just above, then a long jump
-  lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'YALAN ZEMİN :: GÜVENME', exit: { x: 660, y: 258 },
+  lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'FALSE FLOOR :: DO NOT TRUST', exit: { x: 660, y: 258 },
     platforms: [floor(),
       plat(180, 336, 'solid', 52), plat(340, 326, 'fake', 50), plat(340, 290, 'solid', 50),
       plat(505, 290, 'solid', 50), plat(625, 258, 'solid', 64)] }),
   // 4 — FAKE on a climb: fake decoy vs real at each tier — pick correctly while climbing
-  lvl({ name: 'MIRAGE', par: 2, hint: 'YÜKSEK OLAN GERÇEK', exit: { x: 355, y: 134 },
+  lvl({ name: 'MIRAGE', par: 2, hint: 'THE HIGHER ONE IS REAL', exit: { x: 355, y: 134 },
     platforms: [floor(),
       plat(175, 336, 'solid', 56), plat(345, 300, 'solid', 50),
       plat(220, 250, 'fake', 48), plat(440, 250, 'solid', 50),
@@ -63,20 +65,20 @@ export const LEVELS_ALPHA = [
       plat(180, 162, 'fake', 48), plat(470, 162, 'solid', 50),
       plat(330, 134, 'solid', 64)] }),
   // 5 — BOSS (single = falling): a collapsing-platform sprint over a death pit
-  lvl({ name: 'COLLAPSE', par: 3, hint: 'ZEMİN ÇÖKÜYOR :: HIZLI', exit: { x: 662, y: 390 },
+  lvl({ name: 'COLLAPSE', par: 3, hint: 'FLOOR COLLAPSING :: FAST', exit: { x: 662, y: 390 },
     platforms: [floor(0, 180),
       plat(250, 330, 'falling', 54), plat(410, 314, 'falling', 54), plat(560, 296, 'falling', 54), floor(640, 80)] }),
 
   // ── CHAPTER 2 (magenta) ── single trick, medium-wide gaps, less forgiving (pits)
   // 6 — SPIKE_SAFE (single): a deadly-LOOKING field that's safe; one real spike to read
-  lvl({ name: 'RED_HERRING', par: 1, hint: 'HER DİKEN ÖLDÜRMEZ', exit: { x: 662, y: 390 },
+  lvl({ name: 'RED_HERRING', par: 1, hint: 'NOT EVERY SPIKE KILLS', exit: { x: 662, y: 390 },
     platforms: [floor()], hazards: [ss(250), ss(274), ss(298), ss(322), sr(470), ss(560), ss(584), ss(608)] }),
   // 7 — SPIKE mix (single): read the safe stepping spikes, then long jumps over a pit
-  lvl({ name: 'SHARP_LIES', par: 2, hint: 'HANGİSİ GERÇEK?', exit: { x: 662, y: 390 },
+  lvl({ name: 'SHARP_LIES', par: 2, hint: 'WHICH ONE IS REAL?', exit: { x: 662, y: 390 },
     platforms: [floor(0, 230), plat(320, 322, 'solid', 60), plat(480, 296, 'solid', 56), floor(560, 160)],
     hazards: [sr(120, 374), ss(144, 374), sr(168, 374), ss(192, 374)] }),
   // 8 — SIDE-SCROLL falling (single): time the collapsing platforms across the gap
-  lvl({ name: 'TIMING', par: 2, hint: 'ZEMİN ÇÖKÜYOR :: HIZLI OL', bounds: { width: 1120, height: 405 },
+  lvl({ name: 'TIMING', par: 2, hint: 'FLOOR COLLAPSING :: BE QUICK', bounds: { width: 1120, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
     platforms: [floor(0, 230),
       plat(310, 322, 'falling', 56), plat(470, 312, 'falling', 56), plat(630, 322, 'falling', 56),
@@ -88,35 +90,38 @@ export const LEVELS_ALPHA = [
       plat(290, 320, 'falling', 54), plat(450, 306, 'falling', 54), plat(610, 320, 'falling', 54), plat(770, 306, 'falling', 54),
       floor(880, 400)] }),
   // 10 — BOSS (single = ghost): ghost stepping-stones with wide gaps over a pit
-  lvl({ name: 'PHANTOM', par: 3, hint: 'HAVADA BİR ŞEY VAR', exit: { x: 660, y: 258 },
+  lvl({ name: 'PHANTOM', par: 3, hint: 'SOMETHING IS IN THE AIR', exit: { x: 660, y: 258 },
     platforms: [floor(0, 200), plat(290, 326, 'ghost', 58), plat(455, 300, 'ghost', 56), plat(600, 258, 'solid', 80)] }),
 
   // ── CHAPTER 3 (lime) ── visual lies + gravity
   // 11 — INVERSE: a spiky-LOOKING bar that is actually the safe path over a real spike pit
-  lvl({ name: 'INVERSION', par: 1, hint: 'TEHLİKELİ GÖRÜNEN GÜVENLİ', exit: { x: 662, y: 300 },
+  lvl({ name: 'INVERSION', par: 1, hint: 'WHAT LOOKS DEADLY IS SAFE', exit: { x: 662, y: 300 },
     platforms: [floor(0, 200), floor(540, 180)],
     hazards: [{ x: 250, y: 330, type: 'inverse', w: 200 }, sr(300, 374), sr(348, 374), sr(396, 374), sr(444, 374)] }),
-  // 12 — TEXT_TRAP + vertical tiers: serpentine climb; a reassuring label floats as a tempting
-  // mid-air "ledge" that kills if you step on it
-  lvl({ name: 'GASLIGHT', par: 1, hint: 'ETİKETE GÜVENME', exit: { x: 590, y: 130 },
-    platforms: [floor(),
-      plat(170, 330, 'solid', 60), plat(310, 292, 'solid', 56),
-      plat(180, 252, 'solid', 56), plat(330, 214, 'solid', 56),
-      plat(470, 176, 'solid', 60), plat(560, 134, 'solid', 90)],
-    hazards: [{ x: 430, y: 250, type: 'text_trap', message: 'GÜVENLİ BÖLGE', w: 130, h: 22 }] }),
+  // 12 — TEXT_TRAP + FAKE + PORTAL (side-scroll): read the fake steps, cross the gap by the
+  // gate (a "SAFE PATH" label floats over the pit as a tempting kill-decoy)
+  lvl({ name: 'GASLIGHT', par: 2, hint: 'DO NOT TRUST THE LABEL', bounds: { width: 1120, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
+    platforms: [floor(0, 460),
+      plat(190, 320, 'fake', 52), plat(310, 296, 'solid', 52), plat(430, 320, 'fake', 52),
+      floor(660, 460), plat(850, 300, 'solid', 80)],
+    hazards: [{ x: 540, y: 250, type: 'text_trap', message: 'SAFE PATH', w: 120, h: 22 }],
+    portals: [{ a: { x: 400, y: 374 }, b: { x: 760, y: 374 } }] }),
   // 13 — GRAVITY_PULSE intro: float up the column, drift right onto the wide ledge
-  lvl({ name: 'UPSIDE', par: 2, hint: 'YÖN BOZULDU :: ↑ SÜZÜL', exit: { x: 624, y: 110 },
+  lvl({ name: 'UPSIDE', par: 2, hint: 'GRAVITY GLITCHED :: ↑ FLOAT', exit: { x: 624, y: 110 },
     platforms: [floor(0, 320), plat(360, 110, 'solid', 320)],
+    hazards: [{ x: 470, y: 56, type: 'ceiling_trap', dropDistance: 50, armProximity: 60 }],
     env: [{ type: 'gravity_pulse', zone: { x: 285, y: 60, w: 60, h: 340 }, arrowDir: 'up' }] }),
   // 14 — gravity to a two-tier landing
   lvl({ name: 'FLOAT', par: 2, exit: { x: 650, y: 110 },
     platforms: [floor(0, 300), plat(360, 186, 'solid', 130), plat(520, 110, 'solid', 200)],
+    hazards: [{ x: 600, y: 56, type: 'ceiling_trap', dropDistance: 50, armProximity: 60 }],
     env: [{ type: 'gravity_pulse', zone: { x: 270, y: 60, w: 58, h: 340 }, arrowDir: 'up' }] }),
   // 15 — BOSS: invisible scroll wall (jump it) + a ceiling trap further on
   lvl({ name: 'GLITCHWALL', par: 3, exit: { x: 670, y: 390 },
     platforms: [floor()],
     hazards: [{ x: 470, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 60 }],
-    env: [{ type: 'scroll_fake', wallX: 300, hint: 'GEÇERSİZ KOORDİNAT — ATLA' }] }),
+    env: [{ type: 'scroll_fake', wallX: 300, hint: 'INVALID COORDINATE — JUMP' }] }),
 
   // ── CHAPTER 4 (amber) ── speed, portals, gauntlets
   // 16 — SHIFTING: ride a moving platform; a hidden spike + real spike to read
@@ -125,14 +130,15 @@ export const LEVELS_ALPHA = [
     paths: [{ axis: 'h', from: { x: 260, y: 300 }, to: { x: 440, y: 300 }, speed: 120 }],
     hazards: [sr(420, 374)] }),
   // 17 — PORTAL intro (SIDE-SCROLL): an unjumpable gap; walk into the portal to cross
-  lvl({ name: 'GATEWAY', par: 2, hint: 'KAPI SENİ DİĞER TARAFA TAŞIR', bounds: { width: 1120, height: 405 },
+  lvl({ name: 'GATEWAY', par: 3, hint: 'THE GATE CARRIES YOU ACROSS', bounds: { width: 1120, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
     platforms: [floor(0, 460),
-      plat(180, 330, 'solid', 56), plat(300, 296, 'solid', 56),
+      plat(180, 330, 'fake', 56), plat(180, 294, 'solid', 56), plat(300, 296, 'solid', 56),
       floor(660, 460), plat(840, 300, 'solid', 80)],
+    hazards: [hidden(740)],
     portals: [{ a: { x: 420, y: 374 }, b: { x: 720, y: 374 } }] }),
   // 18 — GAUNTLET (SIDE-SCROLL showcase): varied terrain + moving platform + portal over a gap
-  lvl({ name: 'GAUNTLET_1', par: 3, hint: 'YOL DAİMA İLERİ DEĞİL', bounds: { width: 1440, height: 405 },
+  lvl({ name: 'GAUNTLET_1', par: 3, hint: 'FORWARD IS NOT ALWAYS THE WAY', bounds: { width: 1440, height: 405 },
     spawn: { x: 60, y: 330 }, exit: { x: 1390, y: 390 },
     platforms: [floor(0, 680),
       plat(220, 320, 'solid', 60), plat(360, 286, 'fake', 56), plat(360, 248, 'solid', 56),
@@ -148,7 +154,7 @@ export const LEVELS_ALPHA = [
     paths: [{ axis: 'h', from: { x: 560, y: 110 }, to: { x: 660, y: 110 }, speed: 110 }],
     env: [{ type: 'gravity_pulse', zone: { x: 235, y: 60, w: 58, h: 340 }, arrowDir: 'up' }] }),
   // 20 — BOSS (SIDE-SCROLL): every trick, a portal, a FAKE finish, then the shifting real exit
-  lvl({ name: 'KERNEL_PANIC', par: 5, hint: 'ÇEKİRDEK PANİĞİ :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1400, height: 405 },
+  lvl({ name: 'KERNEL_PANIC', par: 5, hint: 'KERNEL PANIC :: TRUST NOTHING', bounds: { width: 1400, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1340, y: 250 },
     platforms: [floor(0, 300),
       plat(200, 336, 'fake', 56), plat(200, 300, 'solid', 56), plat(330, 300, 'falling', 56),
@@ -161,7 +167,7 @@ export const LEVELS_ALPHA = [
 
   // ── CHAPTER 5 (violet) ── advanced combinations
   // 21 — ride a moving platform across the gap; a hidden spike waits on the landing
-  lvl({ name: 'DRIFT', par: 3, hint: 'BİN VE BEKLE', exit: { x: 662, y: 390 },
+  lvl({ name: 'DRIFT', par: 3, hint: 'RIDE AND WAIT', exit: { x: 662, y: 390 },
     platforms: [floor(0, 250), { x: 270, y: 315, w: 96, h: 12, type: 'shifting', pathIndex: 0 }, plat(390, 296, 'fake', 60), floor(560, 160)],
     paths: [{ axis: 'h', from: { x: 270, y: 315 }, to: { x: 470, y: 315 }, speed: 120 }],
     hazards: [hidden(610)] }),
@@ -172,12 +178,12 @@ export const LEVELS_ALPHA = [
     hazards: [hidden(720)],
     portals: [{ a: { x: 800, y: 374 }, b: { x: 1040, y: 374 } }] }),
   // 23 — float up the gravity column, drift onto a falling platform → solid before it drops
-  lvl({ name: 'PLUNGE', par: 3, hint: 'YUKARI SÜZÜLÜRKEN TAVANA DİKKAT', exit: { x: 640, y: 116 },
+  lvl({ name: 'PLUNGE', par: 3, hint: 'MIND THE CEILING AS YOU FLOAT', exit: { x: 640, y: 116 },
     platforms: [floor(0, 280), plat(350, 150, 'falling', 90), plat(500, 116, 'solid', 200)],
     hazards: [hidden(200), { x: 360, y: 70, type: 'ceiling_trap', dropDistance: 50, armProximity: 56 }],
     env: [{ type: 'gravity_pulse', zone: { x: 290, y: 60, w: 58, h: 340 }, arrowDir: 'up' }] }),
   // 24 — spiky-LOOKING safe bar over a real pit + a hidden spike + a ceiling trap on the climb
-  lvl({ name: 'BARBED', par: 3, hint: 'GÖRÜNEN HER ZAMAN GERÇEK DEĞİL', exit: { x: 662, y: 390 },
+  lvl({ name: 'BARBED', par: 3, hint: 'WHAT YOU SEE IS NOT ALWAYS REAL', exit: { x: 662, y: 390 },
     platforms: [floor(0, 190), floor(540, 180), plat(330, 250, 'solid', 80)],
     hazards: [{ x: 250, y: 330, type: 'inverse', w: 190 }, sr(300, 374), sr(348, 374), sr(396, 374),
       { x: 340, y: 70, type: 'ceiling_trap', dropDistance: 56, armProximity: 56 }, hidden(560)] }),
@@ -217,7 +223,7 @@ export const LEVELS_ALPHA = [
     paths: [{ axis: 'v', from: { x: 350, y: 300 }, to: { x: 350, y: 224 }, speed: 90 }],
     hazards: [hidden(150)] }),
   // 30 — FINAL BOSS: long side-scroll, every trick, a portal, a FAKE finish, then the shifting real exit
-  lvl({ name: 'SYSTEM_HALT', par: 6, hint: 'SİSTEM ÇÖKÜYOR :: HİÇBİR ŞEYE GÜVENME', bounds: { width: 1600, height: 405 },
+  lvl({ name: 'SYSTEM_HALT', par: 6, hint: 'SYSTEM HALTING :: TRUST NOTHING', bounds: { width: 1600, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1540, y: 250 },
     platforms: [floor(0, 280),
       plat(200, 336, 'fake', 56), plat(200, 300, 'solid', 56), plat(330, 300, 'falling', 56),
