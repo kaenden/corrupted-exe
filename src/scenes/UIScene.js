@@ -45,6 +45,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   _buildTouchControls() {
+    this.input.addPointer(2); // enable multi-touch: hold the joystick AND tap jump at once
     // Virtual joystick (bottom-left) for movement
     const jx = 78, jy = CONFIG.HEIGHT - 64, R = 46;
     this.add.circle(jx, jy, R, 0x0a2a33, 0.28).setStrokeStyle(2, 0x2affff, 0.4).setDepth(30)
@@ -78,7 +79,7 @@ export class UIScene extends Phaser.Scene {
       .on('pointerdown', () => { this.mobileInput.jump = true; this.mobileInput.jumpJustPressed = true; })
       .on('pointerup', () => { this.mobileInput.jump = false; })
       .on('pointerout', () => { this.mobileInput.jump = false; });
-    this.add.text(jbx, jby, 'ZIP', { ...FONT, fontSize: '14px' }).setOrigin(0.5).setDepth(31);
+    this.add.text(jbx, jby, 'JUMP', { ...FONT, fontSize: '13px' }).setOrigin(0.5).setDepth(31);
   }
 
   update() {
