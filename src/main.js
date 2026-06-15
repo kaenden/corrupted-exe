@@ -42,6 +42,7 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
+window.game = game; // exposed for debugging / automated tests
 
 // Mobile: on the first tap, enter fullscreen + lock landscape (Android Chrome). iOS blocks
 // fullscreen / orientation lock → it gracefully falls back to the rotate prompt + FIT.
