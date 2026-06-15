@@ -116,9 +116,13 @@ export class GameScene extends Phaser.Scene {
   }
 
   update(time) {
-    if (this.dying || this.finished || !this.player?.sprite) return;
     const ui = this.scene.get('UIScene');
+    if (this.dying || this.finished || !this.player?.sprite) {
+      if (ui?.mobileInput) ui.mobileInput.jumpJustPressed = false; // drop stale latch
+      return;
+    }
     this.player.update(time, ui?.mobileInput);
+    if (ui?.mobileInput) ui.mobileInput.jumpJustPressed = false; // consume after the player read it
     this.tricks.update(time, this.player);
 
     // keep the grid covering the camera view; parallax-scroll its texture + constant drift

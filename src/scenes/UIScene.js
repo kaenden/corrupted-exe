@@ -83,10 +83,8 @@ export class UIScene extends Phaser.Scene {
     this.input.on('pointerupoutside', up);
   }
 
-  update() {
-    // Consume the one-frame mobile jump latch (GameScene.update already ran this frame).
-    this.mobileInput.jumpJustPressed = false;
-  }
+  // NOTE: the jump latch is consumed by GameScene.update (which runs BEFORE UIScene's input
+  // dispatch). Clearing it here would wipe it in the same step it was set → the jump never fires.
 
   setDeaths(n) { this.deathText.setText(`DEATHS: ${n}`); }
   setProgress(p) { this.progFill.width = 108 * p; }
