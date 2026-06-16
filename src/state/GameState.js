@@ -16,6 +16,8 @@ export const GameState = {
     settings: { soundEnabled: true, musicEnabled: true, showSpeedrunTimer: false },
     seenTricks: [],                  // trick TYPEs already introduced (first-time hints)
     stats: { totalDeaths: 0, totalLevelsCleared: 0, totalShardEarned: 0 },
+    // THE DESCENT (roguelite) — persistent meta across runs
+    descent: { glitchKeys: 0, bestDepth: 0, upgrades: { integrity: 0, greed: 0, shield: 0 } },
   },
 
   data: null,

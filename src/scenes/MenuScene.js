@@ -37,9 +37,10 @@ export class MenuScene extends Phaser.Scene {
     this._scheduleGlitch();
 
     // Main buttons
-    textButton(this, cx, 210, '▶  START', () => this._go(), { size: '22px', padX: 28, padY: 12 });
-    textButton(this, cx, 258, 'WORLDS', () => this.scene.start('WorldSelectScene'), { size: '16px' });
-    textButton(this, cx, 298, 'SHOP', () => this.scene.start('ShopScene'), { size: '16px' });
+    textButton(this, cx, 196, '▶  START', () => this._go(), { size: '22px', padX: 28, padY: 12 });
+    textButton(this, cx, 242, '▼  THE DESCENT', () => this.scene.start('DescentScene'), { size: '18px', color: '#c4a6ff', bg: '#1a0e2e', padX: 18, padY: 8 });
+    textButton(this, cx, 286, 'WORLDS', () => this.scene.start('WorldSelectScene'), { size: '15px' });
+    textButton(this, cx, 318, 'SHOP', () => this.scene.start('ShopScene'), { size: '15px' });
 
     // Audio toggles + settings gear (bottom)
     this.sesBtn = textButton(this, cx - 70, 360, this._lbl('SOUND', 'soundEnabled'), () => this._toggle('soundEnabled', this.sesBtn, 'SOUND'), { size: '13px' });

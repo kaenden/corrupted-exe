@@ -3,6 +3,7 @@ import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
 import { AdSystem } from '../systems/ad/AdSystem.js';
 import { neonPanel, hdCamera } from '../ui/widgets.js';
+import { RunState } from '../state/RunState.js';
 
 const FONT = { fontFamily: 'monospace', color: '#dffcff', resolution: 3 };
 const ERR_CODES = ['SEGMENTATION_FAULT', 'NULL_REFERENCE', 'STACK_OVERFLOW', 'ACCESS_VIOLATION',
@@ -30,6 +31,8 @@ export class UIScene extends Phaser.Scene {
       this.add.text(8, CONFIG.HEIGHT - 12, 'DEV: N→next  P→prev  R→restart', { ...FONT, fontSize: '10px', color: '#3a6a72' }).setOrigin(0, 1);
     }
     this.deathText = this.add.text(CONFIG.WIDTH / 2, 11, 'DEATHS: 0', { ...FONT, fontSize: '13px' }).setOrigin(0.5, 0);
+    this.runMode = RunState.active;
+    if (this.runMode) this.setIntegrity();   // reuse deathText for the run HUD
 
     // Progress bar (top-right)
     this.add.rectangle(CONFIG.WIDTH - 122, 16, 110, 8, 0x000000).setOrigin(0, 0.5).setStrokeStyle(1, COLORS.cyanDim);
@@ -87,6 +90,14 @@ export class UIScene extends Phaser.Scene {
   // dispatch). Clearing it here would wipe it in the same step it was set → the jump never fires.
 
   setDeaths(n) { this.deathText.setText(`DEATHS: ${n}`); }
+
+  // Run HUD reuses deathText (proven safe to update) — integrity / depth / keys.
+  setIntegrity() {
+    if (!this.runMode || !this.deathText?.active) return;
+    const r = RunState;
+    this.deathText.setColor('#c4a6ff')
+      .setText(`INTEGRITY ${r.integrity}/${r.maxIntegrity}${r.shield ? ' +FW' : ''}   DEPTH ${r.index + 1}/${r.rooms.length}   KEYS ${r.keys}`);
+  }
   setProgress(p) { this.progFill.width = 108 * p; }
 
   // Death feedback: snarky error code, softening to encouragement at 8+; paid-hint off-ramp at 10.

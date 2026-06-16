@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
+import { RunState } from '../state/RunState.js';
 import { PlayerSystem } from '../systems/PlayerSystem.js';
 import { TrickSystem } from '../systems/TrickSystem.js';
 import { SoundSystem } from '../systems/SoundSystem.js';
@@ -12,6 +13,7 @@ export class GameScene extends Phaser.Scene {
   constructor() { super('GameScene'); }
 
   init(data) {
+    this.runMode = data.run === true;       // THE DESCENT roguelite run
     this.world = data.world || 'alpha';
     this.levelIndex = data.levelIndex ?? 0;
     this.levelData = getLevel(this.world, this.levelIndex);
@@ -97,7 +99,7 @@ export class GameScene extends Phaser.Scene {
     addScanlines(this);
     SoundSystem.playMusic(this.world === 'beta' ? 'mus_beta' : 'mus_alpha');
     AdSystem.gameplayStart();
-    if (CONFIG.DEV_UNLOCK_ALL) this._enableDevKeys();
+    if (CONFIG.DEV_UNLOCK_ALL && !this.runMode) this._enableDevKeys();
     this._totalDist = Math.max(1, Phaser.Math.Distance.Between(lvl.spawnPoint.x, lvl.spawnPoint.y, lvl.exit.x, lvl.exit.y));
   }
 
@@ -157,23 +159,33 @@ export class GameScene extends Phaser.Scene {
     if (this.dying || this.finished) return;
     this.dying = true;
     this.deathCount++;
-    this.runDeathShards += CONFIG.SHARD_PER_DEATH;
     this.player.sprite.body.setVelocity(0, 0);
     this.player.sprite.body.enable = false;
     this.player.playDeathFx(GameState.getEquipped('deathFx'));
     this.cameras.main.shake(CONFIG.CAMERA_SHAKE_DEATH.duration, CONFIG.CAMERA_SHAKE_DEATH.intensity);
-    this.scene.get('UIScene')?.setDeaths?.(this.deathCount);
-    this.scene.get('UIScene')?.onDeath?.(this.deathCount);
     SoundSystem.play('sfx_death');
     AdSystem.gameplayStop();
 
-    this.time.delayedCall(CONFIG.RESPAWN_DELAY_MS, () => {
+    const respawn = () => {
       this.tricks.reset(this.player);
       this.player.respawn(this.levelData.spawnPoint.x, this.levelData.spawnPoint.y);
       this.player.sprite.body.enable = true;
       this.dying = false;
       AdSystem.gameplayStart();
-    });
+    };
+
+    if (this.runMode) {
+      const over = RunState.loseLife();
+      // schedule the outcome FIRST so a HUD hiccup can never strand the run
+      this.time.delayedCall(CONFIG.RESPAWN_DELAY_MS, () => { over ? this._endRun(false) : respawn(); });
+      this.scene.get('UIScene')?.setIntegrity?.();
+      return;
+    }
+
+    this.runDeathShards += CONFIG.SHARD_PER_DEATH;
+    this.scene.get('UIScene')?.setDeaths?.(this.deathCount);
+    this.scene.get('UIScene')?.onDeath?.(this.deathCount);
+    this.time.delayedCall(CONFIG.RESPAWN_DELAY_MS, respawn);
   }
 
   // Fake LEVEL COMPLETE overlay (level_complete_fake, §6.3). CONTINUE kills. Whole-game max 1.
@@ -263,6 +275,14 @@ export class GameScene extends Phaser.Scene {
     SoundSystem.play('sfx_win');
     AdSystem.gameplayStop();
 
+    if (this.runMode) {
+      const { gained, won } = RunState.completeRoom();
+      if (won) { this._endRun(true); return; }
+      this.scene.stop('UIScene');
+      this.scene.start('BoonDraftScene', { gained });
+      return;
+    }
+
     const r = GameState.saveLevelResult(this.world, this.levelIndex, this.deathCount, this.runDeathShards, this.levelData.parDeaths);
     console.log(`[LEVEL COMPLETE] ${this.levelData.code} stars=${r.stars} shardsEarned=${r.shardsEarned} deaths=${this.deathCount}`);
     this.scene.get('UIScene')?.showComplete?.(this.levelData, r, () => this.nextLevel(),
@@ -288,6 +308,12 @@ export class GameScene extends Phaser.Scene {
   goLevelSelect() {
     this.scene.stop('UIScene');
     this.scene.start('LevelSelectScene', { world: this.world });
+  }
+
+  _endRun(won) {
+    const summary = RunState.bank(won);
+    this.scene.stop('UIScene');
+    this.scene.start('RunOverScene', summary);
   }
 
   // QA shortcuts (DEV_UNLOCK_ALL): N = next level, P = previous, R = restart level.
