@@ -346,10 +346,10 @@ export class GameScene extends Phaser.Scene {
     const h = lvl.bounds.height;
     const ch = lvl.chase || {};
     const tier = Math.floor((this.levelIndex ?? 0) / 10);          // 0,1,2 across a 30-level world
-    const worldAdd = this.world === 'beta' ? 24 : 0;
+    const worldAdd = this.world === 'beta' ? 18 : 0;
     const slowUp = (GameState.data.backdoor?.upgrades.slow || 0) * 0.06; // -6% per COLD BOOT level
-    this.chaseBaseSpeed = (ch.speed ?? (108 + tier * 28 + worldAdd)) * (1 - Math.min(0.4, slowUp));
-    this.chaseRush = ch.rush ?? 0.7;                               // ×(1+rush) at the exit
+    this.chaseBaseSpeed = (ch.speed ?? (96 + tier * 22 + worldAdd)) * (1 - Math.min(0.4, slowUp));
+    this.chaseRush = ch.rush ?? 0.5;                               // ×(1+rush) at the exit
     this.chaseStartX = (lvl.spawnPoint.x ?? 64) - (ch.headStart ?? 250);
     this.chaseDelay = ch.delay ?? 1100;
     this._spawnX = lvl.spawnPoint.x ?? 64;
