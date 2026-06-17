@@ -22,11 +22,10 @@ export class PlayerSystem {
     const s = this.scene.add.rectangle(x, y, S, S, 0x00ffff, 0.9).setStrokeStyle(2.5, 0xffffff, 0.95);
     this.scene.physics.add.existing(s);
     s.body.setSize(S, S);
-    // BACKDOOR upgrades apply only in ESCAPE (chase) levels — keeps the campaign balance pure.
-    const esc = !!this.scene.levelData?.chase;
+    // BACKDOOR upgrades apply in ALL levels — corruption is the game's through-line.
     const up = GameState.data.backdoor?.upgrades || {};
-    this._speed = CONFIG.PLAYER_SPEED * (esc ? 1 + 0.07 * (up.speed || 0) : 1);
-    this._jumpV = CONFIG.PLAYER_JUMP_VELOCITY * (esc ? 1 + 0.05 * (up.jump || 0) : 1);
+    this._speed = CONFIG.PLAYER_SPEED * (1 + 0.07 * (up.speed || 0));
+    this._jumpV = CONFIG.PLAYER_JUMP_VELOCITY * (1 + 0.05 * (up.jump || 0));
     s.body.setMaxVelocity(this._speed, CONFIG.PLAYER_MAX_FALL);
     s.setDepth(5);
     this.sprite = s;

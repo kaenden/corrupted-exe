@@ -98,9 +98,9 @@ export class TrickSystem {
     const type = p.type || 'solid';
     const moving = type === 'falling' || type === 'shifting';
     const stroke = type === 'falling' ? FALL_COLOR : this.accent;
-    // ESCAPE 'platform' upgrade widens landable platforms (chase levels only)
-    const padW = (this.scene.levelData?.chase && (type === 'solid' || moving) && p.w < 220)
-      ? 12 * (GameState.data.backdoor?.upgrades.platform || 0) : 0;
+    // WIDE BUS upgrade widens landable platforms (all levels)
+    const padW = ((type === 'solid' || moving) && p.w < 220)
+      ? 10 * (GameState.data.backdoor?.upgrades.platform || 0) : 0;
     const obj = this._rect(p.x - padW / 2, p.y, p.w + padW, p.h, stroke, !moving);
     obj.setData({ type, home: { x: p.x, y: p.y }, baseStroke: stroke, dropped: false, falling: false });
 

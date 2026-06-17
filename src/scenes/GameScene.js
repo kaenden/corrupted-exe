@@ -81,6 +81,11 @@ export class GameScene extends Phaser.Scene {
       (_pl, hz) => { if (this.tricks.isLethal(hz)) this.die(); });
     this.physics.add.overlap(this.player.sprite, this.exit, () => this.complete());
     this._setupPickups(lvl);
+    // BACKDOOR upgrades that work in EVERY level (corruption is the through-line)
+    const bup = GameState.data.backdoor?.upgrades || {};
+    this._shieldAvail = (bup.shield || 0) > 0;   // absorb one death (per level)
+    this._alarmOn = (bup.alarm || 0) > 0;        // trap proximity warning
+    this._bugSlowMs = 1300 + (bup.bug || 0) * 450;
 
     // Camera follows on larger levels
     // Side-scroll levels (wider than the screen): bound the camera + follow the player.
@@ -337,10 +342,7 @@ export class GameScene extends Phaser.Scene {
   // BUG pickups slow it momentarily; permanent 'slow' upgrade lowers the base speed.
   _setupChase(lvl) {
     const h = lvl.bounds.height;
-    const ups = GameState.data.backdoor?.upgrades || {};
-    this._shieldAvail = (ups.shield || 0) > 0;   // one free death (per level)
-    this._alarmOn = (ups.alarm || 0) > 0;        // trap proximity warning
-    const slowUp = (ups.slow || 0) * 0.06; // -6% base per level
+    const slowUp = (GameState.data.backdoor?.upgrades.slow || 0) * 0.06; // -6% base per level
     this.chaseBaseSpeed = (lvl.chase.speed || 160) * (1 - Math.min(0.4, slowUp));
     this.chaseAccel = lvl.chase.accel || 0;     // px/s² ramp
     this.chaseStartX = (lvl.spawnPoint.x ?? 64) - (lvl.chase.headStart ?? 240);
@@ -349,7 +351,6 @@ export class GameScene extends Phaser.Scene {
     this.chaseX = this.chaseStartX;
     this._chaseT = 0;
     this.chaseSlowT = 0;
-    this._bugSlowMs = 1300 + (GameState.data.backdoor?.upgrades.bug || 0) * 450; // potency upgrade extends it
     this.chaseFill = this.add.rectangle(0, 0, Math.max(1, this.chaseX), h, 0x3a0014, 0.45).setOrigin(0, 0).setDepth(6);
     this.chaseEdge = this.add.rectangle(this.chaseX, 0, 10, h, 0xff2a4d, 0.95).setOrigin(0, 0).setDepth(7);
     this.chaseParticles = this.add.particles(this.chaseX, 0, 'particle_spark', {
