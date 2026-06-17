@@ -29,6 +29,8 @@ export class MenuScene extends Phaser.Scene {
       fontFamily: FONT, fontSize: '11px', color: '#1f6b78', lineSpacing: 4,
     }).setDepth(-5);
 
+    this._buildMascot(cx, 58);
+
     // Title + glitch copies
     this.title = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#dffcff', resolution: 3 }).setOrigin(0.5);
     this.titleR = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#ff2a55', resolution: 3 }).setOrigin(0.5).setAlpha(0);
@@ -64,6 +66,26 @@ export class MenuScene extends Phaser.Scene {
   _go() {
     // BAŞLAT → resume into the worlds flow (later: jump to last-played level)
     this.scene.start('WorldSelectScene');
+  }
+
+  // The glitch-robot mascot — same look as the player, bobbing above the title
+  _buildMascot(cx, y) {
+    const S = 30;
+    const ant = this.add.rectangle(cx, y - 21, 3, 13, 0xffffff, 0.85);
+    const tip = this.add.circle(cx, y - 28, 4, 0xff2a4d, 1);
+    const body = this.add.rectangle(cx, y, S, S, 0x00ffff, 0.92).setStrokeStyle(3, 0xffffff, 0.95);
+    const eyeL = this.add.rectangle(cx - 6, y - 2, 6, 7, 0x06121a, 1);
+    const eyeR = this.add.rectangle(cx + 6, y - 2, 6, 7, 0x06121a, 1);
+    const parts = [ant, tip, body, eyeL, eyeR];
+    this.tweens.add({ targets: parts, y: '-=6', duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.tweens.add({ targets: tip, scale: 1.45, duration: 680, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    // occasional glitch jitter on the eyes
+    this.time.addEvent({
+      delay: 2600, loop: true, callback: () => {
+        eyeL.x = cx - 6 + Phaser.Math.Between(-3, 3); eyeR.x = cx + 6 + Phaser.Math.Between(-3, 3);
+        this.time.delayedCall(110, () => { eyeL.x = cx - 6; eyeR.x = cx + 6; });
+      },
+    });
   }
 
   _scheduleGlitch() {
