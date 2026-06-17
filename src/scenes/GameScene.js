@@ -363,6 +363,14 @@ export class GameScene extends Phaser.Scene {
       x: 0, y: { min: 0, max: h }, lifespan: 480, speedX: { min: 20, max: 90 }, scale: { start: 0.5, end: 0 },
       tint: [0xff2a4d, 0xff7a4d], frequency: 28, quantity: 2, blendMode: 'ADD',
     }).setDepth(7);
+
+    // Level elements the corruption EATS as it passes (redden → blacken → fade). Snapshot so a
+    // respawn restores them. Skip invisible elements (fakes, armed hidden spikes).
+    const t = this.tricks || {};
+    const cons = [...(t.solids || []), ...(t.moving || []), ...(t.fakes || []), ...(t.hazards || []), ...(this.bugs || []), ...(this.bkeys || [])]
+      .filter((o) => o && o.visible && o.alpha > 0 && (o.setTint ? true : ((o.strokeAlpha ?? 0) > 0.05 || (o.fillAlpha ?? 0) > 0.05)));
+    this._consSnap = cons.map((o) => ({ o, a: o.alpha, sc: o.strokeColor, sa: o.strokeAlpha, sw: o.lineWidth, fc: o.fillColor, fa: o.fillAlpha, fil: o.isFilled }));
+    cons.forEach((o) => { o._consumed = false; });
   }
 
   _resetChase() {
@@ -370,6 +378,31 @@ export class GameScene extends Phaser.Scene {
     this.chaseX = this.chaseStartX;
     this._chaseT = 0;
     this.chaseSlowT = 0;
+    for (const s of this._consSnap || []) {
+      const o = s.o; if (!o) continue;
+      o._consumed = false;
+      o.setVisible(true); o.setAlpha(s.a);
+      if (o.setFillStyle) {
+        o.setStrokeStyle(s.sw || 2.5, s.sc ?? 0xffffff, s.sa ?? 1);
+        if (s.fil) o.setFillStyle(s.fc ?? 0x03101c, s.fa ?? 0.82);
+      } else if (o.clearTint) { o.clearTint(); }
+    }
+  }
+
+  // redden → blacken → fade an element the corruption wall just swept over
+  _consume(o, s) {
+    o._consumed = true;
+    const isShape = o.setFillStyle != null;
+    if (isShape) {
+      o.setStrokeStyle(s.sw || 2.5, 0xff2a4d, 1);
+      if (s.fil) o.setFillStyle(0xff2a4d, Math.max(0.45, s.fa || 0.45));
+    } else if (o.setTintFill) { o.setTintFill(0xff2a4d); }
+    this.time.delayedCall(140, () => {
+      if (!o.active) return;
+      if (isShape) { o.setStrokeStyle(s.sw || 2.5, 0x000000, 1); if (s.fil) o.setFillStyle(0x000000, s.fa || 0.45); }
+      else if (o.setTintFill) { o.setTintFill(0x050505); }
+      this.tweens.add({ targets: o, alpha: 0, duration: 420, ease: 'Quad.in', onComplete: () => o.setVisible(false) });
+    });
   }
 
   _updateChase(delta) {
@@ -388,6 +421,10 @@ export class GameScene extends Phaser.Scene {
     this.chaseFill.width = Math.max(1, this.chaseX);
     this.chaseEdge.setFillStyle(this.chaseSlowT > 0 ? 0x2affff : 0xff2a4d, 0.95).x = this.chaseX + Phaser.Math.Between(-3, 3);
     this.chaseParticles.setX(this.chaseX);
+    const edge = this.chaseX;
+    for (const s of this._consSnap || []) {
+      if (!s.o._consumed && s.o.active && s.o.x < edge - 2) this._consume(s.o, s);
+    }
     if (this.player.sprite.x < this.chaseX + 26) this.die();
   }
 
