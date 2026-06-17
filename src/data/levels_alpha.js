@@ -36,6 +36,7 @@ const lvl = (o) => {
     exit: o.exit, bounds: o.bounds || { width: 720, height: 405 },
     platforms: o.platforms, hazards: o.hazards || [], envTricks: o.env || [],
     paths: o.paths || [], exitShift: o.exitShift || null, wrap: false, portals: o.portals || [],
+    chase: o.chase || null,
     parDeaths: o.par ?? 0, safeZones: SZ, name: o.name, hint: o.hint || null,
   };
 };

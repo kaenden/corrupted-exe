@@ -20,7 +20,7 @@ const lvl = (o) => {
     exit: o.exit, bounds: o.bounds || { width: 720, height: 405 },
     platforms: o.platforms, hazards: o.hazards || [], envTricks: o.env || [],
     paths: o.paths || [], exitShift: o.exitShift ?? { dir: 'left', tiles: 2, triggerX: 600 },
-    wrap: o.wrap || false, portals: o.portals || [],
+    wrap: o.wrap || false, portals: o.portals || [], chase: o.chase || null,
     parDeaths: o.par ?? 2, safeZones: SZ, name: o.name, hint: o.hint || null,
   };
 };

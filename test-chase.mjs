@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-const URL = 'http://localhost:4173/';
+const URL = 'https://kaenden.github.io/corrupted-exe/';
 const browser = await chromium.launch();
 const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, hasTouch: true });
 const page = await ctx.newPage();
@@ -7,7 +7,7 @@ const errs = [];
 page.on('pageerror', (e) => errs.push(e.message));
 page.on('console', (m) => { if (m.type() === 'error') errs.push(m.text()); });
 await page.goto(URL, { waitUntil: 'load' });
-await page.waitForFunction(() => window.game?.scene?.isActive('MenuScene'), { timeout: 15000 });
+await page.waitForFunction(() => window.game?.scene?.isActive('MenuScene'), undefined, { timeout: 20000 });
 await page.touchscreen.tap(640, 360);
 await page.waitForTimeout(300);
 
