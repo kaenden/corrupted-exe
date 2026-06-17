@@ -179,10 +179,10 @@ export class BootScene extends Phaser.Scene {
     try { cv = this.textures.createCanvas('vignette', w, h); } catch (_) { return; }
     if (!cv) return;
     const ctx = cv.getContext();
-    const grd = ctx.createRadialGradient(w / 2, h / 2, h * 0.34, w / 2, h / 2, h * 0.76);
+    const grd = ctx.createRadialGradient(w / 2, h / 2, h * 0.52, w / 2, h / 2, h * 0.98);
     grd.addColorStop(0, 'rgba(255,40,60,0)');
-    grd.addColorStop(0.7, 'rgba(255,35,55,0.18)');
-    grd.addColorStop(1, 'rgba(255,25,45,0.95)');
+    grd.addColorStop(0.55, 'rgba(255,40,60,0)');   // clear center — gameplay stays visible
+    grd.addColorStop(1, 'rgba(255,28,48,0.92)');    // red only at the screen edges
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, w, h);
     cv.refresh();

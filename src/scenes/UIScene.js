@@ -57,7 +57,7 @@ export class UIScene extends Phaser.Scene {
     if (!this.vignette) return;
     const prox = this.gameScene?._wallProx || 0;
     const pulse = 0.85 + 0.15 * Math.sin(this.time.now / 110);
-    this.vignette.setAlpha(Phaser.Math.Linear(this.vignette.alpha, prox * 0.6 * pulse, 0.12));
+    this.vignette.setAlpha(Phaser.Math.Linear(this.vignette.alpha, prox * 0.5 * pulse, 0.12));
   }
 
   _buildTouchControls() {
