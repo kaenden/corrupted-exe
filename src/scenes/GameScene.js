@@ -80,6 +80,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(this.player.sprite, this.tricks.hazards,
       (_pl, hz) => { if (this.tricks.isLethal(hz)) this.die(); });
     this.physics.add.overlap(this.player.sprite, this.exit, () => this.complete());
+    this._setupPickups(lvl);
 
     // Camera follows on larger levels
     // Side-scroll levels (wider than the screen): bound the camera + follow the player.
@@ -174,6 +175,7 @@ export class GameScene extends Phaser.Scene {
       this.player.sprite.body.enable = true;
       this.dying = false;
       this._resetChase();
+      this._resetPickups();
       AdSystem.gameplayStart();
     };
 
@@ -278,6 +280,15 @@ export class GameScene extends Phaser.Scene {
     SoundSystem.play('sfx_win');
     AdSystem.gameplayStop();
 
+    // BACKDOOR KEYS bank only on a CLEAN clear (no deaths / never caught)
+    if (this._keysThisLevel > 0 && this.deathCount === 0) {
+      const mult = 1 + 0.5 * (GameState.data.backdoor.upgrades.keymult || 0);
+      const gained = Math.round(this._keysThisLevel * mult);
+      GameState.data.backdoor.keys += gained;
+      GameState.save();
+      this._pickupFlash(`+${gained} BACKDOOR KEYS BANKED`, '#ffd24a');
+    }
+
     if (this.runMode) {
       const { gained, won } = RunState.completeRoom();
       if (won) { this._endRun(true); return; }
@@ -319,14 +330,19 @@ export class GameScene extends Phaser.Scene {
     this.scene.start('RunOverScene', summary);
   }
 
-  // ESCAPE archetype: a wall of corruption sweeps in from the left — keep moving or die.
+  // ESCAPE archetype: a wall of corruption sweeps in from the left, ACCELERATING — run or die.
+  // BUG pickups slow it momentarily; permanent 'slow' upgrade lowers the base speed.
   _setupChase(lvl) {
     const h = lvl.bounds.height;
-    this.chaseSpeed = lvl.chase.speed || 160;
+    const slowUp = (GameState.data.backdoor?.upgrades.slow || 0) * 0.06; // -6% base per level
+    this.chaseBaseSpeed = (lvl.chase.speed || 160) * (1 - Math.min(0.4, slowUp));
+    this.chaseAccel = lvl.chase.accel || 0;     // px/s² ramp
     this.chaseStartX = (lvl.spawnPoint.x ?? 64) - (lvl.chase.headStart ?? 240);
     this.chaseDelay = lvl.chase.delay ?? 900;
+    this.chaseSpeed = this.chaseBaseSpeed;
     this.chaseX = this.chaseStartX;
     this._chaseT = 0;
+    this.chaseSlowT = 0;
     this.chaseFill = this.add.rectangle(0, 0, Math.max(1, this.chaseX), h, 0x3a0014, 0.45).setOrigin(0, 0).setDepth(6);
     this.chaseEdge = this.add.rectangle(this.chaseX, 0, 10, h, 0xff2a4d, 0.95).setOrigin(0, 0).setDepth(7);
     this.chaseParticles = this.add.particles(this.chaseX, 0, 'particle_spark', {
@@ -338,17 +354,67 @@ export class GameScene extends Phaser.Scene {
   _resetChase() {
     if (this.chaseEdge == null) return;
     this.chaseX = this.chaseStartX;
+    this.chaseSpeed = this.chaseBaseSpeed;
     this._chaseT = 0;
+    this.chaseSlowT = 0;
   }
 
   _updateChase(delta) {
     if (this.chaseEdge == null) return;
     this._chaseT += delta;
-    if (this._chaseT > this.chaseDelay) this.chaseX += this.chaseSpeed * (delta / 1000);
+    if (this._chaseT > this.chaseDelay) {
+      this.chaseSpeed += this.chaseAccel * (delta / 1000);
+      const slowed = this.chaseSlowT > 0;
+      if (slowed) this.chaseSlowT -= delta;
+      this.chaseX += (slowed ? this.chaseSpeed * 0.18 : this.chaseSpeed) * (delta / 1000);
+    }
     this.chaseFill.width = Math.max(1, this.chaseX);
-    this.chaseEdge.x = this.chaseX + Phaser.Math.Between(-3, 3);
+    this.chaseEdge.setFillStyle(this.chaseSlowT > 0 ? 0x2affff : 0xff2a4d, 0.95).x = this.chaseX + Phaser.Math.Between(-3, 3);
     this.chaseParticles.setX(this.chaseX);
     if (this.player.sprite.x < this.chaseX + 26) this.die();
+  }
+
+  // ---- BUG / BACKDOOR KEY pickups ----
+  _setupPickups(lvl) {
+    this._keysThisLevel = 0;
+    this.bugs = (lvl.bugs || []).map((b) => this._mkPickup(b.x, b.y, 'item_bug'));
+    this.bkeys = (lvl.backdoorKeys || []).map((k) => this._mkPickup(k.x, k.y, 'item_key'));
+    if (this.bugs.length) this.physics.add.overlap(this.player.sprite, this.bugs, (_p, o) => this._collect(o, 'bug'));
+    if (this.bkeys.length) this.physics.add.overlap(this.player.sprite, this.bkeys, (_p, o) => this._collect(o, 'key'));
+  }
+
+  _mkPickup(x, y, tex) {
+    const o = this.physics.add.staticImage(x, y, tex).setDepth(4);
+    o.setData('taken', false).setData('homeY', y);
+    this.tweens.add({ targets: o, y: y - 6, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    return o;
+  }
+
+  _collect(o, kind) {
+    if (o.getData('taken')) return;
+    o.setData('taken', true);
+    o.setVisible(false); o.body.enable = false;
+    const burst = this.add.particles(o.x, o.y, 'particle_spark', {
+      lifespan: 320, speed: { min: 30, max: 120 }, scale: { start: 0.6, end: 0 },
+      tint: kind === 'bug' ? 0x2affff : 0xffd24a, quantity: 12, blendMode: 'ADD', emitting: false,
+    });
+    burst.explode(12); this.time.delayedCall(360, () => burst.destroy());
+    SoundSystem.play('sfx_shard');
+    if (kind === 'bug') { this.chaseSlowT = 2600; this._pickupFlash('CORRUPTION SLOWED', '#2affff'); }
+    else { this._keysThisLevel++; this._pickupFlash(`BACKDOOR KEY  +1  (${this._keysThisLevel})`, '#ffd24a'); }
+  }
+
+  _resetPickups() {
+    this._keysThisLevel = 0;
+    [...(this.bugs || []), ...(this.bkeys || [])].forEach((o) => {
+      o.setData('taken', false); o.setVisible(true); o.body.enable = true;
+    });
+  }
+
+  _pickupFlash(text, color) {
+    const v = this.cameras.main.worldView;
+    const t = this.add.text(v.centerX, v.y + 70, text, { fontFamily: 'monospace', fontSize: '15px', color, resolution: 3 }).setOrigin(0.5).setDepth(50);
+    this.tweens.add({ targets: t, alpha: 0, y: t.y - 22, duration: 1100, onComplete: () => t.destroy() });
   }
 
   // QA shortcuts (DEV_UNLOCK_ALL): N = next level, P = previous, R = restart level.

@@ -114,6 +114,19 @@ export class BootScene extends Phaser.Scene {
     g.lineStyle(1.5, 0x00ff88, 0.45).strokeRect(6, 6, 20, 38);
     g.generateTexture('exit_gate', 32, 48);
 
+    // BUG item (cyan glitch diamond) — collect to slow the corruption
+    g.clear();
+    g.fillStyle(0x2affff, 1).fillPoints([{ x: 8, y: 1 }, { x: 15, y: 8 }, { x: 8, y: 15 }, { x: 1, y: 8 }], true);
+    g.fillStyle(0x06222a, 1).fillPoints([{ x: 8, y: 5 }, { x: 11, y: 8 }, { x: 8, y: 11 }, { x: 5, y: 8 }], true);
+    g.generateTexture('item_bug', 16, 16);
+
+    // BACKDOOR KEY (gold) — bank on a clean clear → meta currency
+    g.clear();
+    g.lineStyle(2, 0xffd24a, 1).strokeCircle(8, 5, 3.5);   // bow
+    g.fillStyle(0xffd24a, 1).fillRect(7, 8, 2, 8);          // shaft
+    g.fillRect(9, 12, 3, 2); g.fillRect(9, 15, 3, 2);       // teeth
+    g.generateTexture('item_key', 16, 18);
+
     // Neon UI panel frame (9-slice, 64×64, 16px border) — dark glass + cyan border + corner brackets
     {
       const S = 64, c = 14;

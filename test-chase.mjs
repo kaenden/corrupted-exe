@@ -24,7 +24,7 @@ console.log('INIT ' + JSON.stringify(init));
 await page.waitForTimeout(3200);
 const after = await page.evaluate(() => {
   const gs = window.game.scene.getScene('GameScene');
-  return { chaseX: Math.round(gs.chaseX), deaths: gs.deathCount };
+  return { chaseX: Math.round(gs.chaseX), deaths: gs.deathCount, t: Math.round(gs._chaseT||0), active: window.game.scene.isActive("GameScene") };
 });
 console.log('AFTER IDLE ' + JSON.stringify(after));
 console.log('WALL_ADVANCED ' + (after.chaseX > init.chaseX) + '  CAUGHT(deaths>0) ' + (after.deaths > 0));

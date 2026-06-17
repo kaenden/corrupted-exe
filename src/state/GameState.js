@@ -18,6 +18,8 @@ export const GameState = {
     stats: { totalDeaths: 0, totalLevelsCleared: 0, totalShardEarned: 0 },
     // THE DESCENT (roguelite) — persistent meta across runs
     descent: { glitchKeys: 0, bestDepth: 0, upgrades: { integrity: 0, greed: 0, shield: 0 } },
+    // ESCAPE — BACKDOOR KEYS meta (earned by clean clears) + permanent upgrades
+    backdoor: { keys: 0, upgrades: { speed: 0, jump: 0, slow: 0, platform: 0, alarm: 0, shield: 0, keymult: 0 } },
   },
 
   data: null,

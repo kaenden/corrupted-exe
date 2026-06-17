@@ -36,7 +36,7 @@ const lvl = (o) => {
     exit: o.exit, bounds: o.bounds || { width: 720, height: 405 },
     platforms: o.platforms, hazards: o.hazards || [], envTricks: o.env || [],
     paths: o.paths || [], exitShift: o.exitShift || null, wrap: false, portals: o.portals || [],
-    chase: o.chase || null,
+    chase: o.chase || null, bugs: o.bugs || [], backdoorKeys: o.backdoorKeys || [],
     parDeaths: o.par ?? 0, safeZones: SZ, name: o.name, hint: o.hint || null,
   };
 };
@@ -139,15 +139,17 @@ export const LEVELS_ALPHA = [
     hazards: [hidden(740)],
     portals: [{ a: { x: 420, y: 374 }, b: { x: 720, y: 374 } }] }),
   // 18 — ESCAPE archetype: a corruption wall sweeps in from the left — RUN, don't stop.
-  lvl({ name: 'OUTRUN', par: 4, hint: 'RUN. DO NOT STOP.', bounds: { width: 1800, height: 405 },
+  lvl({ name: 'OUTRUN', par: 4, hint: 'RUN. GRAB BUGS TO SLOW IT.', bounds: { width: 1800, height: 405 },
     spawn: { x: 60, y: 330 }, exit: { x: 1750, y: 390 },
-    chase: { speed: 175, headStart: 260, delay: 1000 },
+    chase: { speed: 160, accel: 10, headStart: 260, delay: 1000 },
     platforms: [floor(0, 380),
       plat(440, 330, 'solid', 70), plat(580, 320, 'falling', 70),
       floor(720, 220),
       plat(1000, 330, 'solid', 70), plat(1140, 318, 'falling', 70),
       floor(1280, 520)],
-    hazards: [sr(300, 374), sr(820, 374), sr(880, 374), sr(1340, 374), sr(1400, 374)] }),
+    hazards: [sr(300, 374), sr(820, 374), sr(880, 374), sr(1340, 374), sr(1400, 374)],
+    bugs: [{ x: 500, y: 312 }, { x: 770, y: 366 }, { x: 1040, y: 312 }, { x: 1480, y: 360 }],
+    backdoorKeys: [{ x: 580, y: 300 }, { x: 1140, y: 298 }, { x: 1700, y: 364 }] }),
   // 19 — GAUNTLET: gravity float + ghost platforms + a shifting platform up top
   lvl({ name: 'GAUNTLET_2', par: 3, exit: { x: 668, y: 110 },
     platforms: [floor(0, 230), plat(300, 110, 'solid', 110), plat(470, 110, 'ghost', 110),
