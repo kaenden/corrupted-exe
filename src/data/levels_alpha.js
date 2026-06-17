@@ -141,7 +141,7 @@ export const LEVELS_ALPHA = [
   // 18 — ESCAPE archetype: a corruption wall sweeps in from the left — RUN, don't stop.
   lvl({ name: 'OUTRUN', par: 4, hint: 'RUN. GRAB BUGS TO SLOW IT.', bounds: { width: 1800, height: 405 },
     spawn: { x: 60, y: 330 }, exit: { x: 1750, y: 390 },
-    chase: { speed: 160, accel: 10, headStart: 260, delay: 1000 },
+    chase: { speed: 160, rush: 0.8, headStart: 260, delay: 1000 },
     platforms: [floor(0, 380),
       plat(440, 330, 'solid', 70), plat(580, 320, 'falling', 70),
       floor(720, 220),

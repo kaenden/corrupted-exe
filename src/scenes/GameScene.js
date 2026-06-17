@@ -105,7 +105,7 @@ export class GameScene extends Phaser.Scene {
     addScanlines(this);
     SoundSystem.playMusic(this.world === 'beta' ? 'mus_beta' : 'mus_alpha');
     AdSystem.gameplayStart();
-    if (lvl.chase) this._setupChase(lvl);
+    this._setupChase(lvl); // corruption wall in EVERY level — the game's through-line
     if (CONFIG.DEV_UNLOCK_ALL && !this.runMode) this._enableDevKeys();
     this._totalDist = Math.max(1, Phaser.Math.Distance.Between(lvl.spawnPoint.x, lvl.spawnPoint.y, lvl.exit.x, lvl.exit.y));
   }
@@ -340,14 +340,20 @@ export class GameScene extends Phaser.Scene {
 
   // ESCAPE archetype: a wall of corruption sweeps in from the left, ACCELERATING — run or die.
   // BUG pickups slow it momentarily; permanent 'slow' upgrade lowers the base speed.
+  // Base speed scales every 10 levels (tier) + per world; within a level it RUSHES toward the
+  // finale (progress multiplier). Early levels = slow (learn the wall), finales = rush mode.
   _setupChase(lvl) {
     const h = lvl.bounds.height;
-    const slowUp = (GameState.data.backdoor?.upgrades.slow || 0) * 0.06; // -6% base per level
-    this.chaseBaseSpeed = (lvl.chase.speed || 160) * (1 - Math.min(0.4, slowUp));
-    this.chaseAccel = lvl.chase.accel || 0;     // px/s² ramp
-    this.chaseStartX = (lvl.spawnPoint.x ?? 64) - (lvl.chase.headStart ?? 240);
-    this.chaseDelay = lvl.chase.delay ?? 900;
-    this.chaseSpeed = this.chaseBaseSpeed;
+    const ch = lvl.chase || {};
+    const tier = Math.floor((this.levelIndex ?? 0) / 10);          // 0,1,2 across a 30-level world
+    const worldAdd = this.world === 'beta' ? 24 : 0;
+    const slowUp = (GameState.data.backdoor?.upgrades.slow || 0) * 0.06; // -6% per COLD BOOT level
+    this.chaseBaseSpeed = (ch.speed ?? (108 + tier * 28 + worldAdd)) * (1 - Math.min(0.4, slowUp));
+    this.chaseRush = ch.rush ?? 0.7;                               // ×(1+rush) at the exit
+    this.chaseStartX = (lvl.spawnPoint.x ?? 64) - (ch.headStart ?? 250);
+    this.chaseDelay = ch.delay ?? 1100;
+    this._spawnX = lvl.spawnPoint.x ?? 64;
+    this._exitX = lvl.exit?.x ?? lvl.bounds.width;
     this.chaseX = this.chaseStartX;
     this._chaseT = 0;
     this.chaseSlowT = 0;
@@ -362,7 +368,6 @@ export class GameScene extends Phaser.Scene {
   _resetChase() {
     if (this.chaseEdge == null) return;
     this.chaseX = this.chaseStartX;
-    this.chaseSpeed = this.chaseBaseSpeed;
     this._chaseT = 0;
     this.chaseSlowT = 0;
   }
@@ -371,10 +376,14 @@ export class GameScene extends Phaser.Scene {
     if (this.chaseEdge == null) return;
     this._chaseT += delta;
     if (this._chaseT > this.chaseDelay) {
-      this.chaseSpeed += this.chaseAccel * (delta / 1000);
+      const denom = this._exitX - this._spawnX;
+      const progress = Math.abs(denom) < 150
+        ? Phaser.Math.Clamp((this._chaseT - this.chaseDelay) / 9000, 0, 1)   // narrow level → time ramp
+        : Phaser.Math.Clamp((this.player.sprite.x - this._spawnX) / denom, 0, 1);
       const slowed = this.chaseSlowT > 0;
       if (slowed) this.chaseSlowT -= delta;
-      this.chaseX += (slowed ? this.chaseSpeed * 0.18 : this.chaseSpeed) * (delta / 1000);
+      const eff = this.chaseBaseSpeed * (1 + progress * this.chaseRush);
+      this.chaseX += (slowed ? eff * 0.18 : eff) * (delta / 1000);
     }
     this.chaseFill.width = Math.max(1, this.chaseX);
     this.chaseEdge.setFillStyle(this.chaseSlowT > 0 ? 0x2affff : 0xff2a4d, 0.95).x = this.chaseX + Phaser.Math.Between(-3, 3);
