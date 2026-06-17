@@ -11,6 +11,7 @@ import { UIScene } from './scenes/UIScene.js';
 import { DescentScene } from './scenes/DescentScene.js';
 import { BoonDraftScene } from './scenes/BoonDraftScene.js';
 import { RunOverScene } from './scenes/RunOverScene.js';
+import { BackdoorScene } from './scenes/BackdoorScene.js';
 import { RunState } from './state/RunState.js';
 
 // Global: every text renders at RENDER_SCALE+1× resolution so it stays crisp under the
@@ -42,12 +43,13 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, DescentScene, BoonDraftScene, RunOverScene],
+  scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, DescentScene, BoonDraftScene, RunOverScene, BackdoorScene],
 };
 
 const game = new Phaser.Game(config);
 window.game = game; // exposed for debugging / automated tests
 window.RunState = RunState;
+import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
 
 // Mobile: on the first tap, enter fullscreen + lock landscape (Android Chrome). iOS blocks
 // fullscreen / orientation lock → it gracefully falls back to the rotate prompt + FIT.

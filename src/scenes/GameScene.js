@@ -129,6 +129,7 @@ export class GameScene extends Phaser.Scene {
     if (ui?.mobileInput) ui.mobileInput.jumpJustPressed = false; // consume after the player read it
     this.tricks.update(time, this.player);
     this._updateChase(delta);
+    this._updateAlarm();
 
     // keep the grid covering the camera view; parallax-scroll its texture + constant drift
     if (this.grid) {
@@ -162,6 +163,8 @@ export class GameScene extends Phaser.Scene {
     if (this.dying || this.finished) return;
     this.dying = true;
     this.deathCount++;
+    // FIREWALL upgrade: absorb one death per level (keeps the clean-clear key bank intact)
+    if (this._shieldAvail) { this._shieldAvail = false; this.deathCount--; this._pickupFlash('FIREWALL ABSORBED', '#2affff'); }
     this.player.sprite.body.setVelocity(0, 0);
     this.player.sprite.body.enable = false;
     this.player.playDeathFx(GameState.getEquipped('deathFx'));
@@ -334,7 +337,10 @@ export class GameScene extends Phaser.Scene {
   // BUG pickups slow it momentarily; permanent 'slow' upgrade lowers the base speed.
   _setupChase(lvl) {
     const h = lvl.bounds.height;
-    const slowUp = (GameState.data.backdoor?.upgrades.slow || 0) * 0.06; // -6% base per level
+    const ups = GameState.data.backdoor?.upgrades || {};
+    this._shieldAvail = (ups.shield || 0) > 0;   // one free death (per level)
+    this._alarmOn = (ups.alarm || 0) > 0;        // trap proximity warning
+    const slowUp = (ups.slow || 0) * 0.06; // -6% base per level
     this.chaseBaseSpeed = (lvl.chase.speed || 160) * (1 - Math.min(0.4, slowUp));
     this.chaseAccel = lvl.chase.accel || 0;     // px/s² ramp
     this.chaseStartX = (lvl.spawnPoint.x ?? 64) - (lvl.chase.headStart ?? 240);
@@ -343,6 +349,7 @@ export class GameScene extends Phaser.Scene {
     this.chaseX = this.chaseStartX;
     this._chaseT = 0;
     this.chaseSlowT = 0;
+    this._bugSlowMs = 1300 + (GameState.data.backdoor?.upgrades.bug || 0) * 450; // potency upgrade extends it
     this.chaseFill = this.add.rectangle(0, 0, Math.max(1, this.chaseX), h, 0x3a0014, 0.45).setOrigin(0, 0).setDepth(6);
     this.chaseEdge = this.add.rectangle(this.chaseX, 0, 10, h, 0xff2a4d, 0.95).setOrigin(0, 0).setDepth(7);
     this.chaseParticles = this.add.particles(this.chaseX, 0, 'particle_spark', {
@@ -374,6 +381,24 @@ export class GameScene extends Phaser.Scene {
     if (this.player.sprite.x < this.chaseX + 26) this.die();
   }
 
+  // ALARM upgrade: a warning pip + beep when a lethal hazard is just ahead (chase levels).
+  _updateAlarm() {
+    if (!this._alarmOn || !this.player?.sprite) return;
+    const px = this.player.sprite.x, py = this.player.sprite.y;
+    let near = false;
+    for (const hz of this.tricks.hazards) {
+      if (!hz.getData('lethal')) continue;
+      if (hz.x > px - 24 && hz.x - px < 115 && Math.abs(hz.y - py) < 90) { near = true; break; }
+    }
+    if (near) {
+      if (!this._alarmIcon) this._alarmIcon = this.add.text(px, py - 30, '⚠', { fontFamily: 'monospace', fontSize: '20px', color: '#ff5a4d', resolution: 3 }).setOrigin(0.5).setDepth(40);
+      this._alarmIcon.setPosition(px, py - 30).setAlpha(0.55 + 0.45 * Math.sin(this.time.now / 70));
+      if (this.time.now - (this._lastBeep || 0) > 650) { SoundSystem.play('sfx_alarm'); this._lastBeep = this.time.now; }
+    } else if (this._alarmIcon) {
+      this._alarmIcon.destroy(); this._alarmIcon = null;
+    }
+  }
+
   // ---- BUG / BACKDOOR KEY pickups ----
   _setupPickups(lvl) {
     this._keysThisLevel = 0;
@@ -400,7 +425,7 @@ export class GameScene extends Phaser.Scene {
     });
     burst.explode(12); this.time.delayedCall(360, () => burst.destroy());
     SoundSystem.play('sfx_shard');
-    if (kind === 'bug') { this.chaseSlowT = 2600; this._pickupFlash('CORRUPTION SLOWED', '#2affff'); }
+    if (kind === 'bug') { this.chaseSlowT = this._bugSlowMs; this._pickupFlash('CORRUPTION SLOWED', '#2affff'); }
     else { this._keysThisLevel++; this._pickupFlash(`BACKDOOR KEY  +1  (${this._keysThisLevel})`, '#ffd24a'); }
   }
 

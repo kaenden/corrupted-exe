@@ -78,6 +78,7 @@ export const SoundSystem = {
       case 'sfx_shard':  this._tone(1200, 1700, 0.09, 'sine', 0.15); break;
       case 'sfx_portal': this._tone(520, 780, 0.18, 'sine', 0.15); this._tone(780, 520, 0.18, 'sine', 0.08); break;
       case 'sfx_click':  this._tone(440, 440, 0.05, 'square', 0.10); break;
+      case 'sfx_alarm':  this._tone(960, 760, 0.07, 'square', 0.13); break;
       default: break;
     }
   },

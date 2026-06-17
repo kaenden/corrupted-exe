@@ -98,7 +98,10 @@ export class TrickSystem {
     const type = p.type || 'solid';
     const moving = type === 'falling' || type === 'shifting';
     const stroke = type === 'falling' ? FALL_COLOR : this.accent;
-    const obj = this._rect(p.x, p.y, p.w, p.h, stroke, !moving);
+    // ESCAPE 'platform' upgrade widens landable platforms (chase levels only)
+    const padW = (this.scene.levelData?.chase && (type === 'solid' || moving) && p.w < 220)
+      ? 12 * (GameState.data.backdoor?.upgrades.platform || 0) : 0;
+    const obj = this._rect(p.x - padW / 2, p.y, p.w + padW, p.h, stroke, !moving);
     obj.setData({ type, home: { x: p.x, y: p.y }, baseStroke: stroke, dropped: false, falling: false });
 
     if (type === 'fake') { this.fakes.push(obj); }

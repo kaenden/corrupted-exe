@@ -3,6 +3,7 @@ import { CONFIG } from '../config/game.js';
 import { COSMETICS } from '../data/cosmetics.js';
 import { SoundSystem } from './SoundSystem.js';
 import { RunState } from '../state/RunState.js';
+import { GameState } from '../state/GameState.js';
 
 // Neon line-art player: a small glowing square with a motion trail (camera bloom does the glow).
 // Instant horizontal movement, single fixed-height jump, coyote time + jump buffer.
@@ -21,7 +22,12 @@ export class PlayerSystem {
     const s = this.scene.add.rectangle(x, y, S, S, 0x00ffff, 0.9).setStrokeStyle(2.5, 0xffffff, 0.95);
     this.scene.physics.add.existing(s);
     s.body.setSize(S, S);
-    s.body.setMaxVelocity(CONFIG.PLAYER_SPEED, CONFIG.PLAYER_MAX_FALL);
+    // BACKDOOR upgrades apply only in ESCAPE (chase) levels — keeps the campaign balance pure.
+    const esc = !!this.scene.levelData?.chase;
+    const up = GameState.data.backdoor?.upgrades || {};
+    this._speed = CONFIG.PLAYER_SPEED * (esc ? 1 + 0.07 * (up.speed || 0) : 1);
+    this._jumpV = CONFIG.PLAYER_JUMP_VELOCITY * (esc ? 1 + 0.05 * (up.jump || 0) : 1);
+    s.body.setMaxVelocity(this._speed, CONFIG.PLAYER_MAX_FALL);
     s.setDepth(5);
     this.sprite = s;
 
@@ -56,8 +62,8 @@ export class PlayerSystem {
     const jumpDown = Phaser.Input.Keyboard.JustDown(k.up) || Phaser.Input.Keyboard.JustDown(k.w)
       || Phaser.Input.Keyboard.JustDown(k.space) || mi.jumpJustPressed;
 
-    if (left && !right) b.setVelocityX(-CONFIG.PLAYER_SPEED);
-    else if (right && !left) b.setVelocityX(CONFIG.PLAYER_SPEED);
+    if (left && !right) b.setVelocityX(-this._speed);
+    else if (right && !left) b.setVelocityX(this._speed);
     else b.setVelocityX(0);
 
     const onFloor = b.blocked.down || b.touching.down;
@@ -66,7 +72,7 @@ export class PlayerSystem {
 
     const coyote = CONFIG.COYOTE_TIME + (RunState.active ? RunState.coyoteBonus : 0);
     if (time - this._jumpQueuedAt <= CONFIG.JUMP_BUFFER && time - this._lastGroundTime <= coyote) {
-      b.setVelocityY(CONFIG.PLAYER_JUMP_VELOCITY);
+      b.setVelocityY(this._jumpV);
       this._jumpQueuedAt = -9999;
       this._lastGroundTime = -9999;
       SoundSystem.play('sfx_jump');

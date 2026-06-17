@@ -37,10 +37,11 @@ export class MenuScene extends Phaser.Scene {
     this._scheduleGlitch();
 
     // Main buttons
-    textButton(this, cx, 196, '▶  START', () => this._go(), { size: '22px', padX: 28, padY: 12 });
-    textButton(this, cx, 242, '▼  THE DESCENT', () => this.scene.start('DescentScene'), { size: '18px', color: '#c4a6ff', bg: '#1a0e2e', padX: 18, padY: 8 });
-    textButton(this, cx, 286, 'WORLDS', () => this.scene.start('WorldSelectScene'), { size: '15px' });
-    textButton(this, cx, 318, 'SHOP', () => this.scene.start('ShopScene'), { size: '15px' });
+    textButton(this, cx, 184, '▶  START', () => this._go(), { size: '22px', padX: 28, padY: 11 });
+    textButton(this, cx, 228, '▼  ESCAPE', () => this.scene.start('BackdoorScene'), { size: '18px', color: '#2affff', bg: '#0e1f2a', padX: 18, padY: 8 });
+    textButton(this, cx, 268, '▼  THE DESCENT', () => this.scene.start('DescentScene'), { size: '15px', color: '#c4a6ff', bg: '#1a0e2e', padX: 14, padY: 6 });
+    textButton(this, cx - 58, 306, 'WORLDS', () => this.scene.start('WorldSelectScene'), { size: '14px' });
+    textButton(this, cx + 58, 306, 'SHOP', () => this.scene.start('ShopScene'), { size: '14px' });
 
     // Audio toggles + settings gear (bottom)
     this.sesBtn = textButton(this, cx - 70, 360, this._lbl('SOUND', 'soundEnabled'), () => this._toggle('soundEnabled', this.sesBtn, 'SOUND'), { size: '13px' });
