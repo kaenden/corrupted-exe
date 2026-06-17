@@ -99,6 +99,7 @@ export class GameScene extends Phaser.Scene {
     addScanlines(this);
     SoundSystem.playMusic(this.world === 'beta' ? 'mus_beta' : 'mus_alpha');
     AdSystem.gameplayStart();
+    if (lvl.chase) this._setupChase(lvl);
     if (CONFIG.DEV_UNLOCK_ALL && !this.runMode) this._enableDevKeys();
     this._totalDist = Math.max(1, Phaser.Math.Distance.Between(lvl.spawnPoint.x, lvl.spawnPoint.y, lvl.exit.x, lvl.exit.y));
   }
@@ -117,7 +118,7 @@ export class GameScene extends Phaser.Scene {
     return map[type] || 'CORRUPTION DETECTED';
   }
 
-  update(time) {
+  update(time, delta) {
     const ui = this.scene.get('UIScene');
     if (this.dying || this.finished || !this.player?.sprite) {
       if (ui?.mobileInput) ui.mobileInput.jumpJustPressed = false; // drop stale latch
@@ -126,6 +127,7 @@ export class GameScene extends Phaser.Scene {
     this.player.update(time, ui?.mobileInput);
     if (ui?.mobileInput) ui.mobileInput.jumpJustPressed = false; // consume after the player read it
     this.tricks.update(time, this.player);
+    this._updateChase(delta);
 
     // keep the grid covering the camera view; parallax-scroll its texture + constant drift
     if (this.grid) {
@@ -171,6 +173,7 @@ export class GameScene extends Phaser.Scene {
       this.player.respawn(this.levelData.spawnPoint.x, this.levelData.spawnPoint.y);
       this.player.sprite.body.enable = true;
       this.dying = false;
+      this._resetChase();
       AdSystem.gameplayStart();
     };
 
@@ -314,6 +317,38 @@ export class GameScene extends Phaser.Scene {
     const summary = RunState.bank(won);
     this.scene.stop('UIScene');
     this.scene.start('RunOverScene', summary);
+  }
+
+  // ESCAPE archetype: a wall of corruption sweeps in from the left — keep moving or die.
+  _setupChase(lvl) {
+    const h = lvl.bounds.height;
+    this.chaseSpeed = lvl.chase.speed || 160;
+    this.chaseStartX = (lvl.spawnPoint.x ?? 64) - (lvl.chase.headStart ?? 240);
+    this.chaseDelay = lvl.chase.delay ?? 900;
+    this.chaseX = this.chaseStartX;
+    this._chaseT = 0;
+    this.chaseFill = this.add.rectangle(0, 0, Math.max(1, this.chaseX), h, 0x3a0014, 0.45).setOrigin(0, 0).setDepth(6);
+    this.chaseEdge = this.add.rectangle(this.chaseX, 0, 10, h, 0xff2a4d, 0.95).setOrigin(0, 0).setDepth(7);
+    this.chaseParticles = this.add.particles(this.chaseX, 0, 'particle_spark', {
+      x: 0, y: { min: 0, max: h }, lifespan: 480, speedX: { min: 20, max: 90 }, scale: { start: 0.5, end: 0 },
+      tint: [0xff2a4d, 0xff7a4d], frequency: 28, quantity: 2, blendMode: 'ADD',
+    }).setDepth(7);
+  }
+
+  _resetChase() {
+    if (this.chaseEdge == null) return;
+    this.chaseX = this.chaseStartX;
+    this._chaseT = 0;
+  }
+
+  _updateChase(delta) {
+    if (this.chaseEdge == null) return;
+    this._chaseT += delta;
+    if (this._chaseT > this.chaseDelay) this.chaseX += this.chaseSpeed * (delta / 1000);
+    this.chaseFill.width = Math.max(1, this.chaseX);
+    this.chaseEdge.x = this.chaseX + Phaser.Math.Between(-3, 3);
+    this.chaseParticles.setX(this.chaseX);
+    if (this.player.sprite.x < this.chaseX + 26) this.die();
   }
 
   // QA shortcuts (DEV_UNLOCK_ALL): N = next level, P = previous, R = restart level.
