@@ -49,7 +49,7 @@ export class GameScene extends Phaser.Scene {
       tint: this.chapterColor, frequency: 300, quantity: 1, blendMode: 'ADD',
     }).setDepth(-8);
     // Global neon bloom — makes every outline glow (WebGL only; guarded for flaky mobile GPUs)
-    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1, 1.15, 6); } catch (_) { /* no bloom */ }
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1.1, 1.4, 8); } catch (_) { /* no bloom */ }
 
     this._startGlitchFx(); // atmospheric "the system is watching/lying" background glitches
 
@@ -103,6 +103,13 @@ export class GameScene extends Phaser.Scene {
     });
 
     addScanlines(this);
+    // ambient data-motes drifting up — subtle atmospheric depth
+    this.add.particles(0, 0, 'particle_spark', {
+      x: { min: 0, max: lvl.bounds.width }, y: { min: 0, max: lvl.bounds.height },
+      lifespan: 3800, speedY: { min: -16, max: -5 }, speedX: { min: -6, max: 6 },
+      scale: { start: 0.16, end: 0 }, alpha: { start: 0.26, end: 0 },
+      frequency: 200, quantity: 1, tint: this.chapterColor || 0x2affff, blendMode: 'ADD',
+    }).setDepth(-8);
     SoundSystem.playMusic(this.world === 'beta' ? 'mus_beta' : 'mus_alpha');
     AdSystem.gameplayStart();
     this._setupChase(lvl); // corruption wall in EVERY level — the game's through-line
@@ -135,6 +142,10 @@ export class GameScene extends Phaser.Scene {
     this.tricks.update(time, this.player);
     this._updateChase(delta);
     this._updateAlarm();
+    if (this.chaseEdge) {
+      const gap = this.player.sprite.x - this.chaseX;
+      this._wallProx = Phaser.Math.Clamp(1 - gap / 280, 0, 1); // 1 = wall on top of you
+    }
 
     // keep the grid covering the camera view; parallax-scroll its texture + constant drift
     if (this.grid) {
@@ -174,6 +185,7 @@ export class GameScene extends Phaser.Scene {
     this.player.sprite.body.enable = false;
     this.player.playDeathFx(GameState.getEquipped('deathFx'));
     this.cameras.main.shake(CONFIG.CAMERA_SHAKE_DEATH.duration, CONFIG.CAMERA_SHAKE_DEATH.intensity);
+    this.cameras.main.flash(130, 90, 0, 16);
     SoundSystem.play('sfx_death');
     AdSystem.gameplayStop();
 

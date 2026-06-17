@@ -25,6 +25,7 @@ export class BootScene extends Phaser.Scene {
     SoundSystem.init(this);
     this.createPlaceholders();
     this.createBackground();
+    this.createVignette();
 
     // Ad SDK init (provider-agnostic). loadingStart/Stop bracket asset load (synchronous here).
     AdSystem.init(SoundSystem).then(() => { AdSystem.loadingStart(); AdSystem.loadingStop(); });
@@ -168,6 +169,23 @@ export class BootScene extends Phaser.Scene {
     g.generateTexture('scanline', 2, 2);
 
     g.destroy();
+  }
+
+  // Radial red vignette (danger glow as the corruption wall closes in) — canvas gradient texture
+  createVignette() {
+    if (this.textures.exists('vignette')) return;
+    const w = 480, h = 270;
+    let cv;
+    try { cv = this.textures.createCanvas('vignette', w, h); } catch (_) { return; }
+    if (!cv) return;
+    const ctx = cv.getContext();
+    const grd = ctx.createRadialGradient(w / 2, h / 2, h * 0.34, w / 2, h / 2, h * 0.76);
+    grd.addColorStop(0, 'rgba(255,40,60,0)');
+    grd.addColorStop(0.7, 'rgba(255,35,55,0.18)');
+    grd.addColorStop(1, 'rgba(255,25,45,0.95)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, w, h);
+    cv.refresh();
   }
 
   // Scrolling grid background tile

@@ -44,7 +44,20 @@ export class UIScene extends Phaser.Scene {
     const touch = this.sys.game.device.input.touch || navigator.maxTouchPoints > 0;
     if (touch) this._buildTouchControls();
 
+    // Danger vignette: pulses red as the corruption wall closes on the player
+    if (this.textures.exists('vignette')) {
+      this.vignette = this.add.image(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2, 'vignette')
+        .setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(900).setAlpha(0);
+    }
+
     this.events.on('shutdown', () => this.input.removeAllListeners());
+  }
+
+  update() {
+    if (!this.vignette) return;
+    const prox = this.gameScene?._wallProx || 0;
+    const pulse = 0.85 + 0.15 * Math.sin(this.time.now / 110);
+    this.vignette.setAlpha(Phaser.Math.Linear(this.vignette.alpha, prox * 0.6 * pulse, 0.12));
   }
 
   _buildTouchControls() {

@@ -15,6 +15,8 @@ export class PlayerSystem {
     this.color = 0x00ffff;
     this._lastGroundTime = -9999;
     this._jumpQueuedAt = -9999;
+    this._wasAir = false;
+    this._fallVy = 0;
   }
 
   create(x, y) {
@@ -75,11 +77,42 @@ export class PlayerSystem {
       this._jumpQueuedAt = -9999;
       this._lastGroundTime = -9999;
       SoundSystem.play('sfx_jump');
+      s.scaleX = 0.8; s.scaleY = 1.25;          // launch stretch
+      this._puff(s.x, s.y + 10, 5, this.color, { min: 200, max: 340 });
     }
+
+    // squash & stretch: stretch in the air, snappy squash on landing
+    const vy = b.velocity.y;
+    if (!onFloor) this._fallVy = Math.max(this._fallVy, vy);
+    let tSX = 1, tSY = 1;
+    if (!onFloor) {
+      const st = Phaser.Math.Clamp(Math.abs(vy) / 600, 0, 1);
+      tSY = 1 + (vy < 0 ? 0.18 : 0.12) * st;
+      tSX = 1 - (vy < 0 ? 0.14 : 0.10) * st;
+    }
+    if (onFloor && this._wasAir && this._fallVy > 180) {
+      s.scaleX = 1.34; s.scaleY = 0.62;         // landing squash
+      this._puff(s.x, s.y + 9, 8, 0xbfffff, { min: 200, max: 340 }, true);
+      if (this._fallVy > 380) this.scene.cameras.main.shake(80, 0.004);
+    }
+    this._wasAir = !onFloor;
+    if (onFloor) this._fallVy = 0;
+    s.scaleX = Phaser.Math.Linear(s.scaleX, tSX, 0.22);
+    s.scaleY = Phaser.Math.Linear(s.scaleY, tSY, 0.22);
 
     // tilt slightly with horizontal motion (a touch of "stickman/Q" character)
     s.rotation = Phaser.Math.Linear(s.rotation, Phaser.Math.Clamp(b.velocity.x / 1400, -0.18, 0.18), 0.2);
     if (this.trail) this.trail.emitting = (left || right || !onFloor);
+  }
+
+  _puff(x, y, n, tint, angle, wide) {
+    const em = this.scene.add.particles(x, y, 'particle_spark', {
+      lifespan: wide ? 300 : 260, scale: { start: wide ? 0.5 : 0.42, end: 0 }, alpha: { start: 0.6, end: 0 },
+      tint, blendMode: 'ADD', quantity: n, emitting: false,
+      ...(wide ? { speedX: { min: -120, max: 120 }, speedY: { min: -45, max: -5 } } : { speed: { min: 30, max: 95 }, angle }),
+    }).setDepth(4);
+    em.explode(n);
+    this.scene.time.delayedCall(360, () => em.destroy());
   }
 
   playDeathFx(deathFxId) {
@@ -106,8 +139,11 @@ export class PlayerSystem {
     s.setVisible(true);
     s.body.setVelocity(0, 0);
     s.setRotation(0);
+    s.setScale(1);
     s.setPosition(x, y);
     this._lastGroundTime = -9999;
     this._jumpQueuedAt = -9999;
+    this._wasAir = false;
+    this._fallVy = 0;
   }
 }
