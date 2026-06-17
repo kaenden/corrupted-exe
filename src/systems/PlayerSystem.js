@@ -32,6 +32,15 @@ export class PlayerSystem {
     s.setDepth(5);
     this.sprite = s;
 
+    // Robot face (visual only — follows the body each frame; eyes/antenna + glitch + expression)
+    const D = 6;
+    this.antenna = this.scene.add.rectangle(x, y - 14, 2, 9, 0xffffff, 0.85).setDepth(D);
+    this.tip = this.scene.add.circle(x, y - 18, 2.6, 0xff2a4d, 1).setDepth(D);
+    this.eyeL = this.scene.add.rectangle(x - 4, y - 1, 4, 5, 0x06121a, 1).setDepth(D);
+    this.eyeR = this.scene.add.rectangle(x + 4, y - 1, 4, 5, 0x06121a, 1).setDepth(D);
+    this.faceParts = [this.antenna, this.tip, this.eyeL, this.eyeR];
+    this._glitchAt = 0; this._glitchGap = 800;
+
     const k = this.scene.input.keyboard;
     this.keys = k.addKeys({ left: 'LEFT', right: 'RIGHT', a: 'A', d: 'D', up: 'UP', w: 'W', space: 'SPACE' });
     return s;
@@ -103,6 +112,34 @@ export class PlayerSystem {
     // tilt slightly with horizontal motion (a touch of "stickman/Q" character)
     s.rotation = Phaser.Math.Linear(s.rotation, Phaser.Math.Clamp(b.velocity.x / 1400, -0.18, 0.18), 0.2);
     if (this.trail) this.trail.emitting = (left || right || !onFloor);
+    this._updateRobot(time);
+  }
+
+  // Glitch-robot visuals: body flickers, antenna tip pulses, eyes widen + go red as the wall nears.
+  _updateRobot(time) {
+    const s = this.sprite;
+    if (!this.faceParts || !s.visible) return;
+    const prox = this.scene._wallProx || 0;
+    const scared = prox > 0.45;
+    if (time - this._glitchAt > this._glitchGap) { this._glitchAt = time; this._glitchGap = Math.max(180, Phaser.Math.Between(500, 1100) - prox * 350); }
+    const glitch = time - this._glitchAt < 70;
+    s.setFillStyle(this.color, glitch ? 0.5 : 0.92);
+    const eyeColor = scared ? 0xff3b5c : 0x06121a;
+    this.eyeL.fillColor = eyeColor; this.eyeR.fillColor = eyeColor;
+    this.eyeL._bs = this.eyeR._bs = scared ? 1.3 : 1;
+    this.tip._bs = 0.85 + 0.25 * Math.sin(time / 140) + (scared ? 0.35 : 0);
+    this.antenna._bs = 1;
+    const cos = Math.cos(s.rotation), sin = Math.sin(s.rotation);
+    const jx = glitch ? Phaser.Math.Between(-3, 3) : 0, jy = glitch ? Phaser.Math.Between(-2, 2) : 0;
+    const place = (obj, ox, oy) => {
+      const sx = (ox + jx) * s.scaleX, sy = (oy + jy) * s.scaleY;
+      obj.x = s.x + sx * cos - sy * sin;
+      obj.y = s.y + sx * sin + sy * cos;
+      obj.rotation = s.rotation;
+      obj.scaleX = s.scaleX * (obj._bs || 1); obj.scaleY = s.scaleY * (obj._bs || 1);
+    };
+    place(this.eyeL, -4, -1); place(this.eyeR, 4, -1);
+    place(this.antenna, 0, -14); place(this.tip, 0, -18);
   }
 
   _puff(x, y, n, tint, angle, wide) {
@@ -131,12 +168,14 @@ export class PlayerSystem {
     em.explode(count);
     this.scene.time.delayedCall(700, () => em.destroy());
     this.sprite.setVisible(false);
+    this.faceParts?.forEach((p) => p.setVisible(false));
     if (this.trail) this.trail.emitting = false;
   }
 
   respawn(x, y) {
     const s = this.sprite;
     s.setVisible(true);
+    this.faceParts?.forEach((p) => p.setVisible(true));
     s.body.setVelocity(0, 0);
     s.setRotation(0);
     s.setScale(1);
