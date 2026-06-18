@@ -71,9 +71,9 @@ export class MenuScene extends Phaser.Scene {
   // Mascot — same big-head character as the player, bobbing above the title
   _buildMascot(cx, y) {
     const HW = 58, HH = 52;
-    const legL = this.add.rectangle(cx - 10, y + 25, 9, 13, 0x00ffff, 0.95);
-    const legR = this.add.rectangle(cx + 10, y + 25, 9, 13, 0x00ffff, 0.95);
-    const head = this.add.image(cx, y, 'p_head').setDisplaySize(HW, HH).setTint(0x00ffff).setAlpha(0.92);
+    const legL = this.add.rectangle(cx - 10, y + 25, 9, 13, 0xffb43b, 0.95);
+    const legR = this.add.rectangle(cx + 10, y + 25, 9, 13, 0xffb43b, 0.95);
+    const head = this.add.image(cx, y, 'p_head').setDisplaySize(HW, HH).setTint(0xffb43b).setAlpha(0.92);
     const line = this.add.image(cx, y, 'p_head_line').setDisplaySize(HW, HH);
     const eyeL = this.add.ellipse(cx - 10, y - 3, 10, 13, 0x06121a, 1);
     const eyeR = this.add.ellipse(cx + 10, y - 3, 10, 13, 0x06121a, 1);

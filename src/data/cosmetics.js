@@ -3,7 +3,7 @@
 export const COSMETICS = {
   // Neon-square player: each skin is a glowing color (the player is drawn as a shape now).
   skins: {
-    skin_default: { color: 0x00ffff },             // cyan
+    skin_default: { color: 0xffb43b },             // amber — pops against the cyan world
     skin_gold:    { color: 0xffd24a },             // gold
     skin_glitch:  { color: 0xff3df0 },             // magenta glitch
     skin_red:     { color: 0xff4d4d },             // red
