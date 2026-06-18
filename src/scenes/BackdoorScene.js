@@ -29,8 +29,8 @@ export class BackdoorScene extends Phaser.Scene {
     this.add.text(cx, 48, 'escape clean to bank keys — spend them to outrun the corruption', { ...FONT, fontSize: '10px', color: '#9a8a4a' }).setOrigin(0.5);
     this.keyText = this.add.text(cx, 74, '', { ...FONT, fontSize: '14px', color: '#ffe27a' }).setOrigin(0.5);
 
-    textButton(this, cx, 110, '▶  ESCAPE  (OUTRUN)', () => {
-      this.scene.start('GameScene', { world: 'alpha', levelIndex: 17 });
+    textButton(this, cx, 110, '∞  ESCAPE  (ENDLESS)', () => {
+      this.scene.start('EscapeScene');
     }, { size: '18px', padX: 24, padY: 9, color: '#2affff', bg: '#0e1f2a' });
 
     this.rows = this.add.container(0, 0);
@@ -41,7 +41,7 @@ export class BackdoorScene extends Phaser.Scene {
 
   _refresh() {
     const m = GameState.data.backdoor;
-    this.keyText.setText(`${m.keys} BACKDOOR KEYS`);
+    this.keyText.setText(`${m.keys} BACKDOOR KEYS      BEST ${m.highScore || 0} m`);
     this.rows.removeAll(true);
     UPGRADES.forEach((u, i) => {
       const col = i < 4 ? 0 : 1;

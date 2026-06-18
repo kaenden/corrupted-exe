@@ -9,6 +9,8 @@ import { ShopScene } from './scenes/ShopScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { UIScene } from './scenes/UIScene.js';
 import { BackdoorScene } from './scenes/BackdoorScene.js';
+import { EscapeScene } from './scenes/EscapeScene.js';
+import { EscapeOverScene } from './scenes/EscapeOverScene.js';
 
 // Global: every text renders at RENDER_SCALE+1× resolution so it stays crisp under the
 // camera's HD zoom (no per-call `resolution` needed). Texts that set their own keep it.
@@ -39,7 +41,7 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, BackdoorScene],
+  scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, BackdoorScene, EscapeScene, EscapeOverScene],
 };
 
 const game = new Phaser.Game(config);
