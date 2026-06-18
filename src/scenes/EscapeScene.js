@@ -68,24 +68,25 @@ export class EscapeScene extends Phaser.Scene {
   _spike(x, y) {
     const s = this.add.image(x, y, 'spike_neon').setOrigin(0, 1).setDepth(3);
     this.physics.add.existing(s, true);
-    s.body.setSize(12, 12).setOffset(2, 4);
+    if (CONFIG.IS_MOBILE) s.body.setSize(8, 9).setOffset(4, 6); else s.body.setSize(12, 12).setOffset(2, 4);
     s.body.updateFromGameObject();
     this.hazards.push(s);
   }
 
   _genChunk() {
     const d = Math.min(1, this._genX / 9000);            // 0→1 difficulty ramp
-    const w = Phaser.Math.Between(150, 300) - Math.round(d * 60);
+    const mob = CONFIG.IS_MOBILE;
+    const w = Phaser.Math.Between(150, 300) - Math.round(d * 60) + (mob ? 80 : 0); // wider on touch
     let y = Phaser.Math.Clamp(this._lastY + Phaser.Math.Between(-34, 34), 270, 372);
-    const plat = this._floor(this._genX, y, w);
-    // occasional spike on wider platforms
-    if (w > 170 && Phaser.Math.Between(0, 100) < 30 + d * 30) this._spike(this._genX + w / 2, y);
+    this._floor(this._genX, y, w);
+    // occasional spike on wider platforms (rarer on touch)
+    if (w > 170 && Phaser.Math.Between(0, 100) < (mob ? 18 : 30 + d * 30)) this._spike(this._genX + w / 2, y);
     // gate roughly every ~1300px of generated track
     if (this._genX - (this._lastGateX || 0) > 1300) {
       this._lastGateX = this._genX;
       this._gate(this._genX + w / 2, y);
     }
-    this._genX += w + Phaser.Math.Between(80, 130) + Math.round(d * 45); // gap
+    this._genX += w + Phaser.Math.Between(80, 130) + Math.round(d * 45) - (mob ? 28 : 0); // gap (smaller on touch)
     this._lastY = y;
   }
 

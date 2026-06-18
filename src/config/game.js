@@ -5,6 +5,7 @@ export const CONFIG = {
   WIDTH: 720,
   HEIGHT: 405,
   RENDER_SCALE: 2,   // 720×405 logical → 1440×810 crisp backing buffer
+  IS_MOBILE: false,  // set true at boot on touch devices → gentler tune (wider platforms, smaller spikes)
 
   // Player physics
   PLAYER_SPEED: 225,          // px/s horizontal

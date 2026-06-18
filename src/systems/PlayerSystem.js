@@ -86,7 +86,7 @@ export class PlayerSystem {
     if (onFloor) this._lastGroundTime = time;
     if (jumpDown) this._jumpQueuedAt = time;
 
-    const coyote = CONFIG.COYOTE_TIME;
+    const coyote = CONFIG.COYOTE_TIME + (CONFIG.IS_MOBILE ? 55 : 0); // touch gets a longer edge-jump grace
     if (time - this._jumpQueuedAt <= CONFIG.JUMP_BUFFER && time - this._lastGroundTime <= coyote) {
       b.setVelocityY(this._jumpV);
       this._jumpQueuedAt = -9999;

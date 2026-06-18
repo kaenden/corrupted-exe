@@ -22,6 +22,8 @@ export class BootScene extends Phaser.Scene {
 
   create() {
     GameState.init();
+    // Mobile gets a gentler tune (wider platforms, smaller spike hitboxes, more coyote) — PC untouched.
+    CONFIG.IS_MOBILE = this.sys.game.device.input.touch || navigator.maxTouchPoints > 0;
     SoundSystem.init(this);
     this.createPlaceholders();
     this.createBackground();

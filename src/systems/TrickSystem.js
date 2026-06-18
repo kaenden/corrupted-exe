@@ -109,9 +109,10 @@ export class TrickSystem {
     const type = p.type || 'solid';
     const moving = type === 'falling' || type === 'shifting';
     const stroke = type === 'falling' ? FALL_COLOR : this.accent;
-    // WIDE BUS upgrade widens landable platforms (all levels)
-    const padW = ((type === 'solid' || moving) && p.w < 220)
-      ? 10 * (GameState.data.backdoor?.upgrades.platform || 0) : 0;
+    // WIDE BUS upgrade + mobile baseline widen landable platforms (they feel short on touch)
+    const landable = (type === 'solid' || moving) && p.w < 240;
+    const padW = (landable ? 10 * (GameState.data.backdoor?.upgrades.platform || 0) : 0)
+      + (landable && CONFIG.IS_MOBILE ? 18 : 0);
     const obj = this._rect(p.x - padW / 2, p.y, p.w + padW, p.h, stroke, !moving);
     obj.setData({ type, home: { x: p.x, y: p.y }, baseStroke: stroke, dropped: false, falling: false });
 
@@ -140,7 +141,9 @@ export class TrickSystem {
 
     const obj = this.scene.add.sprite(h.x, h.y, 'spike_neon').setOrigin(0, 0);
     this.scene.physics.add.existing(obj);
-    obj.body.setAllowGravity(false); obj.body.setImmovable(true); obj.body.setSize(16, 16);
+    obj.body.setAllowGravity(false); obj.body.setImmovable(true);
+    // mobile: forgiving spike hitbox (smaller lethal core) so near-misses survive
+    if (CONFIG.IS_MOBILE) obj.body.setSize(9, 10).setOffset(3.5, 6); else obj.body.setSize(16, 16);
     obj.setData({ type: h.type, lethal: h.type === 'spike_real', home: { x: h.x, y: h.y } });
 
     if (h.type === 'spike_hidden') {
