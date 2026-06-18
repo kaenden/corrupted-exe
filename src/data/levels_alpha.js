@@ -36,7 +36,7 @@ const lvl = (o) => {
     exit: o.exit, bounds: o.bounds || { width: 720, height: 405 },
     platforms: o.platforms, hazards: o.hazards || [], envTricks: o.env || [],
     paths: o.paths || [], exitShift: o.exitShift || null, wrap: false, portals: o.portals || [],
-    chase: o.chase || null, bugs: o.bugs || [], backdoorKeys: o.backdoorKeys || [],
+    chase: o.chase || null, noChase: o.noChase || false, bugs: o.bugs || [], backdoorKeys: o.backdoorKeys || [],
     parDeaths: o.par ?? 0, safeZones: SZ, name: o.name, hint: o.hint || null,
   };
 };
@@ -44,21 +44,23 @@ const lvl = (o) => {
 export const LEVELS_ALPHA = [
   // ── CHAPTER 1 (cyan) ── single trick, gaps near the jump limit (~170px); forgiving floors
   // 1 — pure: real ~175px jumps; the full floor catches misses
-  lvl({ name: 'BOOT_SEQUENCE', par: 0, hint: 'TRUST NOTHING', exit: { x: 660, y: 256 },
+  lvl({ name: 'BOOT_SEQUENCE', par: 0, hint: 'TRUST NOTHING', exit: { x: 660, y: 256 }, noChase: true,
     platforms: [floor(),
       plat(200, 338, 'solid', 54), plat(378, 300, 'solid', 50), plat(556, 300, 'solid', 50), plat(626, 256, 'solid', 70)] }),
-  // 2 — VERTICAL climb: alternate long-flat and steep-up jumps to a high exit
-  lvl({ name: 'WARM_RESET', par: 1, hint: 'YUKARI TIRMAN', exit: { x: 335, y: 130 },
+  // 2 — VERTICAL climb: alternate long-flat and steep-up jumps to a high exit (still no wall — learning)
+  lvl({ name: 'WARM_RESET', par: 1, hint: 'CLIMB', exit: { x: 335, y: 130 }, noChase: true,
     platforms: [floor(),
       plat(170, 338, 'solid', 56), plat(345, 302, 'solid', 50), plat(440, 246, 'solid', 48),
       plat(575, 212, 'solid', 60), plat(455, 162, 'solid', 48), plat(300, 130, 'solid', 70)] }),
-  // 3 — FAKE (single): the obvious low step is fake; the real sits just above, then a long jump
+  // 3 — FAKE (single): the obvious low step is fake; the real sits just above. The wall AWAKENS here (gentle).
   lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'FALSE FLOOR :: DO NOT TRUST', exit: { x: 660, y: 258 },
+    chase: { speed: 72, headStart: 330, delay: 2600 },
     platforms: [floor(),
       plat(180, 336, 'solid', 52), plat(340, 326, 'fake', 50), plat(340, 290, 'solid', 50),
       plat(505, 290, 'solid', 50), plat(625, 258, 'solid', 64)] }),
   // 4 — FAKE on a climb: fake decoy vs real at each tier — pick correctly while climbing
   lvl({ name: 'MIRAGE', par: 2, hint: 'THE HIGHER ONE IS REAL', exit: { x: 355, y: 134 },
+    chase: { speed: 88, headStart: 300, delay: 2000 },
     platforms: [floor(),
       plat(175, 336, 'solid', 56), plat(345, 300, 'solid', 50),
       plat(220, 250, 'fake', 48), plat(440, 250, 'solid', 50),

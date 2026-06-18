@@ -111,7 +111,7 @@ export class GameScene extends Phaser.Scene {
     }).setDepth(-8);
     SoundSystem.playMusic(this.world === 'beta' ? 'mus_beta' : 'mus_alpha');
     AdSystem.gameplayStart();
-    this._setupChase(lvl); // corruption wall in EVERY level — the game's through-line
+    if (!lvl.noChase) this._setupChase(lvl); // corruption wall in (almost) every level — tutorials opt out
     if (CONFIG.DEV_UNLOCK_ALL) this._enableDevKeys();
     this._totalDist = Math.max(1, Phaser.Math.Distance.Between(lvl.spawnPoint.x, lvl.spawnPoint.y, lvl.exit.x, lvl.exit.y));
   }

@@ -21,7 +21,7 @@ const lvl = (o) => {
     platforms: o.platforms, hazards: o.hazards || [], envTricks: o.env || [],
     paths: o.paths || [], exitShift: o.exitShift ?? { dir: 'left', tiles: 2, triggerX: 600 },
     wrap: o.wrap || false, portals: o.portals || [], chase: o.chase || null,
-    bugs: o.bugs || [], backdoorKeys: o.backdoorKeys || [],
+    bugs: o.bugs || [], backdoorKeys: o.backdoorKeys || [], noChase: o.noChase || false,
     parDeaths: o.par ?? 2, safeZones: SZ, name: o.name, hint: o.hint || null,
   };
 };

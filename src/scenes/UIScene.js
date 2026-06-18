@@ -3,6 +3,7 @@ import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
 import { AdSystem } from '../systems/ad/AdSystem.js';
 import { neonPanel, hdCamera } from '../ui/widgets.js';
+import { getStoryBeat } from '../data/story.js';
 
 const FONT = { fontFamily: 'monospace', color: '#dffcff', resolution: 3 };
 const ERR_CODES = ['SEGMENTATION_FAULT', 'NULL_REFERENCE', 'STACK_OVERFLOW', 'ACCESS_VIOLATION',
@@ -46,6 +47,7 @@ export class UIScene extends Phaser.Scene {
     if (touch) this._buildTouchControls();
 
     this._introCard(lvl, worldName);
+    this._storyBeat(getStoryBeat(this.gameScene.world, this.gameScene.levelIndex));
 
     // Danger vignette: pulses red as the corruption wall closes on the player
     if (this.textures.exists('vignette')) {
@@ -149,6 +151,32 @@ export class UIScene extends Phaser.Scene {
     } });
     this.tweens.add({ targets: line, width: 160, duration: 380, ease: 'Cubic.out' });
     this.tweens.add({ targets: parts, alpha: 0, delay: 950, duration: 420, onComplete: () => { jit.remove(); parts.forEach((o) => o.destroy()); } });
+  }
+
+  // Story beat — terminal-style lines type out top-left (SIM vs corruption VOICE), then fade.
+  _storyBeat(beat, delay = 1500) {
+    if (!beat || !beat.length) return;
+    const col = { sim: '#8fe9f2', voice: '#ff5ad0', tut: '#ffe27a' };
+    const pre = { sim: 'SIM> ', voice: '// ', tut: '>> ' };
+    this.time.delayedCall(delay, () => {
+      const objs = [];
+      let li = 0;
+      const typeLine = () => {
+        if (li >= beat.length) {
+          this.time.delayedCall(3400, () => this.tweens.add({ targets: objs, alpha: 0, duration: 600, onComplete: () => objs.forEach((o) => o.destroy()) }));
+          return;
+        }
+        const b = beat[li];
+        const full = (pre[b.s] || '') + b.t;
+        const txt = this.add.text(14, 36 + li * 16, '', { ...FONT, fontSize: '11px', color: col[b.s] || '#dffcff' }).setDepth(60);
+        objs.push(txt);
+        let i = 0;
+        this.time.addEvent({ delay: 16, repeat: full.length - 1, callback: () => txt.setText(full.slice(0, ++i)) });
+        li++;
+        this.time.delayedCall(full.length * 16 + 360, typeLine);
+      };
+      typeLine();
+    });
   }
 
   showHint(text) {
