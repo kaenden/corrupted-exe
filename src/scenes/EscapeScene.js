@@ -189,7 +189,7 @@ export class EscapeScene extends Phaser.Scene {
   _layoutHud(v) {
     this.scoreText.setPosition(v.centerX, v.y + 12);
     this.bankText.setPosition(v.centerX, v.y + 38);
-    this.bestText.setPosition(v.x + 12, v.y + 10);
+    this.bestText.setPosition(v.x + 30, v.y + 10);
   }
 
   // region-based touch: left half = run right (held), right half = jump. Same coord space as UIScene.
