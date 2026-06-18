@@ -1,0 +1,14 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await (await b.newContext({ viewport:{width:1280,height:720} })).newPage();
+await p.goto('https://kaenden.github.io/corrupted-exe/',{waitUntil:'load'});
+await p.waitForFunction(()=>window.GameState?.data && window.game?.scene?.isActive('MenuScene'),undefined,{timeout:20000});
+await p.evaluate(()=>{window.game.scene.stop('MenuScene');window.game.scene.start('GameScene',{world:'alpha',levelIndex:0});});
+await p.waitForTimeout(400);
+const d=await p.evaluate(()=>{const ui=window.game.scene.getScene('UIScene');
+  const cont=ui.children.list.find(o=>o.type==='Container');
+  if(!cont) return {noCont:true};
+  const kids=cont.list.map(k=>({t:k.type, x:Math.round(k.x), y:Math.round(k.y), a:k.alpha, txt:k.text||''}));
+  return {contAlpha:cont.alpha, contDepth:cont.depth, contX:cont.x, contY:cont.y, kids};});
+console.log(JSON.stringify(d,null,1));
+await b.close();
