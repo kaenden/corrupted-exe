@@ -24,6 +24,10 @@ export class UIScene extends Phaser.Scene {
     const lvl = this.gameScene.levelData;
     const worldName = this.gameScene.world === 'beta' ? 'SIM_BETA' : 'SIM_ALPHA';
 
+    // HUD strip — a subtle dark bar + accent underline for legibility
+    this.add.rectangle(0, 0, CONFIG.WIDTH, 27, 0x02080e, 0.5).setOrigin(0, 0).setDepth(-1);
+    this.add.rectangle(0, 27, CONFIG.WIDTH, 1, COLORS.cyan, 0.25).setOrigin(0, 0).setDepth(-1);
+
     this.add.text(8, 8, '⏸', { ...FONT, fontSize: '20px' }).setInteractive({ useHandCursor: true })
       .on('pointerdown', () => this._togglePause());
     this.add.text(40, 11, `${worldName} · ${lvl.code}${lvl.name ? ' · ' + lvl.name : ''}`, { ...FONT, fontSize: '12px' });
@@ -43,6 +47,8 @@ export class UIScene extends Phaser.Scene {
 
     const touch = this.sys.game.device.input.touch || navigator.maxTouchPoints > 0;
     if (touch) this._buildTouchControls();
+
+    this._introCard(lvl, worldName);
 
     // Danger vignette: pulses red as the corruption wall closes on the player
     if (this.textures.exists('vignette')) {
@@ -136,6 +142,24 @@ export class UIScene extends Phaser.Scene {
       if (GameState.spendShards(cost)) { this.gameScene.tricks.revealOneTrick(); this._flash('1 TRAP REVEALED', '#00ffff'); }
       else this._flash('NOT ENOUGH SHARDS', '#ff6a8a');
     });
+  }
+
+  // Cinematic level intro — code glitches in, an accent line sweeps, then fades (non-blocking).
+  _introCard(lvl, worldName) {
+    const cx = CONFIG.WIDTH / 2, cy = CONFIG.HEIGHT / 2 - 14;
+    const c = this.add.container(0, 0).setDepth(820);
+    const bg = this.add.rectangle(cx, cy, 320, 78, 0x02060a, 0.32).setStrokeStyle(1, COLORS.cyan, 0.25);
+    const codeR = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px', color: '#ff2a55' }).setOrigin(0.5).setAlpha(0.6);
+    const codeB = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px', color: '#2affff' }).setOrigin(0.5).setAlpha(0.6);
+    const code = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px' }).setOrigin(0.5);
+    const line = this.add.rectangle(cx, cy + 20, 0, 2, COLORS.cyan, 0.85).setOrigin(0.5);
+    const sub = this.add.text(cx, cy + 32, (lvl.name || worldName), { ...FONT, fontSize: '13px', color: '#6f9aa3' }).setOrigin(0.5);
+    c.add([bg, codeR, codeB, code, line, sub]);
+    const jit = this.time.addEvent({ delay: 55, loop: true, callback: () => {
+      const o = Phaser.Math.Between(-5, 5); codeR.x = cx - 3 + o; codeB.x = cx + 3 - o;
+    } });
+    this.tweens.add({ targets: line, width: 160, duration: 380, ease: 'Cubic.out' });
+    this.tweens.add({ targets: c, alpha: 0, delay: 950, duration: 420, onComplete: () => { jit.remove(); c.destroy(); } });
   }
 
   showHint(text) {

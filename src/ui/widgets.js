@@ -7,6 +7,14 @@ export function hdCamera(scene) {
   const c = scene.cameras.main;
   c.setZoom(CONFIG.RENDER_SCALE);
   c.centerOn(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2);
+  c.fadeIn(240, 1, 3, 8); // smooth materialize from black on every scene entry
+}
+
+// Fade the camera to black, then start another scene (polished transition).
+export function fadeTo(scene, key, data, dur = 220) {
+  const c = scene.cameras.main;
+  c.fadeOut(dur, 1, 3, 8);
+  c.once('camerafadeoutcomplete', () => scene.scene.start(key, data));
 }
 
 // Subtle CRT scanline overlay (GDD §22 polish). Call once per scene.
