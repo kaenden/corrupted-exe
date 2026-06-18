@@ -68,22 +68,21 @@ export class MenuScene extends Phaser.Scene {
     this.scene.start('WorldSelectScene');
   }
 
-  // The glitch-robot mascot — same look as the player, bobbing above the title
+  // Mascot — same big-head character as the player, bobbing above the title
   _buildMascot(cx, y) {
-    const S = 30;
-    const ant = this.add.rectangle(cx, y - 21, 3, 13, 0xffffff, 0.85);
-    const tip = this.add.circle(cx, y - 28, 4, 0xff2a4d, 1);
-    const body = this.add.rectangle(cx, y, S, S, 0x00ffff, 0.92).setStrokeStyle(3, 0xffffff, 0.95);
-    const eyeL = this.add.rectangle(cx - 6, y - 2, 6, 7, 0x06121a, 1);
-    const eyeR = this.add.rectangle(cx + 6, y - 2, 6, 7, 0x06121a, 1);
-    const parts = [ant, tip, body, eyeL, eyeR];
-    this.tweens.add({ targets: parts, y: '-=6', duration: 1400, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    this.tweens.add({ targets: tip, scale: 1.45, duration: 680, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    // occasional glitch jitter on the eyes
+    const HW = 58, HH = 52;
+    const legL = this.add.rectangle(cx - 10, y + 25, 9, 13, 0x00ffff, 0.95);
+    const legR = this.add.rectangle(cx + 10, y + 25, 9, 13, 0x00ffff, 0.95);
+    const head = this.add.image(cx, y, 'p_head').setDisplaySize(HW, HH).setTint(0x00ffff).setAlpha(0.92);
+    const line = this.add.image(cx, y, 'p_head_line').setDisplaySize(HW, HH);
+    const eyeL = this.add.ellipse(cx - 10, y - 3, 10, 13, 0x06121a, 1);
+    const eyeR = this.add.ellipse(cx + 10, y - 3, 10, 13, 0x06121a, 1);
+    const parts = [legL, legR, head, line, eyeL, eyeR];
+    this.tweens.add({ targets: parts, y: '-=7', duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.time.addEvent({
       delay: 2600, loop: true, callback: () => {
-        eyeL.x = cx - 6 + Phaser.Math.Between(-3, 3); eyeR.x = cx + 6 + Phaser.Math.Between(-3, 3);
-        this.time.delayedCall(110, () => { eyeL.x = cx - 6; eyeR.x = cx + 6; });
+        eyeL.x = cx - 10 + Phaser.Math.Between(-3, 3); eyeR.x = cx + 10 + Phaser.Math.Between(-3, 3);
+        this.time.delayedCall(110, () => { eyeL.x = cx - 10; eyeR.x = cx + 10; });
       },
     });
   }
