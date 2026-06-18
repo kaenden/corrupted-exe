@@ -461,10 +461,43 @@ export class GameScene extends Phaser.Scene {
   // ---- BUG / BACKDOOR KEY pickups ----
   _setupPickups(lvl) {
     this._keysThisLevel = 0;
-    this.bugs = (lvl.bugs || []).map((b) => this._mkPickup(b.x, b.y, 'item_bug'));
-    this.bkeys = (lvl.backdoorKeys || []).map((k) => this._mkPickup(k.x, k.y, 'item_key'));
+    let bugs = lvl.bugs || [];
+    let keys = lvl.backdoorKeys || [];
+    // Auto-distribute pickups across the campaign when a level doesn't hand-place them.
+    // BUG (wall-slow) from alpha L4 (wall awakens L3); KEY from alpha L5; both throughout beta.
+    if (!lvl.noChase && bugs.length === 0 && keys.length === 0) {
+      const a = this._autoItems();
+      bugs = a.bugs; keys = a.keys;
+    }
+    this.bugs = bugs.map((b) => this._mkPickup(b.x, b.y, 'item_bug'));
+    this.bkeys = keys.map((k) => this._mkPickup(k.x, k.y, 'item_key'));
     if (this.bugs.length) this.physics.add.overlap(this.player.sprite, this.bugs, (_p, o) => this._collect(o, 'bug'));
     if (this.bkeys.length) this.physics.add.overlap(this.player.sprite, this.bkeys, (_p, o) => this._collect(o, 'key'));
+  }
+
+  // Procedural pickup placement: spread across the level's raised (non-floor) platforms, scaling
+  // with tier. Bugs help you survive; keys reward clean clears. Counts ramp with level index.
+  _autoItems() {
+    const idx = this.levelIndex;
+    const isAlpha = this.world === 'alpha';
+    const spots = [...(this.tricks.solids || []), ...(this.tricks.moving || [])]
+      .filter((p) => p.width >= 40 && p.width <= 400)   // skip the long floor + tiny fragments
+      .map((p) => ({ x: p.x + p.width / 2, y: p.y - 14 }))
+      .sort((a, b) => a.x - b.x);
+    if (spots.length < 2) return { bugs: [], keys: [] };
+    const bugN = (isAlpha ? idx >= 3 : true) ? Math.min(3, 1 + Math.floor(idx / 10)) : 0;
+    const keyN = (isAlpha ? idx >= 4 : true) ? Math.min(2, 1 + Math.floor(idx / 15)) : 0;
+    const used = new Set();
+    const pick = (n) => {
+      const out = [];
+      for (let i = 0; i < n && used.size < spots.length; i++) {
+        let j = Math.round(((i + 1) / (n + 1)) * (spots.length - 1)); // evenly spaced
+        while (used.has(j)) j = (j + 1) % spots.length;
+        used.add(j); out.push(spots[j]);
+      }
+      return out;
+    };
+    return { bugs: pick(bugN), keys: pick(keyN) };
   }
 
   _mkPickup(x, y, tex) {
