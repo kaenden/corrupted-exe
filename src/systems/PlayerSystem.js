@@ -2,7 +2,6 @@ import Phaser from 'phaser';
 import { CONFIG } from '../config/game.js';
 import { COSMETICS } from '../data/cosmetics.js';
 import { SoundSystem } from './SoundSystem.js';
-import { RunState } from '../state/RunState.js';
 import { GameState } from '../state/GameState.js';
 
 // Neon line-art player: a small glowing square with a motion trail (camera bloom does the glow).
@@ -87,7 +86,7 @@ export class PlayerSystem {
     if (onFloor) this._lastGroundTime = time;
     if (jumpDown) this._jumpQueuedAt = time;
 
-    const coyote = CONFIG.COYOTE_TIME + (RunState.active ? RunState.coyoteBonus : 0);
+    const coyote = CONFIG.COYOTE_TIME;
     if (time - this._jumpQueuedAt <= CONFIG.JUMP_BUFFER && time - this._lastGroundTime <= coyote) {
       b.setVelocityY(this._jumpV);
       this._jumpQueuedAt = -9999;

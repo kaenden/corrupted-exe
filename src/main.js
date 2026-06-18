@@ -8,11 +8,7 @@ import { LevelSelectScene } from './scenes/LevelSelectScene.js';
 import { ShopScene } from './scenes/ShopScene.js';
 import { GameScene } from './scenes/GameScene.js';
 import { UIScene } from './scenes/UIScene.js';
-import { DescentScene } from './scenes/DescentScene.js';
-import { BoonDraftScene } from './scenes/BoonDraftScene.js';
-import { RunOverScene } from './scenes/RunOverScene.js';
 import { BackdoorScene } from './scenes/BackdoorScene.js';
-import { RunState } from './state/RunState.js';
 
 // Global: every text renders at RENDER_SCALE+1× resolution so it stays crisp under the
 // camera's HD zoom (no per-call `resolution` needed). Texts that set their own keep it.
@@ -43,12 +39,11 @@ const config = {
       debug: false,
     },
   },
-  scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, DescentScene, BoonDraftScene, RunOverScene, BackdoorScene],
+  scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, BackdoorScene],
 };
 
 const game = new Phaser.Game(config);
 window.game = game; // exposed for debugging / automated tests
-window.RunState = RunState;
 import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
 
 // Mobile: on the first tap, enter fullscreen + lock landscape (Android Chrome). iOS blocks

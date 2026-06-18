@@ -16,8 +16,6 @@ export const GameState = {
     settings: { soundEnabled: true, musicEnabled: true, showSpeedrunTimer: false },
     seenTricks: [],                  // trick TYPEs already introduced (first-time hints)
     stats: { totalDeaths: 0, totalLevelsCleared: 0, totalShardEarned: 0 },
-    // THE DESCENT (roguelite) — persistent meta across runs
-    descent: { glitchKeys: 0, bestDepth: 0, upgrades: { integrity: 0, greed: 0, shield: 0 } },
     // ESCAPE — BACKDOOR KEYS meta (earned by clean clears) + permanent upgrades
     backdoor: { keys: 0, upgrades: { speed: 0, jump: 0, slow: 0, bug: 0, platform: 0, alarm: 0, shield: 0, keymult: 0 } },
   },

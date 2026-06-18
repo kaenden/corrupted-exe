@@ -1,7 +1,6 @@
 import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
-import { RunState } from '../state/RunState.js';
 import { PlayerSystem } from '../systems/PlayerSystem.js';
 import { TrickSystem } from '../systems/TrickSystem.js';
 import { SoundSystem } from '../systems/SoundSystem.js';
@@ -13,7 +12,6 @@ export class GameScene extends Phaser.Scene {
   constructor() { super('GameScene'); }
 
   init(data) {
-    this.runMode = data.run === true;       // THE DESCENT roguelite run
     this.world = data.world || 'alpha';
     this.levelIndex = data.levelIndex ?? 0;
     this.levelData = getLevel(this.world, this.levelIndex);
@@ -114,7 +112,7 @@ export class GameScene extends Phaser.Scene {
     SoundSystem.playMusic(this.world === 'beta' ? 'mus_beta' : 'mus_alpha');
     AdSystem.gameplayStart();
     this._setupChase(lvl); // corruption wall in EVERY level — the game's through-line
-    if (CONFIG.DEV_UNLOCK_ALL && !this.runMode) this._enableDevKeys();
+    if (CONFIG.DEV_UNLOCK_ALL) this._enableDevKeys();
     this._totalDist = Math.max(1, Phaser.Math.Distance.Between(lvl.spawnPoint.x, lvl.spawnPoint.y, lvl.exit.x, lvl.exit.y));
   }
 
@@ -199,14 +197,6 @@ export class GameScene extends Phaser.Scene {
       this._resetPickups();
       AdSystem.gameplayStart();
     };
-
-    if (this.runMode) {
-      const over = RunState.loseLife();
-      // schedule the outcome FIRST so a HUD hiccup can never strand the run
-      this.time.delayedCall(CONFIG.RESPAWN_DELAY_MS, () => { over ? this._endRun(false) : respawn(); });
-      this.scene.get('UIScene')?.setIntegrity?.();
-      return;
-    }
 
     this.runDeathShards += CONFIG.SHARD_PER_DEATH;
     this.scene.get('UIScene')?.setDeaths?.(this.deathCount);
@@ -310,14 +300,6 @@ export class GameScene extends Phaser.Scene {
       this._pickupFlash(`+${gained} BACKDOOR KEYS BANKED`, '#ffd24a');
     }
 
-    if (this.runMode) {
-      const { gained, won } = RunState.completeRoom();
-      if (won) { this._endRun(true); return; }
-      this.scene.stop('UIScene');
-      this.scene.start('BoonDraftScene', { gained });
-      return;
-    }
-
     const r = GameState.saveLevelResult(this.world, this.levelIndex, this.deathCount, this.runDeathShards, this.levelData.parDeaths);
     console.log(`[LEVEL COMPLETE] ${this.levelData.code} stars=${r.stars} shardsEarned=${r.shardsEarned} deaths=${this.deathCount}`);
     this.scene.get('UIScene')?.showComplete?.(this.levelData, r, () => this.nextLevel(),
@@ -343,12 +325,6 @@ export class GameScene extends Phaser.Scene {
   goLevelSelect() {
     this.scene.stop('UIScene');
     this.scene.start('LevelSelectScene', { world: this.world });
-  }
-
-  _endRun(won) {
-    const summary = RunState.bank(won);
-    this.scene.stop('UIScene');
-    this.scene.start('RunOverScene', summary);
   }
 
   // ESCAPE archetype: a wall of corruption sweeps in from the left, ACCELERATING — run or die.
