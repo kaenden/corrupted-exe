@@ -128,13 +128,14 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(9, 12, 3, 2); g.fillRect(9, 15, 3, 2);       // teeth
     g.generateTexture('item_key', 16, 18);
 
-    // Player head — big rounded square (smooth, high-res, tinted at runtime) + separate outline
+    // Player head — big rounded square. Rendered at VERY high source res so it stays crisp (HD)
+    // even when squash/stretch + camera zoom scale it up. Display size is set small at runtime.
     g.clear();
-    g.fillStyle(0xffffff, 1).fillRoundedRect(0, 0, 104, 92, 30);
-    g.generateTexture('p_head', 104, 92);
+    g.fillStyle(0xffffff, 1).fillRoundedRect(0, 0, 288, 256, 84);
+    g.generateTexture('p_head', 288, 256);
     g.clear();
-    g.lineStyle(7, 0xffffff, 1).strokeRoundedRect(4, 4, 96, 84, 27);
-    g.generateTexture('p_head_line', 104, 92);
+    g.lineStyle(18, 0xffffff, 1).strokeRoundedRect(11, 11, 266, 234, 74);
+    g.generateTexture('p_head_line', 288, 256);
 
     // Neon UI panel frame (9-slice, 64×64, 16px border) — dark glass + cyan border + corner brackets
     {
