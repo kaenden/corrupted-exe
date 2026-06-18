@@ -128,6 +128,14 @@ export class BootScene extends Phaser.Scene {
     g.fillRect(9, 12, 3, 2); g.fillRect(9, 15, 3, 2);       // teeth
     g.generateTexture('item_key', 16, 18);
 
+    // Player head — big rounded square (smooth, high-res, tinted at runtime) + separate outline
+    g.clear();
+    g.fillStyle(0xffffff, 1).fillRoundedRect(0, 0, 104, 92, 30);
+    g.generateTexture('p_head', 104, 92);
+    g.clear();
+    g.lineStyle(7, 0xffffff, 1).strokeRoundedRect(4, 4, 96, 84, 27);
+    g.generateTexture('p_head_line', 104, 92);
+
     // Neon UI panel frame (9-slice, 64×64, 16px border) — dark glass + cyan border + corner brackets
     {
       const S = 64, c = 14;

@@ -69,6 +69,7 @@ export class GameScene extends Phaser.Scene {
     this.exit = this.physics.add.staticImage(lvl.exit.x, lvl.exit.y, 'exit_gate').setOrigin(0.5, 1);
     this.exit.body.setSize(28, 44).setOffset(2, 4);
     this.exit.body.updateFromGameObject();
+    this._decorateExit(lvl.exit.x, lvl.exit.y);
 
     // Collisions (TrickSystem exposes plain arrays; Arcade colliders accept arrays)
     this.physics.add.collider(this.player.sprite, this.tricks.solids,
@@ -161,7 +162,7 @@ export class GameScene extends Phaser.Scene {
       es.done = true;
       const dx = (es.dir === 'left' ? -1 : 1) * (es.tiles || 3) * 32;
       this.tweens.add({
-        targets: this.exit, x: this.exit.x + dx, duration: 250,
+        targets: [this.exit, this.exitDecor].filter(Boolean), x: this.exit.x + dx, duration: 250,
         onUpdate: () => this.exit.body.updateFromGameObject(),
       });
     }
@@ -456,6 +457,29 @@ export class GameScene extends Phaser.Scene {
     } else if (this._alarmIcon) {
       this._alarmIcon.destroy(); this._alarmIcon = null;
     }
+  }
+
+  // Conceptual exit gateway — halo + rotating tick-ring + rising motes + a gentle gate pulse.
+  _decorateExit(x, y) {
+    const cy = y - 24;
+    this.exit.setDepth(4);
+    const c = this.add.container(x, cy).setDepth(3);
+    const halo = this.add.circle(0, 0, 26, 0x00ff88, 0.12);
+    this.tweens.add({ targets: halo, scale: 1.35, alpha: 0.24, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    const ring = this.add.container(0, 0);
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const d = this.add.rectangle(Math.cos(a) * 30, Math.sin(a) * 30, 7, 2.5, 0x00ff88, 0.85);
+      d.rotation = a; ring.add(d);
+    }
+    this.tweens.add({ targets: ring, rotation: Math.PI * 2, duration: 7000, repeat: -1 });
+    const motes = this.add.particles(0, 22, 'particle_spark', {
+      y: { min: -40, max: 6 }, x: { min: -11, max: 11 }, lifespan: 1200, speedY: { min: -28, max: -10 },
+      scale: { start: 0.34, end: 0 }, alpha: { start: 0.55, end: 0 }, tint: 0x00ff88, frequency: 150, quantity: 1, blendMode: 'ADD',
+    });
+    c.add([halo, ring, motes]);
+    this.exitDecor = c;
+    this.tweens.add({ targets: this.exit, scale: 1.06, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
   }
 
   // ---- BUG / BACKDOOR KEY pickups ----

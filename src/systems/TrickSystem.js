@@ -37,14 +37,23 @@ export class TrickSystem {
 
   // Paired teleport portals: enter one → emerge at the other (with a short cooldown).
   _buildPortal(p) {
+    const objs = [], tws = [];
     const ring = (x, y) => {
       const r = this.scene.add.circle(x, y, 18, 0x000000, 0).setStrokeStyle(3, 0xbb6bff).setDepth(3);
-      this.scene.add.circle(x, y, 11, 0x000000, 0).setStrokeStyle(2, 0xe0b0ff).setDepth(3);
-      this.scene.tweens.add({ targets: r, scale: 1.18, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      const inner = this.scene.add.circle(x, y, 11, 0x000000, 0).setStrokeStyle(2, 0xe0b0ff).setDepth(3);
+      tws.push(this.scene.tweens.add({ targets: r, scale: 1.18, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' }));
+      objs.push(r, inner);
     };
     ring(p.a.x, p.a.y); ring(p.b.x, p.b.y);
-    this.portals.push({ a: p.a, b: p.b });
+    this.portals.push({ a: p.a, b: p.b, objs, tws, used: false });
     this._maybeHint('portal');
+  }
+
+  _dimPortal(pt) {
+    if (pt.used) return;
+    pt.used = true;
+    pt.tws.forEach((t) => t.pause());
+    pt.objs.forEach((o) => o.setScale(1).setStrokeStyle(2, 0x5a4a72, 0.4)); // spent → faded
   }
 
   _updatePortals(time, px, py, player) {
@@ -68,6 +77,7 @@ export class TrickSystem {
         SoundSystem.play('sfx_portal');
         player.sprite.setPosition(dest.x, dest.y);
         player.sprite.body.setVelocity(0, 0);
+        this._dimPortal(pt);
         this._portalArmed = false;
         this._portalCD = time + 1500;
         return;
@@ -77,8 +87,9 @@ export class TrickSystem {
 
   // ---- shape helpers (origin 0,0 → level data x,y is top-left) ----
   _rect(x, y, w, h, stroke, isStatic) {
-    const r = this.scene.add.rectangle(x, y, w, h, 0x03101c, 0.82).setOrigin(0, 0);
-    r.setStrokeStyle(2.5, stroke, 1);
+    // stronger platforms: a touch lighter fill + thicker bright outline (bloom does the glow)
+    const r = this.scene.add.rectangle(x, y, w, h, 0x09202e, 0.9).setOrigin(0, 0);
+    r.setStrokeStyle(3, stroke, 1);
     this.scene.physics.add.existing(r, isStatic);
     r.body.setSize(w, h);
     if (isStatic) r.body.updateFromGameObject();
@@ -356,15 +367,15 @@ export class TrickSystem {
         obj.body.setAllowGravity(false); obj.body.setVelocity(0, 0); obj.body.checkCollision.none = false;
         if (home) obj.body.reset(home.x, home.y);
         obj.setData('dropped', false); obj.setData('falling', false);
-        if (type === 'falling') obj.setStrokeStyle(2.5, FALL_COLOR, 1);
+        if (type === 'falling') obj.setStrokeStyle(3, FALL_COLOR, 1);
         obj.setAlpha(1);
       } else if (type === 'ghost') {
-        obj.setAlpha(0); obj.setStrokeStyle(2.5, this.accent, 0); obj.setFillStyle(0x03101c, 0);
+        obj.setAlpha(0); obj.setStrokeStyle(3, this.accent, 0); obj.setFillStyle(0x09202e, 0);
         obj.body.enable = false; obj.setData('revealed', false);
       } else if (type === 'scroll_wall') {
-        obj.setAlpha(1); obj.setStrokeStyle(2.5, this.accent, 0); obj.setData('tellShown', false);
+        obj.setAlpha(1); obj.setStrokeStyle(3, this.accent, 0); obj.setData('tellShown', false);
       } else {
-        obj.setAlpha(1); obj.setStrokeStyle(2.5, base, 1);
+        obj.setAlpha(1); obj.setStrokeStyle(3, base, 1);
       }
     }
     for (const hz of this.hazards) {
@@ -373,6 +384,12 @@ export class TrickSystem {
       else if (type === 'ceiling_trap') { hz.setData('lethal', false); hz.setData('state', 'armed'); hz.setVisible(false); hz.y = hz.getData('homeY'); }
     }
     for (const e of this.env) { e.active = false; e.fired = false; }
+    for (const pt of this.portals) {
+      if (!pt.used) continue;
+      pt.used = false;
+      pt.tws.forEach((t) => t.resume());
+      pt.objs.forEach((o, i) => o.setStrokeStyle(i % 2 === 0 ? 3 : 2, i % 2 === 0 ? 0xbb6bff : 0xe0b0ff, 1));
+    }
     this._portalCD = 0;
     this._portalArmed = true;
   }
