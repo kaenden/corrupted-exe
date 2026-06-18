@@ -138,6 +138,7 @@ export class EscapeScene extends Phaser.Scene {
     const v = this.cameras.main.worldView;
     this.grid.setPosition(v.x - 128, v.y - 128);
     this.grid.tilePositionX = v.x * 0.5;
+    this._layoutHud(v);
 
     // stream generation + cull behind
     while (this._genX < v.right + 500) this._genChunk();
@@ -178,10 +179,17 @@ export class EscapeScene extends Phaser.Scene {
   }
 
   _buildHud() {
-    this.scoreText = this.add.text(CONFIG.WIDTH / 2, 14, '0 m', { ...TXT, fontSize: '20px' }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(50);
-    this.bankText = this.add.text(CONFIG.WIDTH / 2, 40, 'BANKED 0', { ...TXT, fontSize: '11px', color: '#00ff88' }).setOrigin(0.5, 0).setScrollFactor(0).setDepth(50);
-    this.add.text(10, 10, `BEST ${GameState.data.backdoor.highScore}`, { ...TXT, fontSize: '11px', color: '#ffe27a' }).setScrollFactor(0).setDepth(50);
+    // world objects repositioned to the camera view each frame (scrollFactor 0 is unreliable under follow+zoom)
+    this.scoreText = this.add.text(0, 0, '0 m', { ...TXT, fontSize: '20px' }).setOrigin(0.5, 0).setDepth(50);
+    this.bankText = this.add.text(0, 0, 'BANKED 0', { ...TXT, fontSize: '11px', color: '#00ff88' }).setOrigin(0.5, 0).setDepth(50);
+    this.bestText = this.add.text(0, 0, `BEST ${GameState.data.backdoor.highScore} m`, { ...TXT, fontSize: '11px', color: '#ffe27a' }).setOrigin(0, 0).setDepth(50);
     this._mobile = (this.sys.game.device.input.touch || navigator.maxTouchPoints > 0) ? this._touch() : null;
+  }
+
+  _layoutHud(v) {
+    this.scoreText.setPosition(v.centerX, v.y + 12);
+    this.bankText.setPosition(v.centerX, v.y + 38);
+    this.bestText.setPosition(v.x + 12, v.y + 10);
   }
 
   // region-based touch: left half = run right (held), right half = jump. Same coord space as UIScene.
