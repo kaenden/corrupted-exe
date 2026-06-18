@@ -4,11 +4,9 @@ const p = await (await b.newContext({ viewport:{width:1280,height:720} })).newPa
 await p.goto('https://kaenden.github.io/corrupted-exe/',{waitUntil:'load'});
 await p.waitForFunction(()=>window.GameState?.data && window.game?.scene?.isActive('MenuScene'),undefined,{timeout:20000});
 await p.evaluate(()=>{window.game.scene.stop('MenuScene');window.game.scene.start('GameScene',{world:'alpha',levelIndex:0});});
-await p.waitForTimeout(400);
-const d=await p.evaluate(()=>{const ui=window.game.scene.getScene('UIScene');
-  const cont=ui.children.list.find(o=>o.type==='Container');
-  if(!cont) return {noCont:true};
-  const kids=cont.list.map(k=>({t:k.type, x:Math.round(k.x), y:Math.round(k.y), a:k.alpha, txt:k.text||''}));
-  return {contAlpha:cont.alpha, contDepth:cont.depth, contX:cont.x, contY:cont.y, kids};});
-console.log(JSON.stringify(d,null,1));
+await p.waitForTimeout(500);
+await p.evaluate(()=>{['UIScene','GameScene'].forEach(k=>{const c=window.game.scene.getScene(k).cameras.main;c.fadeEffect&&c.fadeEffect.reset();c.resetFX&&c.resetFX();});});
+await p.waitForTimeout(120);
+await p.screenshot({ path:'p3-intro.png' });
+console.log('shot');
 await b.close();

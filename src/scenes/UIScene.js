@@ -147,12 +147,13 @@ export class UIScene extends Phaser.Scene {
   // Cinematic level intro — code glitches in, an accent line sweeps, then fades (non-blocking).
   _introCard(lvl, worldName) {
     const cx = CONFIG.WIDTH / 2, cy = CONFIG.HEIGHT / 2 - 14;
-    const bg = this.add.rectangle(cx, cy, 320, 78, 0x02060a, 0.32).setStrokeStyle(1, COLORS.cyan, 0.25).setDepth(820);
-    const codeR = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px', color: '#ff2a55' }).setOrigin(0.5).setAlpha(0.6).setDepth(821);
-    const codeB = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px', color: '#2affff' }).setOrigin(0.5).setAlpha(0.6).setDepth(821);
-    const code = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px' }).setOrigin(0.5).setDepth(822);
-    const line = this.add.rectangle(cx, cy + 20, 0, 2, COLORS.cyan, 0.85).setOrigin(0.5).setDepth(822);
-    const sub = this.add.text(cx, cy + 32, (lvl.name || worldName), { ...FONT, fontSize: '13px', color: '#6f9aa3' }).setOrigin(0.5).setDepth(822);
+    const D = 50;
+    const bg = this.add.rectangle(cx, cy, 320, 78, 0x02060a, 0.32).setStrokeStyle(1, COLORS.cyan, 0.25).setDepth(D);
+    const codeR = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px', color: '#ff2a55' }).setOrigin(0.5).setAlpha(0.6).setDepth(D + 1);
+    const codeB = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px', color: '#2affff' }).setOrigin(0.5).setAlpha(0.6).setDepth(D + 1);
+    const code = this.add.text(cx, cy, lvl.code, { ...FONT, fontSize: '38px' }).setOrigin(0.5).setDepth(D + 2);
+    const line = this.add.rectangle(cx, cy + 20, 0, 2, COLORS.cyan, 0.85).setOrigin(0.5).setDepth(D + 2);
+    const sub = this.add.text(cx, cy + 32, (lvl.name || worldName), { ...FONT, fontSize: '13px', color: '#6f9aa3' }).setOrigin(0.5).setDepth(D + 2);
     const parts = [bg, codeR, codeB, code, line, sub];
     const jit = this.time.addEvent({ delay: 55, loop: true, callback: () => {
       const o = Phaser.Math.Between(-5, 5); codeR.x = cx - 3 + o; codeB.x = cx + 3 - o;
