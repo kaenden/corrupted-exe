@@ -37,6 +37,10 @@ export const AdSystem = {
       const p = new P(sound);
       await p.init();
       this.provider = p;
+      // The SDK loads async — a level (gameplayStart) may have begun BEFORE the provider was ready,
+      // so re-apply the current gameplay state to the real SDK now. Without this the very first
+      // gameplayStart can be lost → CrazyGames' "First gameplay start" check stays No.
+      if (this._gameplayActive) this.provider.gameplayStart();
     } catch {
       this.provider = import.meta.env?.DEV ? new DevProvider() : new AdProvider();
     }
@@ -44,8 +48,9 @@ export const AdSystem = {
 
   loadingStart() { this.provider.loadingStart(); },
   loadingStop() { this.provider.loadingStop(); },
-  gameplayStart() { this.provider.gameplayStart(); },
-  gameplayStop() { this.provider.gameplayStop(); },
+  // Track the gameplay state so init() can re-fire it once the real provider is swapped in.
+  gameplayStart() { this._gameplayActive = true; this.provider.gameplayStart(); },
+  gameplayStop() { this._gameplayActive = false; this.provider.gameplayStop(); },
 
   // Ads OFF (Basic Launch) → skip the interstitial, continue the transition immediately.
   showInterstitial() {

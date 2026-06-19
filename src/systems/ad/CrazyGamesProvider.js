@@ -12,10 +12,11 @@ export class CrazyGamesProvider {
     const sdk = window.CrazyGames?.SDK;
     if (!sdk) throw new Error('CrazyGames SDK missing');
     await sdk.init(); // MUST await — SDK unusable until initialized
-    // On an UNAPPROVED domain (GitHub Pages, tunnels, pre-approval hosting) environment is
-    // 'disabled' and every SDK method THROWS. Reject so the facade falls back to the safe
-    // NullProvider and scene code never touches a throwing SDK. (Real CG host → 'crazygames'.)
-    if (sdk.environment === 'disabled') throw new Error('CrazyGames environment disabled');
+    // Keep the SDK ACTIVE in EVERY environment (crazygames / local / qa / staging / undefined / even
+    // 'disabled'). CrazyGames' QA & pre-approval preview can report a non-'crazygames' environment; if
+    // we dropped the provider there, game.gameplayStart() would never reach the SDK and the QA
+    // "First gameplay start" check fails. Every call below is try/catch-guarded, so on a genuinely
+    // disabled domain the methods simply no-op — they never throw into the game loop.
     this.sdk = sdk;
     this.loadingStart(); // signal "loading" now that the SDK is live; BootScene calls loadingStop when ready
   }
