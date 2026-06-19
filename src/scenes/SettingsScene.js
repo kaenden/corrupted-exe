@@ -33,7 +33,14 @@ export class SettingsScene extends Phaser.Scene {
       else { this.scale.startFullscreen(); window.screen?.orientation?.lock?.('landscape').catch(() => {}); }
     });
 
-    this.add.text(cx, CONFIG.HEIGHT - 22, 'changes save automatically', { ...TXT, fontSize: '11px', color: '#3a5a62' }).setOrigin(0.5);
+    this.add.text(cx, CONFIG.HEIGHT - 50, 'changes save automatically', { ...TXT, fontSize: '11px', color: '#3a5a62' }).setOrigin(0.5);
+
+    // CrazyGames Basic-Launch requirement: in-game mention of Terms & Privacy. The game keeps no
+    // account and collects no personal data (progress is local); platform data use is CrazyGames'.
+    // (Plain text — no external link, to respect the "no links out of the game" rule.)
+    this.add.text(cx, CONFIG.HEIGHT - 22,
+      "Runs on CrazyGames · progress is saved locally on your device · CrazyGames' Terms of Service and Privacy Policy apply.",
+      { ...TXT, fontSize: '9px', color: '#3a5a62', align: 'center', wordWrap: { width: 460 }, lineSpacing: 3 }).setOrigin(0.5);
   }
 
   _lbl(key) { return `[ ${GameState.getSetting(key) ? 'ON' : 'OFF'} ]`; }
