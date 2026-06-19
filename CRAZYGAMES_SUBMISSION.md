@@ -30,15 +30,17 @@ npm run build:cg      # vite build --mode crazygames → selects the CrazyGames 
 ```
 
 - Output is in **`dist/`** (relative asset paths via `base:'./'` → runs from CrazyGames' CDN as‑is).
-- **Zip the *contents* of `dist/`** (so `index.html` is at the zip root, not inside a `dist/` folder) and
-  upload at **developer.crazygames.com/games → New game**.
+- **Upload the *contents* of `dist/` directly** in the portal (developer.crazygames.com/games → New game):
+  select/drag **`index.html` + the `assets/` folder** into the upload area so `index.html` sits at the
+  **top level** — do NOT nest them inside a `dist/` folder, and a zip is not required (CrazyGames just
+  looks for your `index.html`). (docs.crazygames.com/requirements/technical/)
 - Total size ≈ **2.2 MB** (JS ~368 KB gzip + ~0.6 MB images) — well within CG limits (≤50 MB initial /
-  ≤250 MB total / ≤1500 files). (docs.crazygames.com/requirements/technical/)
+  ≤250 MB total / ≤1500 files).
 - Plain `npm run build` (no SDK, ad‑free) is what GitHub Pages auto‑deploys — **do not** upload that one to
   CrazyGames; use `build:cg`.
 
-> Note: with the release build, the public GitHub Pages site is now **locked** (must clear levels to
-> progress — dev unlock is off in production). For unlocked local testing run **`npm run dev`**.
+> The public GitHub Pages site stays **unlocked + debuggable** (it's our QA mirror — only the `build:cg`
+> portal upload is locked/clean). Nothing about GitHub Pages was turned off.
 
 ---
 
@@ -118,10 +120,11 @@ standard web formats: PNG or JPG for covers, MP4 for video.)
 | Preview video — **Landscape** | **1080p** | 16:9 | MP4 | required · **15–20 s** · **≤ 50 MB** · **no sound** |
 | Preview video — **Portrait** | **1080p** | 2:3 | MP4 | required · 15–20 s · ≤ 50 MB · no sound |
 
-**Cover rules (CG, verbatim intent):** put the game's name on the cover; use a font that fits the game's
-look; keep it clean, balanced, legible. **Don't** add borders; **don't** write anything but the title (no
-"New/Updated/Play/Play now"); no store/platform icons or logos; avoid raw in‑game screenshots; nothing
-blurry or pixelated.
+**Cover rules — quoted verbatim from docs.crazygames.com/requirements/game-covers/:**
+- ✅ Your game's **own title/logo IS required** on the cover: *"Put the name of your game directly on the cover."* Use a font fitting the game's aesthetic.
+- ❌ *"Don't put icons or store logos in the visuals"* — this is about **third‑party / app‑store icons & logos** (e.g. Play Store badges), **not** your own game title.
+- ❌ *"Don't write anything else other than your game's title (e.g. don't write New, Updated, Play or Play now,...)"*
+- ❌ *"Don't put borders around your game covers"* · *"Don't just take a screenshot of the game"* · *"Don't use blurry or pixelated visuals"* · *"Don't use copyrighted visuals that you don't have the right to use."*
 
 **Video rules:** no opening/black‑screen transition, no black bars, no visible mouse cursor, no promo text,
 no app/social icons, no fast‑forwarding — just clean gameplay.

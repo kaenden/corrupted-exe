@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { CONFIG, COLORS } from './config/game.js';
+import { CONFIG, COLORS, RELEASE_BUILD } from './config/game.js';
 import { BootScene } from './scenes/BootScene.js';
 import { MenuScene } from './scenes/MenuScene.js';
 import { SettingsScene } from './scenes/SettingsScene.js';
@@ -53,9 +53,10 @@ let game = null; // module-scoped so the fullscreen/resize handlers below reach 
 const startGame = () => {
   if (_started) return; _started = true;
   game = new Phaser.Game(config);
-  // Debug/test handles are DEV-ONLY — never expose the game instance or the save state in a
-  // production build (Vite tree-shakes this branch out → no console level-skipping / save-cheating).
-  if (import.meta.env.DEV) {
+  // Debug/test handles exist everywhere EXCEPT the portal release build (build:cg) — so the GitHub
+  // Pages QA mirror keeps window.game (Playwright tests) + window.GameState, while the CrazyGames
+  // upload exposes neither (tree-shaken out → no console level-skipping / save-cheating).
+  if (!RELEASE_BUILD) {
     window.game = game;
     import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
   }
