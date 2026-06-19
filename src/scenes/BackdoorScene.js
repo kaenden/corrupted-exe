@@ -49,23 +49,17 @@ export class BackdoorScene extends Phaser.Scene {
       const maxed = lvl >= u.max;
       const cost = this._cost(u, lvl);
       const can = !maxed && m.keys >= cost;
-      this.rows.add(card(this, x0 + 158, y, 320, 44, { accent: maxed ? 0x00ff88 : (can ? 0xffd24a : 0x2c3a42), active: maxed }));
+      const buyIt = () => {
+        if (GameState.data.backdoor.keys < cost) return;
+        GameState.data.backdoor.keys -= cost;
+        GameState.data.backdoor.upgrades[u.id] = lvl + 1;
+        GameState.save();
+        this._refresh();
+      };
+      this.rows.add(card(this, x0 + 158, y, 320, 44, { accent: maxed ? 0x00ff88 : (can ? 0xffd24a : 0x2c3a42), active: maxed, onClick: can ? buyIt : null }));
       this.rows.add(this.add.text(x0 + 14, y - 9, `${u.name}${u.max > 1 ? '  Lv' + lvl + '/' + u.max : ''}`, { ...TXT, fontSize: '12px', color: '#eafdff' }).setOrigin(0, 0.5));
       this.rows.add(this.add.text(x0 + 14, y + 9, u.desc, { ...TXT, fontSize: '8.5px', color: '#7a8a90' }).setOrigin(0, 0.5));
-      const buy = this.add.text(x0 + 300, y, maxed ? 'MAX' : `◈ ${cost}`, { ...TXT, fontSize: '12px', color: maxed ? '#5fae86' : (can ? '#ffe27a' : '#b06a6a') }).setOrigin(1, 0.5);
-      if (can) {
-        buy.setInteractive({ useHandCursor: true });
-        buy.on('pointerover', () => { buy.setColor('#ffffff'); buy.setScale(1.1); });
-        buy.on('pointerout', () => { buy.setColor('#ffe27a'); buy.setScale(1); });
-        buy.on('pointerup', () => {
-          if (GameState.data.backdoor.keys < cost) return;
-          GameState.data.backdoor.keys -= cost;
-          GameState.data.backdoor.upgrades[u.id] = lvl + 1;
-          GameState.save();
-          this._refresh();
-        });
-      }
-      this.rows.add(buy);
+      this.rows.add(this.add.text(x0 + 300, y, maxed ? 'MAX' : `◈ ${cost}`, { ...TXT, fontSize: '12px', color: maxed ? '#5fae86' : (can ? '#ffe27a' : '#b06a6a') }).setOrigin(1, 0.5));
     });
   }
 }

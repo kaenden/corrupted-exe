@@ -21,7 +21,10 @@ export class WorldSelectScene extends Phaser.Scene {
   _card(world, cx, unlocked) {
     const meta = WORLD_META[world];
     const cy = 210;
-    card(this, cx, cy, 280, 230, { accent: unlocked ? meta.accent : 0x444444, active: unlocked }).setAlpha(unlocked ? 1 : 0.9);
+    card(this, cx, cy, 280, 230, {
+      accent: unlocked ? meta.accent : 0x444444, active: unlocked,
+      onClick: unlocked ? () => this.scene.start('LevelSelectScene', { world }) : null,
+    }).setAlpha(unlocked ? 1 : 0.9);
 
     const title = this.add.text(cx, cy - 80, meta.name, { fontFamily: FONT, fontSize: '22px', color: unlocked ? '#dffcff' : '#777' }).setOrigin(0.5);
     this.add.text(cx, cy - 52, meta.subtitle, { fontFamily: FONT, fontSize: '11px', color: '#5b8a93' }).setOrigin(0.5);
@@ -38,7 +41,7 @@ export class WorldSelectScene extends Phaser.Scene {
       this.add.text(cx, cy - 10, `${done} / ${total} complete`, { fontFamily: FONT, fontSize: '14px', color: '#9fd6df' }).setOrigin(0.5);
       this.add.image(cx - 18, cy + 16, 'icon_star').setDisplaySize(18, 18);
       this.add.text(cx - 2, cy + 16, `${stars}`, { fontFamily: FONT, fontSize: '16px', color: '#ffe27a' }).setOrigin(0, 0.5);
-      menuButton(this, cx, cy + 78, 'ENTER', () => this.scene.start('LevelSelectScene', { world }), { size: '18px', accent: meta.accent });
+      this.add.text(cx, cy + 80, 'ENTER  ▶', { fontFamily: FONT, fontSize: '17px', color: '#bdf6ff', resolution: 3 }).setOrigin(0.5);
     } else {
       // static-noise look for locked world
       this.add.text(cx, cy - 6, '[ ACCESS DENIED ]', { fontFamily: FONT, fontSize: '13px', color: '#ff5566' }).setOrigin(0.5);

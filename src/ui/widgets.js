@@ -79,11 +79,19 @@ export function menuButton(scene, x, y, label, cb, opts = {}) {
 }
 
 // Dark content card (thin accent frame) — separates panels from the backdrop.
+// opts.onClick → the WHOLE card is tappable; the frame glows on hover.
 export function card(scene, cx, cy, w, h, opts = {}) {
   const accent = opts.accent ?? COLORS.cyan;
   const active = !!opts.active;
-  return scene.add.rectangle(cx, cy, w, h, 0x080b0f, active ? 0.97 : 0.9)
-    .setStrokeStyle(active ? 2 : 1.5, accent, active ? 1 : 0.5);
+  const baseW = active ? 2 : 1.5, baseA = active ? 1 : 0.45, baseFill = 0x05080b, fillA = active ? 0.97 : 0.92;
+  const r = scene.add.rectangle(cx, cy, w, h, baseFill, fillA).setStrokeStyle(baseW, accent, baseA);
+  if (opts.onClick) {
+    r.setInteractive({ useHandCursor: true });
+    r.on('pointerover', () => r.setStrokeStyle(2.5, accent, 1).setFillStyle(0x0b131a, 0.95));
+    r.on('pointerout', () => r.setStrokeStyle(baseW, accent, baseA).setFillStyle(baseFill, fillA));
+    r.on('pointerup', () => opts.onClick());
+  }
+  return r;
 }
 
 export function backButton(scene, cb) {

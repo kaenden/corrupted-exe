@@ -74,28 +74,18 @@ export class ShopScene extends Phaser.Scene {
     const locked = item.unlock === 'achievement' && !owned;
     const accent = equipped ? COLORS.green : locked ? 0x3a4a52 : owned ? COLORS.cyan : (affordable ? 0xffd24a : 0x5a3a3a);
 
-    // dark-grey card with a thin accent frame (brighter when active) — stands out from the backdrop
-    this.grid.add(card(this, x, y, w, h, { accent, active: equipped }));
-
-    this._preview(slot, item, x, y - 30);
-
-    this.grid.add(this.add.text(x, y + 6, item.name, { ...TXT, fontSize: '13px', color: locked ? '#7a8a90' : '#eafdff' }).setOrigin(0.5));
-    this.grid.add(this.add.text(x, y + 22, (locked ? item.hint : item.desc) || '', { ...TXT, fontSize: '8px', color: '#6f8a92', align: 'center', wordWrap: { width: w - 26 } }).setOrigin(0.5, 0));
-
-    // action — minimal interactive text (reliable standalone-text input)
-    let label, color, cb = null;
+    // whole card is the click target; the frame glows on hover (action label is just a state cue)
+    let label, color, onClick = null;
     if (locked) { label = 'LOCKED'; color = '#5f7a82'; }
     else if (equipped) { label = '— ACTIVE —'; color = '#00ff88'; }
-    else if (owned) { label = 'EQUIP'; color = '#bdf6ff'; cb = () => { GameState.equipItem(slot, item.id); SoundSystem.play('sfx_click'); this._render(); }; }
-    else { label = `◈ ${item.cost}`; color = affordable ? '#ffe27a' : '#b06a6a'; cb = affordable ? () => this._buy(item, slot) : null; }
-    const act = this.add.text(x, y + h / 2 - 14, label, { ...TXT, fontSize: '13px', color }).setOrigin(0.5);
-    if (cb) {
-      act.setInteractive({ useHandCursor: true });
-      act.on('pointerover', () => { act.setColor('#ffffff'); act.setScale(1.08); });
-      act.on('pointerout', () => { act.setColor(color); act.setScale(1); });
-      act.on('pointerup', () => { act.setScale(1); cb(); });
-    }
-    this.grid.add(act);
+    else if (owned) { label = 'EQUIP'; color = '#bdf6ff'; onClick = () => { GameState.equipItem(slot, item.id); SoundSystem.play('sfx_click'); this._render(); }; }
+    else { label = `◈ ${item.cost}`; color = affordable ? '#ffe27a' : '#b06a6a'; onClick = affordable ? () => this._buy(item, slot) : null; }
+
+    this.grid.add(card(this, x, y, w, h, { accent, active: equipped, onClick }));
+    this._preview(slot, item, x, y - 30);
+    this.grid.add(this.add.text(x, y + 6, item.name, { ...TXT, fontSize: '13px', color: locked ? '#7a8a90' : '#eafdff' }).setOrigin(0.5));
+    this.grid.add(this.add.text(x, y + 22, (locked ? item.hint : item.desc) || '', { ...TXT, fontSize: '8px', color: '#6f8a92', align: 'center', wordWrap: { width: w - 26 } }).setOrigin(0.5, 0));
+    this.grid.add(this.add.text(x, y + h / 2 - 14, label, { ...TXT, fontSize: '13px', color }).setOrigin(0.5));
   }
 
   // ---- live previews ----

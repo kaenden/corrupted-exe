@@ -40,7 +40,7 @@ export class LevelSelectScene extends Phaser.Scene {
     const boss = isBossIndex(index);
     const accent = boss ? 0xff3344 : (unlocked ? COLORS.cyan : 0x3a3a3a);
 
-    const box = this.add.rectangle(x, y, CELL_W, CELL_H, 0x080b0f, unlocked ? 0.9 : 0.94).setStrokeStyle(unlocked ? 1.5 : 1.5, accent, unlocked ? 0.7 : 0.5);
+    const box = this.add.rectangle(x, y, CELL_W, CELL_H, 0x05080b, unlocked ? 0.92 : 0.95).setStrokeStyle(1.5, accent, unlocked ? 0.7 : 0.5);
     this.add.text(x, y - 15, lvl.code, { fontFamily: FONT, fontSize: '12px', color: unlocked ? '#dffcff' : '#555', resolution: 3 }).setOrigin(0.5);
 
     if (!unlocked) {
@@ -57,8 +57,8 @@ export class LevelSelectScene extends Phaser.Scene {
     }
 
     box.setInteractive({ useHandCursor: true })
-      .on('pointerover', () => box.setStrokeStyle(2, accent, 1).setFillStyle(0x12202a, 0.95))
-      .on('pointerout', () => box.setStrokeStyle(1.5, accent, 0.7).setFillStyle(0x080b0f, 0.9))
+      .on('pointerover', () => box.setStrokeStyle(2.5, accent, 1).setFillStyle(0x0b131a, 0.95))
+      .on('pointerout', () => box.setStrokeStyle(1.5, accent, 0.7).setFillStyle(0x05080b, 0.92))
       .on('pointerup', () => { this.scene.stop('UIScene'); this.scene.start('GameScene', { world: this.world, levelIndex: index }); });
   }
 }
