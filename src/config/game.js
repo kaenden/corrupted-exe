@@ -55,10 +55,11 @@ export const CONFIG = {
   AD_INTERSTITIAL_EVERY_N: 5,    // signal a midgame opportunity every N completions (first at level N → clean start)
   AD_SKIP_IF_DEATHS_OVER: 5,     // never show a midgame right after a frustrating, high-death clear
 
-  // Dev — TURN OFF (false) BEFORE RELEASE
-  DEV_UNLOCK_ALL: true,       // unlock every world+level for QA; enables N/P level-skip keys in-game
-  DEBUG_TRICKS: false,        // when true, fake/hidden tricks get a faint debug marker
-  DEBUG_SKIP_MENU: false,     // when true, boot straight into DEBUG_START instead of MenuScene
+  // Dev affordances are driven off the BUILD MODE — no manual flag to flip before release.
+  // Vite inlines `import.meta.env.DEV` as `true` under `npm run dev` and statically `false`
+  // under `vite build` (the dead branches are then tree-shaken out of the production bundle).
+  DEV_UNLOCK_ALL: import.meta.env.DEV,  // dev: unlock all worlds/levels + N/P/R skip keys · prod: locked progression
+  DEBUG_SKIP_MENU: false,     // dev-only (gated): boot straight into DEBUG_START instead of MenuScene
   DEBUG_START: { world: 'alpha', levelIndex: 0 },
 };
 

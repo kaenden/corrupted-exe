@@ -272,7 +272,10 @@ export class UIScene extends Phaser.Scene {
 
     let row = cy + 36;
     if (CONFIG.SHARD_2X_AD && r.shardsEarned > 0) {
-      const ad = this.add.text(cx, row, '[ WATCH FOR 2× SHARDS ]', { ...FONT, fontSize: '13px', color: '#ffd24a', backgroundColor: '#3a2e06', padding: { x: 10, y: 5 } })
+      // Label honours the ad gate: with ads OFF (Basic Launch) the reward is granted on tap,
+      // so the button reads "CLAIM" (not "WATCH") — no misleading dead ad-button for QA.
+      const rewardLabel = AdSystem.adsEnabled ? '[ WATCH FOR 2× SHARDS ]' : '[ CLAIM 2× SHARDS ]';
+      const ad = this.add.text(cx, row, rewardLabel, { ...FONT, fontSize: '13px', color: '#ffd24a', backgroundColor: '#3a2e06', padding: { x: 10, y: 5 } })
         .setOrigin(0.5).setInteractive({ useHandCursor: true });
       ad.on('pointerup', () => {
         ad.disableInteractive().setAlpha(0.6);

@@ -17,7 +17,7 @@ export class BootScene extends Phaser.Scene {
     const img = (key, file) => this.load.image(key, IMG + (file || key) + '.png');
     img('bg_menu');
     img('icon_shard');
-    this.load.on('loaderror', (f) => console.warn('[art] missing, using placeholder:', f.key));
+    if (import.meta.env.DEV) this.load.on('loaderror', (f) => console.warn('[art] missing, using placeholder:', f.key));
   }
 
   create() {
@@ -29,10 +29,11 @@ export class BootScene extends Phaser.Scene {
     this.createBackground();
     this.createVignette();
 
-    // Ad SDK init (provider-agnostic). loadingStart/Stop bracket asset load (synchronous here).
-    AdSystem.init(SoundSystem).then(() => { AdSystem.loadingStart(); AdSystem.loadingStop(); });
+    // Ad SDK init (provider-agnostic). The provider fires loadingStart once the SDK is live;
+    // we fire loadingStop here when init resolves and the boot scene is ready to hand off.
+    AdSystem.init(SoundSystem).then(() => AdSystem.loadingStop());
 
-    if (CONFIG.DEBUG_SKIP_MENU) {
+    if (import.meta.env.DEV && CONFIG.DEBUG_SKIP_MENU) {
       const { world, levelIndex } = CONFIG.DEBUG_START;
       this.scene.start('GameScene', { world, levelIndex });
     } else {

@@ -16,6 +16,13 @@ export const AdSystem = {
   provider: new AdProvider(),  // NullProvider until init() swaps it
   sound: null,
 
+  // CrazyGames BASIC LAUNCH force-disables ads platform-side (no revenue is shared), and QA
+  // REJECTS a game that shows dead rewarded buttons while ads are off. So during Basic Launch we
+  // keep ads OFF here: rewarded grants resolve INSTANTLY (no dead button) and interstitials are
+  // skipped — while loading + gameplayStart/Stop still fire so the SDK is detected.
+  // Flip to true ONLY after CrazyGames approves the game for FULL LAUNCH.
+  adsEnabled: false,
+
   async init(sound) {
     this.sound = sound;
     // Only load a portal SDK when explicitly built for it (VITE_AD_PROVIDER=crazygames|poki).
@@ -39,10 +46,17 @@ export const AdSystem = {
   loadingStop() { this.provider.loadingStop(); },
   gameplayStart() { this.provider.gameplayStart(); },
   gameplayStop() { this.provider.gameplayStop(); },
-  showInterstitial() { return this.provider.showInterstitial(); },
 
-  // onComplete fires ONLY when the ad truly finished (never on error/no-fill/cooldown).
+  // Ads OFF (Basic Launch) → skip the interstitial, continue the transition immediately.
+  showInterstitial() {
+    if (!this.adsEnabled) return Promise.resolve();
+    return this.provider.showInterstitial();
+  },
+
+  // Ads OFF (Basic Launch) → grant the reward INSTANTLY so the button is never dead.
+  // Ads ON (Full Launch) → onComplete fires ONLY when the ad truly finished (never on error/no-fill/cooldown).
   async showRewarded(onComplete) {
+    if (!this.adsEnabled) { onComplete?.(); return true; }
     const watched = await this.provider.showRewarded();
     if (watched) onComplete?.();
     return watched;

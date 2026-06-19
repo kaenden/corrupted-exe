@@ -12,12 +12,13 @@ export class PokiProvider {
     this.sdk = window.PokiSDK;
     if (!this.sdk) throw new Error('Poki SDK missing');
     await this.sdk.init();
+    this.loadingStart(); // SDK live → signal load begin; BootScene calls loadingStop when ready
   }
 
-  loadingStart() { this.sdk?.gameLoadingStart(); }
-  loadingStop() { this.sdk?.gameLoadingFinished(); }
-  gameplayStart() { this.sdk?.gameplayStart(); }
-  gameplayStop() { this.sdk?.gameplayStop(); }
+  loadingStart() { try { this.sdk?.gameLoadingStart(); } catch {} }
+  loadingStop() { try { this.sdk?.gameLoadingFinished(); } catch {} }
+  gameplayStart() { try { this.sdk?.gameplayStart(); } catch {} }
+  gameplayStop() { try { this.sdk?.gameplayStop(); } catch {} }
 
   async showInterstitial() {
     if (!this.sdk) return;

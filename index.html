@@ -6,12 +6,16 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="icon" href="data:," />
+    <link rel="icon" type="image/png" href="./assets/images/robot.png" />
     <title>CORRUPTED.EXE</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <style>
+      /* Self-hosted Chakra Petch (latin subset, English-only UI) — NO external font-CDN request,
+         so every shipped resource is first-party (CrazyGames QA prefers no uncontrolled fetches).
+         Falls back to monospace until a face loads / if one fails. */
+      @font-face { font-family: 'Chakra Petch'; font-style: normal; font-weight: 400; font-display: swap; src: url('./assets/fonts/chakrapetch-400.woff2') format('woff2'); }
+      @font-face { font-family: 'Chakra Petch'; font-style: normal; font-weight: 500; font-display: swap; src: url('./assets/fonts/chakrapetch-500.woff2') format('woff2'); }
+      @font-face { font-family: 'Chakra Petch'; font-style: normal; font-weight: 600; font-display: swap; src: url('./assets/fonts/chakrapetch-600.woff2') format('woff2'); }
+      @font-face { font-family: 'Chakra Petch'; font-style: normal; font-weight: 700; font-display: swap; src: url('./assets/fonts/chakrapetch-700.woff2') format('woff2'); }
       html, body {
         margin: 0; padding: 0; background: #02030a; overflow: hidden;
         width: 100%; height: 100vh; height: 100dvh; touch-action: none;

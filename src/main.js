@@ -49,11 +49,16 @@ const config = {
 // Boot once the display font is ready (fallback timer if it fails) so text never renders in the
 // fallback face and gets stuck there (Phaser doesn't re-render text on late font load).
 let _started = false;
+let game = null; // module-scoped so the fullscreen/resize handlers below reach it without a global
 const startGame = () => {
   if (_started) return; _started = true;
-  const game = new Phaser.Game(config);
-  window.game = game; // exposed for debugging / automated tests
-  import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
+  game = new Phaser.Game(config);
+  // Debug/test handles are DEV-ONLY — never expose the game instance or the save state in a
+  // production build (Vite tree-shakes this branch out → no console level-skipping / save-cheating).
+  if (import.meta.env.DEV) {
+    window.game = game;
+    import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
+  }
 };
 if (document.fonts?.load) {
   document.fonts.load("600 16px 'Chakra Petch'").then(startGame).catch(startGame);
@@ -68,14 +73,14 @@ if (isTouch) {
   // fullscreen the guard makes further taps no-ops. iOS ignores it → the dvh CSS still fits.
   const goFull = () => {
     try {
-      if (game.scale && !game.scale.isFullscreen) game.scale.startFullscreen();
+      if (game?.scale && !game.scale.isFullscreen) game.scale.startFullscreen();
       window.screen?.orientation?.lock?.('landscape').catch(() => {});
     } catch (_) { /* unsupported */ }
-    setTimeout(() => game.scale?.refresh(), 300); // re-fit after the viewport changes
+    setTimeout(() => game?.scale?.refresh(), 300); // re-fit after the viewport changes
   };
   window.addEventListener('pointerdown', goFull);
 }
 
 // Force the FIT scaler to recompute after an orientation flip (mobile reports new dims late).
-window.addEventListener('orientationchange', () => setTimeout(() => game.scale?.refresh(), 250));
-window.addEventListener('resize', () => game.scale?.refresh());
+window.addEventListener('orientationchange', () => setTimeout(() => game?.scale?.refresh(), 250));
+window.addEventListener('resize', () => game?.scale?.refresh());

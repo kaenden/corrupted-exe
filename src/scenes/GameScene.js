@@ -311,7 +311,6 @@ export class GameScene extends Phaser.Scene {
 
     const r = GameState.saveLevelResult(this.world, this.levelIndex, this.deathCount, this.runDeathShards, this.levelData.parDeaths);
     const unlock = GameState.newUnlock; GameState.newUnlock = null; // ability earned by finishing the world
-    console.log(`[LEVEL COMPLETE] ${this.levelData.code} stars=${r.stars} shardsEarned=${r.shardsEarned} deaths=${this.deathCount}`);
     this.scene.get('UIScene')?.showComplete?.(this.levelData, r, () => this.nextLevel(),
       // 2× rewarded: re-credit completion shards, only if the ad actually finished. Returns watched bool.
       () => AdSystem.showRewarded(() => { GameState.addShards(r.shardsEarned); this.adShownThisLevel = true; }), unlock);
