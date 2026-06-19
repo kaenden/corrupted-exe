@@ -58,28 +58,35 @@ export const LEVELS_ALPHA = [
     platforms: [floor(),
       plat(180, 336, 'solid', 52), plat(340, 326, 'fake', 50), plat(340, 290, 'solid', 50),
       plat(505, 290, 'solid', 50), plat(625, 258, 'solid', 64)] }),
-  // 4 — FAKE on a climb: fake decoy vs real at each tier — pick correctly while climbing
-  lvl({ name: 'MIRAGE', par: 2, hint: 'THE HIGHER ONE IS REAL', exit: { x: 355, y: 134 },
-    chase: { speed: 88, headStart: 300, delay: 2000 },
-    platforms: [floor(),
-      plat(175, 336, 'solid', 56), plat(345, 300, 'solid', 50),
-      plat(220, 250, 'fake', 48), plat(440, 250, 'solid', 50),
-      plat(330, 200, 'solid', 50),
-      plat(180, 162, 'fake', 48), plat(470, 162, 'solid', 50),
-      plat(330, 134, 'solid', 64)] }),
-  // 5 — BOSS (single = falling): a collapsing-platform sprint over a death pit
-  lvl({ name: 'COLLAPSE', par: 3, hint: 'FLOOR COLLAPSING :: FAST', exit: { x: 662, y: 390 },
-    platforms: [floor(0, 180),
-      plat(250, 330, 'falling', 54), plat(410, 314, 'falling', 54), plat(560, 296, 'falling', 54), floor(640, 80)] }),
+  // 4 — FAKE gauntlet (WIDE): at each stop the LOW platform is fake, the higher one real — read & climb-right
+  lvl({ name: 'MIRAGE', par: 2, hint: 'THE HIGHER ONE IS REAL', bounds: { width: 1260, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1210, y: 330 },
+    platforms: [floor(0, 250),
+      plat(330, 326, 'fake', 56), plat(330, 292, 'solid', 56),
+      plat(500, 300, 'solid', 60),
+      plat(670, 326, 'fake', 56), plat(670, 292, 'solid', 56),
+      plat(840, 300, 'solid', 60),
+      floor(1010, 250)] }),
+  // 5 — BOSS (falling, WIDE): a collapsing-platform sprint over a long death pit — no rest
+  lvl({ name: 'COLLAPSE', par: 3, hint: 'FLOOR COLLAPSING :: FAST', bounds: { width: 1420, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1370, y: 330 },
+    platforms: [floor(0, 200),
+      plat(280, 330, 'falling', 60), plat(440, 316, 'falling', 60), plat(600, 330, 'falling', 60),
+      plat(760, 316, 'falling', 60), plat(920, 330, 'falling', 60),
+      floor(1080, 340)] }),
 
   // ── CHAPTER 2 (magenta) ── single trick, medium-wide gaps, less forgiving (pits)
-  // 6 — SPIKE_SAFE (single): a deadly-LOOKING field that's safe; one real spike to read
-  lvl({ name: 'RED_HERRING', par: 1, hint: 'NOT EVERY SPIKE KILLS', exit: { x: 662, y: 390 },
-    platforms: [floor()], hazards: [ss(250), ss(274), ss(298), ss(322), sr(470), ss(560), ss(584), ss(608)] }),
-  // 7 — SPIKE mix (single): read the safe stepping spikes, then long jumps over a pit
-  lvl({ name: 'SHARP_LIES', par: 2, hint: 'WHICH ONE IS REAL?', exit: { x: 662, y: 390 },
-    platforms: [floor(0, 230), plat(320, 322, 'solid', 60), plat(480, 296, 'solid', 56), floor(560, 160)],
-    hazards: [sr(120, 374), ss(144, 374), sr(168, 374), ss(192, 374)] }),
+  // 6 — SPIKE_SAFE field (WIDE): walk the deadly-LOOKING safe spikes, jump the few real ones
+  lvl({ name: 'RED_HERRING', par: 1, hint: 'NOT EVERY SPIKE KILLS', bounds: { width: 1220, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1170, y: 390 },
+    platforms: [floor(0, 1220)],
+    hazards: [ss(250), ss(274), ss(298), sr(430), ss(560), ss(584), ss(608), sr(740), ss(900), ss(924), ss(948)] }),
+  // 7 — SPIKE read + gaps (WIDE): read the real spike among the safe, then platform gaps with more reads
+  lvl({ name: 'SHARP_LIES', par: 2, hint: 'WHICH ONE IS REAL?', bounds: { width: 1320, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1270, y: 330 },
+    platforms: [floor(0, 300), plat(380, 322, 'solid', 64), plat(560, 300, 'solid', 60), floor(720, 220),
+      plat(990, 316, 'solid', 64), floor(1130, 190)],
+    hazards: [sr(150, 374), ss(180, 374), sr(210, 374), sr(770, 374), ss(800, 374), sr(830, 374)] }),
   // 8 — SIDE-SCROLL falling (single): time the collapsing platforms across the gap
   lvl({ name: 'TIMING', par: 2, hint: 'FLOOR COLLAPSING :: BE QUICK', bounds: { width: 1120, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
