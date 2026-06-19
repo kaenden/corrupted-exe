@@ -2,6 +2,7 @@ node_modules/
 dist/
 *.local
 *.zip
+covers/
 .DS_Store
 .vite/
 tools/art-gen/
