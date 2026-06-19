@@ -1,4 +1,3 @@
-import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
 
@@ -48,24 +47,6 @@ export function textButton(scene, x, y, label, cb, opts = {}) {
     .on('pointerdown', () => { t.setScale(0.96); })
     .on('pointerup', () => { t.setScale(1); cb?.(); });
   return t;
-}
-
-// Neon framed button (corner-bracket panel + accent tick + hover glow) — matches the game's HUD/portal look.
-export function neonButton(scene, x, y, label, cb, opts = {}) {
-  const w = opts.w || 250, h = opts.h || 44;
-  const accent = opts.accent ?? COLORS.cyan;
-  const base = opts.color || '#dffcff';
-  const c = scene.add.container(x, y);
-  const panel = neonPanel(scene, 0, 0, w, h, accent);
-  const tick = scene.add.rectangle(-w / 2 + 13, 0, 4, h - 20, accent, 0.9);
-  const txt = scene.add.text(8, 0, label, { fontFamily: FONT, fontSize: opts.size || '18px', color: base, resolution: RES }).setOrigin(0.5);
-  c.add([panel, tick, txt]);
-  c.setSize(w, h).setInteractive(new Phaser.Geom.Rectangle(-w / 2, -h / 2, w, h), Phaser.Geom.Rectangle.Contains);
-  c.on('pointerover', () => { txt.setColor('#ffffff'); tick.setAlpha(1); scene.tweens.add({ targets: c, scale: 1.05, duration: 110, ease: 'Quad.out' }); });
-  c.on('pointerout', () => { txt.setColor(base); tick.setAlpha(0.9); scene.tweens.add({ targets: c, scale: 1, duration: 110 }); });
-  c.on('pointerdown', () => c.setScale(0.97));
-  c.on('pointerup', () => { c.setScale(1.05); cb?.(); });
-  return c;
 }
 
 export function backButton(scene, cb) {

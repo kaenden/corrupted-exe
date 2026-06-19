@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { SoundSystem } from '../systems/SoundSystem.js';
-import { neonButton, addScanlines, hdCamera, FONT } from '../ui/widgets.js';
+import { addScanlines, hdCamera, FONT } from '../ui/widgets.js';
 
 const LOG_LINES = [
   'SIM_ALPHA initializing...',
@@ -46,11 +46,11 @@ export class MenuScene extends Phaser.Scene {
     this.add.text(cx, 152, 'a simulation is lying to you', { fontFamily: FONT, fontSize: '12px', color: '#5b8a93', resolution: 3 }).setOrigin(0.5);
     this._scheduleGlitch();
 
-    // Main menu — Campaign / Escape / Shop / Settings, cascading in
-    this._menuBtn(cx, 202, '▶  CAMPAIGN', () => this._go(), { w: 264, size: '20px', accent: 0x00ff88 }, 0);
-    this._menuBtn(cx, 252, '∞  ESCAPE', () => this.scene.start('BackdoorScene'), { w: 264, size: '18px', accent: 0x2affff, color: '#bdf6ff' }, 90);
-    this._menuBtn(cx, 300, 'SHOP', () => this.scene.start('ShopScene'), { w: 264, size: '17px', accent: 0xffd24a }, 180);
-    this._menuBtn(cx, 346, 'SETTINGS', () => this.scene.start('SettingsScene'), { w: 264, size: '17px', accent: 0x9b8aff }, 270);
+    // Main menu — minimal text (Q-style): clean labels, hover draws an accent underline + ▸◂ marks
+    this._menuBtn(206, 'CAMPAIGN', () => this._go(), 0x00ff88, 0);
+    this._menuBtn(250, 'ESCAPE', () => this.scene.start('BackdoorScene'), 0x2affff, 90);
+    this._menuBtn(294, 'SHOP', () => this.scene.start('ShopScene'), 0xffd24a, 180);
+    this._menuBtn(338, 'SETTINGS', () => this.scene.start('SettingsScene'), 0x9b8aff, 270);
 
     this.add.text(CONFIG.WIDTH - 8, CONFIG.HEIGHT - 6, 'v0.1', { fontFamily: FONT, fontSize: '10px', color: '#2a4a52' }).setOrigin(1, 1);
 
@@ -58,10 +58,32 @@ export class MenuScene extends Phaser.Scene {
     SoundSystem.playMusic('mus_menu');
   }
 
-  _menuBtn(x, y, label, cb, opts, delay) {
-    const b = neonButton(this, x, y + 18, label, cb, opts).setAlpha(0);
-    this.tweens.add({ targets: b, alpha: 1, y, duration: 380, delay, ease: 'Cubic.out' });
-    return b;
+  _menuBtn(y, label, cb, accent, delay) {
+    const cx = CONFIG.WIDTH / 2;
+    const accentHex = '#' + accent.toString(16).padStart(6, '0');
+    const base = '#84c4d0';
+    const t = this.add.text(cx, y, label, { fontFamily: FONT, fontSize: '21px', color: base, resolution: 3 }).setOrigin(0.5).setAlpha(0);
+    const line = this.add.rectangle(cx, y + 19, 10, 2, accent, 0).setOrigin(0.5);
+    const mkL = this.add.text(cx, y, '▸', { fontFamily: FONT, fontSize: '15px', color: accentHex, resolution: 3 }).setOrigin(0.5).setAlpha(0);
+    const mkR = this.add.text(cx, y, '◂', { fontFamily: FONT, fontSize: '15px', color: accentHex, resolution: 3 }).setOrigin(0.5).setAlpha(0);
+
+    t.setInteractive({ useHandCursor: true });
+    t.on('pointerover', () => {
+      t.setColor('#ffffff');
+      const w = t.width;
+      mkL.setX(cx - w / 2 - 20).setAlpha(1); mkR.setX(cx + w / 2 + 20).setAlpha(1);
+      this.tweens.add({ targets: t, scale: 1.1, duration: 130, ease: 'Quad.out' });
+      this.tweens.add({ targets: line, width: w + 12, alpha: 0.95, duration: 180, ease: 'Cubic.out' });
+    });
+    t.on('pointerout', () => {
+      t.setColor(base); mkL.setAlpha(0); mkR.setAlpha(0);
+      this.tweens.add({ targets: t, scale: 1, duration: 130 });
+      this.tweens.add({ targets: line, width: 10, alpha: 0, duration: 160 });
+    });
+    t.on('pointerdown', () => t.setScale(1.03));
+    t.on('pointerup', () => { t.setScale(1.1); cb(); });
+
+    this.tweens.add({ targets: t, alpha: 1, duration: 420, delay, ease: 'Cubic.out' });
   }
 
   // Periodic red corruption bar sweeping across the backdrop (cinematic, on-theme)
