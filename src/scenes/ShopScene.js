@@ -113,8 +113,8 @@ export class ShopScene extends Phaser.Scene {
     const t = COSMETICS.trails[item.id];
     if (!t) { this.grid.add(this.add.text(cx, cy, 'OFF', { ...TXT, fontSize: '12px', color: '#5a7a82' }).setOrigin(0.5)); return; }
     this.grid.add(this.add.particles(cx - 28, cy, 'particle_spark', {
-      tint: t.tint ?? 0xffffff, lifespan: 480, frequency: 50, speedX: { min: 34, max: 78 },
-      scale: { start: t.scale ?? 0.55, end: 0 }, alpha: { start: 0.9, end: 0 }, blendMode: 'ADD', quantity: 1,
+      tint: t.tint ?? 0xffffff, lifespan: 460, frequency: 34, speedX: { min: 34, max: 80 },
+      scale: { start: (t.scale ?? 0.6) + 0.15, end: 0.06 }, alpha: { start: 1, end: 0.18 }, blendMode: 'NORMAL', quantity: 1,
       gravityY: (t.gravityY ?? 0) * 0.4,
     }));
     this.grid.add(this.add.image(cx + 24, cy, 'p_head').setDisplaySize(16, 14).setTint(0x2affff));
@@ -133,8 +133,8 @@ export class ShopScene extends Phaser.Scene {
     };
     const c = map[kind] || {};
     this.grid.add(this.add.particles(cx, cy, 'particle_spark', {
-      lifespan: 520, speed: { min: 22, max: 55 }, scale: { start: 0.5, end: 0 }, alpha: { start: 0.7, end: 0 },
-      tint: 0xff6a5a, blendMode: 'ADD', frequency: 60, quantity: 1, ...c,
+      lifespan: 520, speed: { min: 26, max: 72 }, scale: { start: 0.75, end: 0.08 }, alpha: { start: 1, end: 0.2 },
+      tint: 0xff3b2a, blendMode: 'NORMAL', frequency: 38, quantity: 2, ...c,
     }));
   }
 

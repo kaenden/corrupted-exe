@@ -18,6 +18,8 @@ const _textFactory = Phaser.GameObjects.GameObjectFactory.prototype.text;
 Phaser.GameObjects.GameObjectFactory.prototype.text = function (x, y, text, style) {
   style = style || {};
   if (style.resolution == null) style.resolution = CONFIG.RENDER_SCALE + 1;
+  // Dark outline on every label → stays crisp/high-contrast against the bloom (no wash-out).
+  if (style.stroke == null) { style.stroke = '#04070b'; style.strokeThickness = style.strokeThickness ?? 2.5; }
   return _textFactory.call(this, x, y, text, style);
 };
 
