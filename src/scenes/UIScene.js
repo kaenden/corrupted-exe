@@ -4,6 +4,7 @@ import { GameState } from '../state/GameState.js';
 import { AdSystem } from '../systems/ad/AdSystem.js';
 import { neonPanel, hdCamera } from '../ui/widgets.js';
 import { getStoryBeat } from '../data/story.js';
+import { getTutorial } from '../data/tutorial.js';
 
 const FONT = { fontFamily: 'monospace', color: '#dffcff', resolution: 3 };
 const ERR_CODES = ['SEGMENTATION_FAULT', 'NULL_REFERENCE', 'STACK_OVERFLOW', 'ACCESS_VIOLATION',
@@ -46,8 +47,15 @@ export class UIScene extends Phaser.Scene {
     const touch = this.sys.game.device.input.touch || navigator.maxTouchPoints > 0;
     if (touch) this._buildTouchControls();
 
-    this._introCard(lvl, worldName);
-    this._storyBeat(getStoryBeat(this.gameScene.world, this.gameScene.levelIndex));
+    const world = this.gameScene.world, index = this.gameScene.levelIndex;
+    const tut = getTutorial(world, index);
+    if (tut) {
+      // teach the mechanic first (game paused), then let the story beat play
+      this._tutorial(tut, () => this._storyBeat(getStoryBeat(world, index), 300));
+    } else {
+      this._introCard(lvl, worldName);
+      this._storyBeat(getStoryBeat(world, index));
+    }
 
     // Danger vignette: pulses red as the corruption wall closes on the player
     if (this.textures.exists('vignette')) {
@@ -151,6 +159,35 @@ export class UIScene extends Phaser.Scene {
     } });
     this.tweens.add({ targets: line, width: 160, duration: 380, ease: 'Cubic.out' });
     this.tweens.add({ targets: parts, alpha: 0, delay: 950, duration: 420, onComplete: () => { jit.remove(); parts.forEach((o) => o.destroy()); } });
+  }
+
+  // Tutorial pop-ups — pause the game and step through mechanic cards before the action starts.
+  _tutorial(steps, onDone) {
+    this.scene.pause('GameScene');
+    const cx = CONFIG.WIDTH / 2, cy = CONFIG.HEIGHT / 2;
+    let i = 0, objs = [];
+    const clear = () => { objs.forEach((o) => o.destroy()); objs = []; };
+    const finish = () => {
+      clear();
+      this.input.off('pointerdown', advance);
+      this.input.keyboard.off('keydown', advance);
+      this.scene.resume('GameScene');
+      onDone?.();
+    };
+    const show = () => {
+      clear();
+      if (i >= steps.length) { finish(); return; }
+      const s = steps[i];
+      objs.push(this.add.rectangle(cx, cy, CONFIG.WIDTH, CONFIG.HEIGHT, 0x010407, 0.55).setDepth(69));
+      objs.push(neonPanel(this, cx, cy, 392, 156).setDepth(70));
+      objs.push(this.add.text(cx, cy - 46, s.title, { ...FONT, fontSize: '18px', color: '#2affff' }).setOrigin(0.5).setDepth(71));
+      objs.push(this.add.text(cx, cy - 4, s.body, { ...FONT, fontSize: '12px', color: '#cfeaf0', align: 'center', wordWrap: { width: 348 }, lineSpacing: 5 }).setOrigin(0.5).setDepth(71));
+      objs.push(this.add.text(cx, cy + 58, `TAP / SPACE TO CONTINUE   (${i + 1}/${steps.length})`, { ...FONT, fontSize: '10px', color: '#6f9aa3' }).setOrigin(0.5).setDepth(71));
+    };
+    const advance = () => { i++; show(); };
+    this.input.on('pointerdown', advance);
+    this.input.keyboard.on('keydown', advance);
+    show();
   }
 
   // Story beat — terminal-style lines type out top-left (SIM vs corruption VOICE), then fade.
