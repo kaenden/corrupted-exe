@@ -110,9 +110,12 @@ export const LEVELS_ALPHA = [
 
   // ── CHAPTER 3 (lime) ── visual lies + gravity
   // 11 — INVERSE: a spiky-LOOKING bar that is actually the safe path over a real spike pit
-  lvl({ name: 'INVERSION', par: 1, hint: 'WHAT LOOKS DEADLY IS SAFE', exit: { x: 662, y: 300 },
-    platforms: [floor(0, 200), floor(540, 180)],
-    hazards: [{ x: 250, y: 330, type: 'inverse', w: 200 }, sr(300, 374), sr(348, 374), sr(396, 374), sr(444, 374)] }),
+  lvl({ name: 'INVERSION', par: 2, hint: 'WHAT LOOKS DEADLY IS SAFE', bounds: { width: 1280, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1230, y: 390 },
+    platforms: [floor(0, 200), floor(560, 200), floor(1040, 240)],
+    hazards: [
+      { x: 230, y: 336, type: 'inverse', w: 300 }, sr(270, 374), sr(320, 374), sr(370, 374), sr(420, 374), sr(470, 374),
+      { x: 790, y: 336, type: 'inverse', w: 210 }, sr(820, 374), sr(870, 374), sr(920, 374), sr(970, 374)] }),
   // 12 — TEXT_TRAP + FAKE + PORTAL (side-scroll): read the fake steps, cross the gap by the
   // gate (a "SAFE PATH" label floats over the pit as a tempting kill-decoy)
   lvl({ name: 'GASLIGHT', par: 2, hint: 'DO NOT TRUST THE LABEL', bounds: { width: 1120, height: 405 },
@@ -123,20 +126,24 @@ export const LEVELS_ALPHA = [
     hazards: [{ x: 540, y: 250, type: 'text_trap', message: 'SAFE PATH', w: 120, h: 22 }],
     portals: [{ a: { x: 400, y: 374 }, b: { x: 760, y: 374 } }] }),
   // 13 — GRAVITY_PULSE intro: float up the column, drift right onto the wide ledge
-  lvl({ name: 'UPSIDE', par: 2, hint: 'GRAVITY GLITCHED :: ↑ FLOAT', exit: { x: 624, y: 110 },
-    platforms: [floor(0, 320), plat(360, 110, 'solid', 320)],
-    hazards: [{ x: 470, y: 56, type: 'ceiling_trap', dropDistance: 50, armProximity: 60 }],
-    env: [{ type: 'gravity_pulse', zone: { x: 285, y: 60, w: 60, h: 340 }, arrowDir: 'up' }] }),
+  lvl({ name: 'UPSIDE', par: 2, hint: 'GRAVITY GLITCHED :: ↑ FLOAT', bounds: { width: 1200, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1150, y: 160 },
+    platforms: [floor(0, 380), plat(440, 160, 'solid', 720)],
+    hazards: [{ x: 760, y: 106, type: 'ceiling_trap', dropDistance: 52, armProximity: 64 }],
+    env: [{ type: 'gravity_pulse', zone: { x: 380, y: 60, w: 64, h: 340 }, arrowDir: 'up' }] }),
   // 14 — gravity to a two-tier landing
-  lvl({ name: 'FLOAT', par: 2, exit: { x: 650, y: 110 },
-    platforms: [floor(0, 300), plat(360, 186, 'solid', 130), plat(520, 110, 'solid', 200)],
-    hazards: [{ x: 600, y: 56, type: 'ceiling_trap', dropDistance: 50, armProximity: 60 }],
-    env: [{ type: 'gravity_pulse', zone: { x: 270, y: 60, w: 58, h: 340 }, arrowDir: 'up' }] }),
+  lvl({ name: 'FLOAT', par: 2, hint: 'GRAVITY GLITCHED :: ↑ FLOAT', bounds: { width: 1320, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1270, y: 200 },
+    platforms: [floor(0, 340), plat(400, 200, 'solid', 280), floor(760, 180), plat(1000, 200, 'solid', 320)],
+    hazards: [{ x: 540, y: 146, type: 'ceiling_trap', dropDistance: 50, armProximity: 60 }, sr(800, 374), sr(840, 374)],
+    env: [{ type: 'gravity_pulse', zone: { x: 340, y: 60, w: 56, h: 340 }, arrowDir: 'up' },
+      { type: 'gravity_pulse', zone: { x: 940, y: 60, w: 56, h: 340 }, arrowDir: 'up' }] }),
   // 15 — BOSS: invisible scroll wall (jump it) + a ceiling trap further on
-  lvl({ name: 'GLITCHWALL', par: 3, exit: { x: 670, y: 390 },
-    platforms: [floor()],
-    hazards: [{ x: 470, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 60 }],
-    env: [{ type: 'scroll_fake', wallX: 300, hint: 'INVALID COORDINATE — JUMP' }] }),
+  lvl({ name: 'GLITCHWALL', par: 3, hint: 'INVALID COORDINATE — JUMP', bounds: { width: 1320, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1270, y: 390 },
+    platforms: [floor(0, 1320)],
+    hazards: [{ x: 560, y: 70, type: 'ceiling_trap', dropDistance: 60, armProximity: 64 }, sr(840, 374), sr(880, 374), sr(920, 374)],
+    env: [{ type: 'scroll_fake', wallX: 330, hint: 'INVALID COORDINATE — JUMP' }, { type: 'scroll_fake', wallX: 1060 }] }),
 
   // ── CHAPTER 4 (amber) ── speed, portals, gauntlets
   // 16 — SHIFTING gauntlet (WIDE): ride moving platforms, a fake/real stack, then a hidden spike near the exit
