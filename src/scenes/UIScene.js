@@ -41,6 +41,10 @@ export class UIScene extends Phaser.Scene {
     this.add.rectangle(CONFIG.WIDTH - 122, 16, 110, 8, 0x000000).setOrigin(0, 0.5).setStrokeStyle(1, COLORS.cyanDim);
     this.progFill = this.add.rectangle(CONFIG.WIDTH - 121, 16, 0, 6, COLORS.cyan).setOrigin(0, 0.5);
 
+    // Backdoor-key wallet (top-right, under the progress bar)
+    this.keyHud = this.add.text(CONFIG.WIDTH - 12, 30, '', { ...FONT, fontSize: '12px', color: '#ffd24a' }).setOrigin(1, 0);
+    this.setKeys();
+
     this.hintText = this.add.text(CONFIG.WIDTH / 2, 60, '', { ...FONT, fontSize: '16px', color: '#ff66aa' })
       .setOrigin(0.5).setAlpha(0);
 
@@ -117,6 +121,7 @@ export class UIScene extends Phaser.Scene {
 
   setDeaths(n) { this.deathText.setText(`DEATHS: ${n}`); }
   setProgress(p) { this.progFill.width = 108 * p; }
+  setKeys() { this.keyHud?.setText(`🔑 ${GameState.data.backdoor.keys}`); }
 
   // Death feedback: snarky error code, softening to encouragement at 8+; paid-hint off-ramp at 10.
   onDeath(n) {

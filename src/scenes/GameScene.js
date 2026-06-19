@@ -100,6 +100,7 @@ export class GameScene extends Phaser.Scene {
       if (lvl.hint) ui?.showHint?.(lvl.hint);
       else if (this._pendingHints.length) ui?.showHint?.(this._pendingHints[0]);
     });
+    this.input.keyboard.on('keydown-ESC', () => this.scene.get('UIScene')?._togglePause());
 
     addScanlines(this);
     // ambient data-motes drifting up — subtle atmospheric depth
@@ -185,10 +186,15 @@ export class GameScene extends Phaser.Scene {
     this.player.playDeathFx(GameState.getEquipped('deathFx'));
     this.cameras.main.shake(CONFIG.CAMERA_SHAKE_DEATH.duration, CONFIG.CAMERA_SHAKE_DEATH.intensity);
     this.cameras.main.flash(130, 90, 0, 16);
+    // death stinger: a slow zoom-punch holds on the moment so the chosen death FX actually reads
+    const cam = this.cameras.main;
+    this._deathZoom = cam.zoom;
+    cam.zoomTo(cam.zoom * 1.18, 220, 'Quad.out');
     SoundSystem.play('sfx_death');
     AdSystem.gameplayStop();
 
     const respawn = () => {
+      this.cameras.main.zoomTo(this._deathZoom || CONFIG.RENDER_SCALE, 160, 'Quad.out');
       this.tricks.reset(this.player);
       this.player.respawn(this.levelData.spawnPoint.x, this.levelData.spawnPoint.y);
       this.player.sprite.body.enable = true;
@@ -297,6 +303,7 @@ export class GameScene extends Phaser.Scene {
       const gained = Math.round(this._keysThisLevel * mult);
       GameState.data.backdoor.keys += gained;
       GameState.save();
+      this.scene.get('UIScene')?.setKeys?.();
       this._pickupFlash(`+${gained} BACKDOOR KEYS BANKED`, '#ffd24a');
     }
 

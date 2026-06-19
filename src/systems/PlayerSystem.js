@@ -35,8 +35,8 @@ export class PlayerSystem {
     // Iconic look: big rounded head + two stubby legs + eyes. Smooth (texture-based, not blocky).
     // Feet sit on the hull's bottom (y+10) so the character stands ON platforms, not below them.
     const HW = 26, HH = 20;
-    this.legL = this.scene.add.rectangle(x - 5, y + 6, 5, 9, this.color, 1).setDepth(4);
-    this.legR = this.scene.add.rectangle(x + 5, y + 6, 5, 9, this.color, 1).setDepth(4);
+    this.legL = this.scene.add.rectangle(x - 5, y + 6, 5, 7, this.color, 1).setDepth(4);
+    this.legR = this.scene.add.rectangle(x + 5, y + 6, 5, 7, this.color, 1).setDepth(4);
     this.headFill = this.scene.add.image(x, y, 'p_head').setDisplaySize(HW, HH).setTint(this.color).setAlpha(1).setDepth(5);
     this.eyeL = this.scene.add.ellipse(x - 5, y - 1, 5.5, 7.5, 0x05121a, 1).setDepth(7);
     this.eyeR = this.scene.add.ellipse(x + 5, y - 1, 5.5, 7.5, 0x05121a, 1).setDepth(7);
@@ -55,7 +55,10 @@ export class PlayerSystem {
     this._skinAlpha = skin.alpha ?? 1;
     this._skinAnim = skin.anim || null;
     this.headFill?.setTint(this.color);
-    if (this.legL) { this.legL.fillColor = this.color; this.legR.fillColor = this.color; }
+    if (this.legL) {
+      this.legL.fillColor = this.color; this.legR.fillColor = this.color;
+      this.legL.setAlpha(this._skinAlpha); this.legR.setAlpha(this._skinAlpha);
+    }
 
     this.trail?.destroy(); this.trail = null;
     const tr = COSMETICS.trails[equipped.trail];   // each trail carries its own colour + motion
@@ -150,9 +153,9 @@ export class PlayerSystem {
       obj.scaleX = (obj._dsx ?? 1) * s.scaleX * bs;
       obj.scaleY = (obj._dsy ?? 1) * s.scaleY * bs;
     };
-    // legs: centered at +5.5 (9 tall → feet at +10 = hull bottom = platform contact)
-    place(this.legL, -5, 5.5 + wob);
-    place(this.legR, 5, 5.5 - wob);
+    // legs sit clearly BELOW the head (top ~+3) so they never show through a translucent body
+    place(this.legL, -5, 6.5 + wob);
+    place(this.legR, 5, 6.5 - wob);
     place(this.headFill, 0, -9);   // head bottom at +1, sits just above the legs
     const ew = scared ? 1.3 : 1;
     place(this.eyeL, -5, -10, ew);

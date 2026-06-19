@@ -202,6 +202,7 @@ export class EscapeScene extends Phaser.Scene {
     this.scoreText = this.add.text(0, 0, '0 m', { ...TXT, fontSize: '20px' }).setOrigin(0.5, 0).setDepth(50);
     this.bankText = this.add.text(0, 0, 'BANKED 0', { ...TXT, fontSize: '11px', color: '#00ff88' }).setOrigin(0.5, 0).setDepth(50);
     this.bestText = this.add.text(0, 0, `BEST ${GameState.data.backdoor.highScore} m`, { ...TXT, fontSize: '11px', color: '#ffe27a' }).setOrigin(0, 0).setDepth(50);
+    this.keyHud = this.add.text(0, 0, `🔑 ${GameState.data.backdoor.keys}`, { ...TXT, fontSize: '12px', color: '#ffd24a' }).setOrigin(1, 0).setDepth(50);
     this._mobile = (this.sys.game.device.input.touch || navigator.maxTouchPoints > 0) ? this._touch() : null;
   }
 
@@ -209,6 +210,7 @@ export class EscapeScene extends Phaser.Scene {
     this.scoreText.setPosition(v.centerX, v.y + 12);
     this.bankText.setPosition(v.centerX, v.y + 38);
     this.bestText.setPosition(v.x + 30, v.y + 10);
+    this.keyHud.setPosition(v.right - 14, v.y + 10);
   }
 
   // region-based touch: left half = run right (held), right half = jump. Same coord space as UIScene.

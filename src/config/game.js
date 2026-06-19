@@ -29,7 +29,7 @@ export const CONFIG = {
 
   // Death
   DEATH_FREEZE_MS: 400,       // freeze frame on death
-  RESPAWN_DELAY_MS: 600,      // total delay from death to respawn
+  RESPAWN_DELAY_MS: 880,      // total delay from death to respawn (lets the death FX play out)
 
   // Economy
   SHARD_PER_DEATH: 2,         // shards accrued per death this run (paid on complete; doubled by 2× ad)

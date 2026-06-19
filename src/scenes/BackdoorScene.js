@@ -25,11 +25,9 @@ export class BackdoorScene extends Phaser.Scene {
     backButton(this, () => this.scene.start('MenuScene'));
     const cx = CONFIG.WIDTH / 2;
 
-    this.add.text(cx, 24, 'BACKDOOR', { ...FONT, fontSize: '24px', color: '#ffd24a' }).setOrigin(0.5);
-    this.add.text(cx, 48, 'escape clean to bank keys — spend them to outrun the corruption', { ...FONT, fontSize: '10px', color: '#9a8a4a' }).setOrigin(0.5);
-    this.keyText = this.add.text(cx, 74, '', { ...FONT, fontSize: '14px', color: '#ffe27a' }).setOrigin(0.5);
-
-    menuButton(this, cx, 112, '∞  ESCAPE  (ENDLESS)', () => this.scene.start('EscapeScene'), { size: '18px', accent: 0x2affff, color: '#bdf6ff' });
+    this.add.text(cx, 30, 'UPGRADES', { ...FONT, fontSize: '24px', color: '#ff7ab8' }).setOrigin(0.5);
+    this.add.text(cx, 54, 'permanent boosts — apply to the WHOLE game (campaign + escape)', { ...FONT, fontSize: '10px', color: '#9a6a82' }).setOrigin(0.5);
+    this.keyText = this.add.text(cx, 82, '', { ...FONT, fontSize: '14px', color: '#ffe27a' }).setOrigin(0.5);
 
     this.rows = this.add.container(0, 0);
     this._refresh();

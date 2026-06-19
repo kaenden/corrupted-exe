@@ -45,10 +45,11 @@ export class MenuScene extends Phaser.Scene {
     this.tweens.add({ targets: [this.title, this.sub], alpha: 1, duration: 520, delay: REVEAL });
     this._scheduleGlitch();
 
-    this._menuBtn(206, 'CAMPAIGN', () => this._go(), 0x00ff88, REVEAL + 0);
-    this._menuBtn(250, 'ESCAPE', () => this.scene.start('BackdoorScene'), 0x2affff, REVEAL + 90);
-    this._menuBtn(294, 'SHOP', () => this.scene.start('ShopScene'), 0xffd24a, REVEAL + 180);
-    this._menuBtn(338, 'SETTINGS', () => this.scene.start('SettingsScene'), 0x9b8aff, REVEAL + 270);
+    this._menuBtn(192, 'CAMPAIGN', () => this._go(), 0x00ff88, REVEAL + 0);
+    this._menuBtn(230, 'ESCAPE', () => this.scene.start('EscapeScene'), 0x2affff, REVEAL + 70);
+    this._menuBtn(268, 'UPGRADES', () => this.scene.start('BackdoorScene'), 0xff5a9e, REVEAL + 140);
+    this._menuBtn(306, 'SHOP', () => this.scene.start('ShopScene'), 0xffd24a, REVEAL + 210);
+    this._menuBtn(344, 'SETTINGS', () => this.scene.start('SettingsScene'), 0x9b8aff, REVEAL + 280);
 
     this.add.text(CONFIG.WIDTH - 8, CONFIG.HEIGHT - 6, 'v0.1', { fontFamily: FONT, fontSize: '10px', color: '#2a4a52' }).setOrigin(1, 1);
     addScanlines(this);
@@ -112,8 +113,8 @@ export class MenuScene extends Phaser.Scene {
   // Mascot — big-head character with emoji-like expressions (squint, smile, blink) + glitch.
   _buildMascot(cx, y) {
     const C = 0xffa81a, HW = 58, HH = 52;
-    const legL = this.add.rectangle(cx - 10, y + 25, 9, 13, C, 1);
-    const legR = this.add.rectangle(cx + 10, y + 25, 9, 13, C, 1);
+    const legL = this.add.rectangle(cx - 10, y + 33, 9, 13, C, 1);
+    const legR = this.add.rectangle(cx + 10, y + 33, 9, 13, C, 1);
     const head = this.add.image(cx, y, 'p_head').setDisplaySize(HW, HH).setTint(C).setAlpha(1);
     const eyeL = this.add.ellipse(cx - 10, y - 3, 11, 14, 0x05121a, 1);
     const eyeR = this.add.ellipse(cx + 10, y - 3, 11, 14, 0x05121a, 1);
