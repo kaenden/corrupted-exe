@@ -40,9 +40,12 @@ export const CONFIG = {
   DEATH_FREEZE_MS: 400,       // freeze frame on death
   RESPAWN_DELAY_MS: 880,      // total delay from death to respawn (lets the death FX play out)
 
-  // Economy
-  SHARD_PER_DEATH: 2,         // shards accrued per death this run (paid on complete; doubled by 2× ad)
-  SHARD_PER_STAR: { 1: 80, 2: 150, 3: 250 },
+  // Economy — calibrated to the shop (~5100 shards of items). A clean 3★ run of the whole 60-level
+  // campaign (×2 with the bonus claim) roughly funds the shop; without the bonus it funds ~half, so
+  // cosmetics are a real goal, not unlocked in 2-3 levels. Star shards pay only the IMPROVEMENT
+  // difference (no replay farm), so 3★ (skill) is rewarded over scraping 1★.
+  SHARD_PER_DEATH: 1,         // small pity shard per death this run (paid on complete; doubled by 2× ad)
+  SHARD_PER_STAR: { 1: 12, 2: 25, 3: 45 },
   SHARD_2X_AD: true,
 
   // Stars — per-level death PAR (level.parDeaths). 3★: <=par · 2★: <=par+margin · else 1★.
@@ -51,7 +54,7 @@ export const CONFIG = {
   // Onboarding / fairness off-ramp
   HINT_ON_FIRST_TRICK: true,
   HINT_PURCHASE_AFTER_DEATHS: 10,
-  HINT_PURCHASE_COST: 50,
+  HINT_PURCHASE_COST: 25,     // help-when-stuck off-ramp — kept cheap vs the leaner economy
   MOCKERY_SOFTEN_AFTER: 8,
 
   // World layout (single source of truth)

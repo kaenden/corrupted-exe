@@ -252,16 +252,17 @@ export class UIScene extends Phaser.Scene {
   }
 
   // Level-complete overlay (§10.8). onReward() returns the rewarded-ad promise (watched bool).
-  showComplete(lvl, r, onContinue, onReward, unlock) {
+  showComplete(lvl, r, onContinue, onReward, unlock, newSkin) {
     const cx = CONFIG.WIDTH / 2, cy = CONFIG.HEIGHT / 2;
     const panel = this.add.container(0, 0).setDepth(50);
     panel.add(card(this, cx, cy, 360, 280, { accent: COLORS.green, active: true }));
-    if (unlock) {
-      const txt = unlock === 'airDash' ? '★ AIR DASH UNLOCKED — jump again mid-air' : '★ GHOST STEP UNLOCKED — SHIFT / phase to pass hazards';
-      const t = this.add.text(cx, cy - 122, txt, { ...FONT, fontSize: '11px', color: '#ffd24a' }).setOrigin(0.5).setDepth(52);
+    const toast = (txt, y) => {
+      const t = this.add.text(cx, y, txt, { ...FONT, fontSize: '11px', color: '#ffd24a' }).setOrigin(0.5).setDepth(52);
       this.tweens.add({ targets: t, alpha: 0.4, duration: 500, yoyo: true, repeat: -1 });
       panel.add(t);
-    }
+    };
+    if (unlock) toast(unlock === 'airDash' ? '★ AIR DASH UNLOCKED — jump again mid-air' : '★ GHOST STEP UNLOCKED — SHIFT / phase to pass hazards', cy - 122);
+    if (newSkin) toast(`★ ${newSkin} SKIN UNLOCKED — deathless clear!`, unlock ? cy - 138 : cy - 122);
     panel.add(this.add.text(cx, cy - 100, 'PROCESS_TERMINATED', { ...FONT, fontSize: '12px', color: '#5b8a93' }).setOrigin(0.5));
     panel.add(this.add.text(cx, cy - 80, `${lvl.code} — CLEARED`, { ...FONT, fontSize: '16px', color: '#00ff88' }).setOrigin(0.5));
 

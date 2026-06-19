@@ -86,6 +86,13 @@ export const GameState = {
     this.data.stats.totalLevelsCleared += 1;
     this.sessionLevelCount += 1;
 
+    // Deathless ALPHA clear → unlock the PRISM skin (one-time achievement). `newSkin` (transient)
+    // lets the complete screen toast it.
+    if (world === 'alpha' && deaths === 0 && !this.data.ownedItems.includes('skin_glitch')) {
+      this.unlockItem('skin_glitch');
+      this.newSkin = 'PRISM';
+    }
+
     this.checkWorldUnlock();
     this.checkAbilityUnlocks();
     this.save();

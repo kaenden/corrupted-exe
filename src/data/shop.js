@@ -6,10 +6,10 @@ export const SHOP = {
     items: [
       { id: 'skin_default', name: 'AMBER',   cost: 0,   unlock: 'always',      desc: 'Standard amber core' },
       { id: 'skin_gold',    name: 'SOLAR',    cost: 300, unlock: 'purchase',    desc: 'Molten gold plating' },
-      { id: 'skin_glitch',  name: 'PRISM',    cost: 650, unlock: 'purchase',    desc: 'Shifts through every colour' },
+      { id: 'skin_glitch',  name: 'PRISM',    cost: 0,   unlock: 'achievement', desc: 'Shifts through every colour', hint: 'Clear an ALPHA level deathless' },
       { id: 'skin_red',     name: 'EMBER',    cost: 400, unlock: 'purchase',    desc: 'Burning orange-red shell' },
       { id: 'skin_ghost',   name: 'PHANTOM',  cost: 800, unlock: 'purchase',    desc: 'Half-rendered, translucent' },
-      { id: 'skin_void',    name: 'VOID',     cost: 0,   unlock: 'achievement', desc: 'Violet void core', hint: 'Clear an ALPHA level deathless' },
+      { id: 'skin_void',    name: 'VOID',     cost: 650, unlock: 'purchase',    desc: 'Violet void core' },
     ],
   },
   deathFx: {
