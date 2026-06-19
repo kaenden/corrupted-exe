@@ -49,8 +49,50 @@ export function textButton(scene, x, y, label, cb, opts = {}) {
   return t;
 }
 
+// Minimal Q-style text button: clean label, hover glow + scale + accent underline + ▸◂ marks.
+// Standalone-text input (reliable under the zoomed camera). Returns the Text object.
+export function menuButton(scene, x, y, label, cb, opts = {}) {
+  const accent = opts.accent ?? COLORS.cyan;
+  const accentHex = '#' + accent.toString(16).padStart(6, '0');
+  const base = opts.color || '#84c4d0';
+  const sz = opts.size || '20px';
+  const t = scene.add.text(x, y, label, { fontFamily: FONT, fontSize: sz, color: base, resolution: RES }).setOrigin(0.5);
+  const line = scene.add.rectangle(x, y + parseInt(sz, 10) * 0.62 + 5, 0, 2, accent, 0).setOrigin(0.5);
+  const mkL = scene.add.text(x, y, '▸', { fontFamily: FONT, fontSize: '14px', color: accentHex, resolution: RES }).setOrigin(0.5).setAlpha(0);
+  const mkR = scene.add.text(x, y, '◂', { fontFamily: FONT, fontSize: '14px', color: accentHex, resolution: RES }).setOrigin(0.5).setAlpha(0);
+  t.setInteractive({ useHandCursor: true });
+  t.on('pointerover', () => {
+    t.setColor('#ffffff'); const w = t.width;
+    mkL.setX(x - w / 2 - 18).setAlpha(1); mkR.setX(x + w / 2 + 18).setAlpha(1);
+    scene.tweens.add({ targets: t, scale: 1.1, duration: 130, ease: 'Quad.out' });
+    scene.tweens.add({ targets: line, width: w + 12, alpha: 0.95, duration: 180, ease: 'Cubic.out' });
+  });
+  t.on('pointerout', () => {
+    t.setColor(base); mkL.setAlpha(0); mkR.setAlpha(0);
+    scene.tweens.add({ targets: t, scale: 1, duration: 130 });
+    scene.tweens.add({ targets: line, width: 0, alpha: 0, duration: 160 });
+  });
+  t.on('pointerdown', () => t.setScale(1.04));
+  t.on('pointerup', () => { t.setScale(1.1); cb && cb(); });
+  if (opts.delay != null) { t.setAlpha(0); scene.tweens.add({ targets: t, alpha: 1, duration: 400, delay: opts.delay, ease: 'Cubic.out' }); }
+  return t;
+}
+
+// Dark-grey content card (thin accent frame) — separates panels from the backdrop.
+export function card(scene, cx, cy, w, h, opts = {}) {
+  const accent = opts.accent ?? COLORS.cyan;
+  const active = !!opts.active;
+  return scene.add.rectangle(cx, cy, w, h, 0x161d24, active ? 0.95 : 0.82)
+    .setStrokeStyle(active ? 2 : 1.5, accent, active ? 1 : 0.5);
+}
+
 export function backButton(scene, cb) {
-  return textButton(scene, 14, 22, '← BACK', cb, { size: '14px', originX: 0, originY: 0.5, padX: 10, padY: 5 });
+  const t = scene.add.text(16, 22, '‹ BACK', { fontFamily: FONT, fontSize: '14px', color: '#7fb8c2', resolution: RES })
+    .setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
+  t.on('pointerover', () => t.setColor('#ffffff'));
+  t.on('pointerout', () => t.setColor('#7fb8c2'));
+  t.on('pointerup', cb);
+  return t;
 }
 
 // Top-right shard badge with the crystal icon. Returns { text, icon, update }.

@@ -4,7 +4,7 @@ import { GameState } from '../state/GameState.js';
 import { SHOP, SHOP_TABS } from '../data/shop.js';
 import { COSMETICS } from '../data/cosmetics.js';
 import { SoundSystem } from '../systems/SoundSystem.js';
-import { backButton, shardBadge, hdCamera, FONT, TXT } from '../ui/widgets.js';
+import { backButton, shardBadge, hdCamera, card, FONT, TXT } from '../ui/widgets.js';
 
 // Minimal Q-style shop: clean thin cards, live previews (mini-robot skins, animated FX bursts,
 // real trail emitters), tap-to-equip/buy, accent-underline tabs.
@@ -74,8 +74,8 @@ export class ShopScene extends Phaser.Scene {
     const locked = item.unlock === 'achievement' && !owned;
     const accent = equipped ? COLORS.green : locked ? 0x3a4a52 : owned ? COLORS.cyan : (affordable ? 0xffd24a : 0x5a3a3a);
 
-    // minimal card: faint fill + thin frame (accent on active/owned)
-    this.grid.add(this.add.rectangle(x, y, w, h, 0x040b10, equipped ? 0.6 : 0.32).setStrokeStyle(equipped ? 2 : 1.5, accent, equipped ? 1 : 0.55));
+    // dark-grey card with a thin accent frame (brighter when active) — stands out from the backdrop
+    this.grid.add(card(this, x, y, w, h, { accent, active: equipped }));
 
     this._preview(slot, item, x, y - 30);
 

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
 import { getLevels, WORLD_META } from '../data/levels.js';
-import { textButton, backButton, shardBadge, panelRect, hdCamera, FONT } from '../ui/widgets.js';
+import { menuButton, backButton, shardBadge, card, hdCamera, FONT } from '../ui/widgets.js';
 
 export class WorldSelectScene extends Phaser.Scene {
   constructor() { super('WorldSelectScene'); }
@@ -21,7 +21,7 @@ export class WorldSelectScene extends Phaser.Scene {
   _card(world, cx, unlocked) {
     const meta = WORLD_META[world];
     const cy = 210;
-    panelRect(this, cx, cy, 280, 230, unlocked ? meta.accent : 0x444444).setAlpha(unlocked ? 1 : 0.85);
+    card(this, cx, cy, 280, 230, { accent: unlocked ? meta.accent : 0x444444, active: unlocked }).setAlpha(unlocked ? 1 : 0.9);
 
     const title = this.add.text(cx, cy - 80, meta.name, { fontFamily: FONT, fontSize: '22px', color: unlocked ? '#dffcff' : '#777' }).setOrigin(0.5);
     this.add.text(cx, cy - 52, meta.subtitle, { fontFamily: FONT, fontSize: '11px', color: '#5b8a93' }).setOrigin(0.5);
@@ -38,7 +38,7 @@ export class WorldSelectScene extends Phaser.Scene {
       this.add.text(cx, cy - 10, `${done} / ${total} complete`, { fontFamily: FONT, fontSize: '14px', color: '#9fd6df' }).setOrigin(0.5);
       this.add.image(cx - 18, cy + 16, 'icon_star').setDisplaySize(18, 18);
       this.add.text(cx - 2, cy + 16, `${stars}`, { fontFamily: FONT, fontSize: '16px', color: '#ffe27a' }).setOrigin(0, 0.5);
-      textButton(this, cx, cy + 75, '[ ENTER ]', () => this.scene.start('LevelSelectScene', { world }), { size: '18px', padX: 26 });
+      menuButton(this, cx, cy + 78, 'ENTER', () => this.scene.start('LevelSelectScene', { world }), { size: '18px', accent: meta.accent });
     } else {
       // static-noise look for locked world
       this.add.text(cx, cy - 6, '[ ACCESS DENIED ]', { fontFamily: FONT, fontSize: '13px', color: '#ff5566' }).setOrigin(0.5);
