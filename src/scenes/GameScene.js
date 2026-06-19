@@ -360,6 +360,27 @@ export class GameScene extends Phaser.Scene {
       .filter((o) => o && o.visible && o.alpha > 0 && (o.setTint ? true : ((o.strokeAlpha ?? 0) > 0.05 || (o.fillAlpha ?? 0) > 0.05)));
     this._consSnap = cons.map((o) => ({ o, a: o.alpha, sc: o.strokeColor, sa: o.strokeAlpha, sw: o.lineWidth, fc: o.fillColor, fa: o.fillAlpha, fil: o.isFilled }));
     cons.forEach((o) => { o._consumed = false; });
+    this._chaseWarning();
+  }
+
+  // Glitchy red "BREACH DETECTED" stinger while the wall is still parked (the chase delay).
+  _chaseWarning() {
+    const v = this.cameras.main.worldView;
+    const cx = v.centerX, cy = v.y + 92;
+    this.cameras.main.flash(220, 90, 0, 8);
+    const big = (color, a) => this.add.text(cx, cy, 'BREACH DETECTED', { fontFamily: 'monospace', fontSize: '28px', color, resolution: 3 }).setOrigin(0.5).setDepth(60).setAlpha(a);
+    const warn = this.add.text(cx, cy - 28, '⚠  W A R N I N G  ⚠', { fontFamily: 'monospace', fontSize: '16px', color: '#ff5a44', resolution: 3 }).setOrigin(0.5).setDepth(60);
+    const r = big('#ff2a55', 0.55), bl = big('#2affff', 0.55), main = big('#ff3344', 1);
+    const objs = [warn, r, bl, main];
+    const ev = this.time.addEvent({ delay: 55, loop: true, callback: () => {
+      const o = Phaser.Math.Between(-7, 7);
+      r.setX(cx - 4 + o); bl.setX(cx + 4 - o); main.setX(cx + Phaser.Math.Between(-2, 2));
+      warn.setAlpha(Phaser.Math.Between(0, 10) > 2 ? 1 : 0.3);
+    } });
+    this.time.delayedCall((this.chaseDelay || 1100) + 200, () => {
+      ev.remove();
+      this.tweens.add({ targets: objs, alpha: 0, duration: 280, onComplete: () => objs.forEach((o) => o.destroy()) });
+    });
   }
 
   _resetChase() {
