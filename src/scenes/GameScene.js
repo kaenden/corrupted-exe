@@ -77,7 +77,7 @@ export class GameScene extends Phaser.Scene {
     this.physics.add.overlap(this.player.sprite, this.tricks.fakes,
       (_pl, fake) => this.tricks.onFakeContact(fake));
     this.physics.add.overlap(this.player.sprite, this.tricks.hazards,
-      (_pl, hz) => { if (this.tricks.isLethal(hz)) this.die(); });
+      (_pl, hz) => { if (this.tricks.isLethal(hz) && !this.player.isGhosting()) this.die(); });
     this.physics.add.overlap(this.player.sprite, this.exit, () => this.complete());
     this._setupPickups(lvl);
     // BACKDOOR upgrades that work in EVERY level (corruption is the through-line)
@@ -134,11 +134,11 @@ export class GameScene extends Phaser.Scene {
   update(time, delta) {
     const ui = this.scene.get('UIScene');
     if (this.dying || this.finished || !this.player?.sprite) {
-      if (ui?.mobileInput) ui.mobileInput.jumpJustPressed = false; // drop stale latch
+      if (ui?.mobileInput) { ui.mobileInput.jumpJustPressed = false; ui.mobileInput.ghostJustPressed = false; }
       return;
     }
     this.player.update(time, ui?.mobileInput);
-    if (ui?.mobileInput) ui.mobileInput.jumpJustPressed = false; // consume after the player read it
+    if (ui?.mobileInput) { ui.mobileInput.jumpJustPressed = false; ui.mobileInput.ghostJustPressed = false; } // consume after the player read it
     this.tricks.update(time, this.player);
     this._updateChase(delta);
     this._updateAlarm();
@@ -308,10 +308,11 @@ export class GameScene extends Phaser.Scene {
     }
 
     const r = GameState.saveLevelResult(this.world, this.levelIndex, this.deathCount, this.runDeathShards, this.levelData.parDeaths);
+    const unlock = GameState.newUnlock; GameState.newUnlock = null; // ability earned by finishing the world
     console.log(`[LEVEL COMPLETE] ${this.levelData.code} stars=${r.stars} shardsEarned=${r.shardsEarned} deaths=${this.deathCount}`);
     this.scene.get('UIScene')?.showComplete?.(this.levelData, r, () => this.nextLevel(),
       // 2× rewarded: re-credit completion shards, only if the ad actually finished. Returns watched bool.
-      () => AdSystem.showRewarded(() => { GameState.addShards(r.shardsEarned); this.adShownThisLevel = true; }));
+      () => AdSystem.showRewarded(() => { GameState.addShards(r.shardsEarned); this.adShownThisLevel = true; }), unlock);
   }
 
   nextLevel() {

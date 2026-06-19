@@ -17,7 +17,7 @@ export class UIScene extends Phaser.Scene {
 
   init(data) {
     this.gameScene = data.gameScene;
-    this.mobileInput = { left: false, right: false, jump: false, jumpJustPressed: false };
+    this.mobileInput = { left: false, right: false, jump: false, jumpJustPressed: false, ghostJustPressed: false };
   }
 
   create() {
@@ -89,6 +89,14 @@ export class UIScene extends Phaser.Scene {
     const jbtn = this.add.circle(jbx, jby, 40, 0x0a2a33, 0.3).setStrokeStyle(2, 0x2affff, 0.5).setDepth(30);
     this.add.text(jbx, jby, 'JUMP', { ...FONT, fontSize: '13px' }).setOrigin(0.5).setDepth(31);
 
+    // PHASE button (GHOST STEP) above jump — only once unlocked
+    if (GameState.data.unlocks?.ghostStep) {
+      const gx = CONFIG.WIDTH - 70, gy = CONFIG.HEIGHT - 144;
+      this.add.circle(gx, gy, 30, 0x1a0e2e, 0.32).setStrokeStyle(2, 0xbd8aff, 0.6).setDepth(30);
+      this.add.text(gx, gy, 'PHASE', { ...FONT, fontSize: '11px', color: '#d6c2ff' }).setOrigin(0.5).setDepth(31);
+      this._ghostBtn = { gx, gy, r: 34 };
+    }
+
     // Left bottom = joystick, right bottom = jump. Tracked by pointer id for multi-touch.
     this._joyId = -1; this._jumpId = -1;
     const moveThumb = (x) => {
@@ -99,6 +107,9 @@ export class UIScene extends Phaser.Scene {
     };
     this.input.on('pointerdown', (p) => {
       if (this.scene.isPaused('GameScene') || p.y < CONFIG.HEIGHT * 0.4) return; // ignore HUD/top
+      if (this._ghostBtn && Phaser.Math.Distance.Between(p.x, p.y, this._ghostBtn.gx, this._ghostBtn.gy) < this._ghostBtn.r) {
+        this.mobileInput.ghostJustPressed = true; return;
+      }
       if (p.x >= CONFIG.WIDTH * 0.5) {
         this._jumpId = p.id;
         this.mobileInput.jump = true; this.mobileInput.jumpJustPressed = true;
@@ -241,10 +252,16 @@ export class UIScene extends Phaser.Scene {
   }
 
   // Level-complete overlay (§10.8). onReward() returns the rewarded-ad promise (watched bool).
-  showComplete(lvl, r, onContinue, onReward) {
+  showComplete(lvl, r, onContinue, onReward, unlock) {
     const cx = CONFIG.WIDTH / 2, cy = CONFIG.HEIGHT / 2;
     const panel = this.add.container(0, 0).setDepth(50);
     panel.add(card(this, cx, cy, 360, 280, { accent: COLORS.green, active: true }));
+    if (unlock) {
+      const txt = unlock === 'airDash' ? '★ AIR DASH UNLOCKED — jump again mid-air' : '★ GHOST STEP UNLOCKED — SHIFT / phase to pass hazards';
+      const t = this.add.text(cx, cy - 122, txt, { ...FONT, fontSize: '11px', color: '#ffd24a' }).setOrigin(0.5).setDepth(52);
+      this.tweens.add({ targets: t, alpha: 0.4, duration: 500, yoyo: true, repeat: -1 });
+      panel.add(t);
+    }
     panel.add(this.add.text(cx, cy - 100, 'PROCESS_TERMINATED', { ...FONT, fontSize: '12px', color: '#5b8a93' }).setOrigin(0.5));
     panel.add(this.add.text(cx, cy - 80, `${lvl.code} — CLEARED`, { ...FONT, fontSize: '16px', color: '#00ff88' }).setOrigin(0.5));
 

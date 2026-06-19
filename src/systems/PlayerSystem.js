@@ -27,7 +27,13 @@ export class PlayerSystem {
     const up = GameState.data.backdoor?.upgrades || {};   // upgrades apply in ALL levels
     this._speed = CONFIG.PLAYER_SPEED * (1 + 0.07 * (up.speed || 0));
     this._jumpV = CONFIG.PLAYER_JUMP_VELOCITY * (1 + 0.05 * (up.jump || 0));
-    s.body.setMaxVelocity(this._speed, CONFIG.PLAYER_MAX_FALL);
+    // permanent abilities (earned by clearing worlds)
+    this._airDash = !!GameState.data.unlocks?.airDash;
+    this._ghost = !!GameState.data.unlocks?.ghostStep;
+    this._dashSpeed = this._speed * 2.3;
+    this._facing = 1; this._airDashAvail = false; this._dashUntil = 0; this._dashWasOn = false;
+    this._ghostUntil = 0; this._ghostCD = 0;
+    s.body.setMaxVelocity(this._airDash ? this._dashSpeed : this._speed, CONFIG.PLAYER_MAX_FALL);
     this.sprite = s;
     this.color = 0xffb43b;
     this._skinAlpha = 1;
@@ -45,7 +51,7 @@ export class PlayerSystem {
     this._glitchAt = 0; this._glitchGap = 800;
 
     const k = this.scene.input.keyboard;
-    this.keys = k.addKeys({ left: 'LEFT', right: 'RIGHT', a: 'A', d: 'D', up: 'UP', w: 'W', space: 'SPACE' });
+    this.keys = k.addKeys({ left: 'LEFT', right: 'RIGHT', a: 'A', d: 'D', up: 'UP', w: 'W', space: 'SPACE', shift: 'SHIFT', x: 'X' });
     return s;
   }
 
@@ -78,27 +84,50 @@ export class PlayerSystem {
     const k = this.keys, mi = mobileInput || {};
     const b = s.body;
 
+    this._now = time;
     const left = k.left.isDown || k.a.isDown || mi.left;
     const right = k.right.isDown || k.d.isDown || mi.right;
+    if (left && !right) this._facing = -1; else if (right && !left) this._facing = 1;
     const jumpDown = Phaser.Input.Keyboard.JustDown(k.up) || Phaser.Input.Keyboard.JustDown(k.w)
       || Phaser.Input.Keyboard.JustDown(k.space) || mi.jumpJustPressed;
-
-    if (left && !right) b.setVelocityX(-this._speed);
-    else if (right && !left) b.setVelocityX(this._speed);
-    else b.setVelocityX(0);
-
     const onFloor = b.blocked.down || b.touching.down;
-    if (onFloor) this._lastGroundTime = time;
-    if (jumpDown) this._jumpQueuedAt = time;
+    if (onFloor) { this._lastGroundTime = time; this._airDashAvail = true; }
+    const coyote = CONFIG.COYOTE_TIME + (CONFIG.IS_MOBILE ? 55 : 0);
 
-    const coyote = CONFIG.COYOTE_TIME + (CONFIG.IS_MOBILE ? 55 : 0); // touch gets a longer edge-jump grace
-    if (time - this._jumpQueuedAt <= CONFIG.JUMP_BUFFER && time - this._lastGroundTime <= coyote) {
-      b.setVelocityY(this._jumpV);
-      this._jumpQueuedAt = -9999;
-      this._lastGroundTime = -9999;
-      SoundSystem.play('sfx_jump');
-      s.scaleX = 0.8; s.scaleY = 1.25;          // launch stretch
-      this._puff(s.x, s.y + 10, 5, this.color, { min: 200, max: 340 });
+    // GHOST STEP — brief pass-through-hazards on a cooldown
+    if (this._ghost) {
+      const gd = Phaser.Input.Keyboard.JustDown(k.shift) || Phaser.Input.Keyboard.JustDown(k.x) || mi.ghostJustPressed;
+      if (gd && time > this._ghostCD) { this._ghostUntil = time + 450; this._ghostCD = time + 3500; this._ghostFx(); SoundSystem.play('sfx_portal'); }
+    }
+
+    const dashing = this._dashUntil > time;
+    if (this._dashWasOn && !dashing) { b.setAllowGravity(true); this._dashWasOn = false; }
+    if (dashing) {
+      this._dashWasOn = true;
+      b.setAllowGravity(false);
+      b.setVelocity(this._dashDir * this._dashSpeed, 0);
+    } else {
+      if (left && !right) b.setVelocityX(-this._speed);
+      else if (right && !left) b.setVelocityX(this._speed);
+      else b.setVelocityX(0);
+
+      if (jumpDown) {
+        if (this._airDash && !onFloor && this._airDashAvail && (time - this._lastGroundTime > coyote)) {
+          this._dashUntil = time + 165;                  // AIR DASH
+          this._dashDir = right ? 1 : left ? -1 : this._facing;
+          this._airDashAvail = false;
+          this._dashFx();
+          SoundSystem.play('sfx_jump');
+        } else { this._jumpQueuedAt = time; }
+      }
+      if (time - this._jumpQueuedAt <= CONFIG.JUMP_BUFFER && time - this._lastGroundTime <= coyote) {
+        b.setVelocityY(this._jumpV);
+        this._jumpQueuedAt = -9999;
+        this._lastGroundTime = -9999;
+        SoundSystem.play('sfx_jump');
+        s.scaleX = 0.8; s.scaleY = 1.25;
+        this._puff(s.x, s.y + 10, 5, this.color, { min: 200, max: 340 });
+      }
     }
 
     // squash & stretch: stretch in the air, snappy squash on landing
@@ -160,6 +189,30 @@ export class PlayerSystem {
     const ew = scared ? 1.3 : 1;
     place(this.eyeL, -5, -10, ew);
     place(this.eyeR, 5, -10, ew);
+    // GHOST STEP — flicker translucent while phasing through hazards
+    if (this._ghostUntil > time) {
+      const f = (Math.floor(time / 55) % 2) ? 0.35 : 0.7;
+      this.headFill.setAlpha(f); this.legL.setAlpha(f); this.legR.setAlpha(f);
+    }
+  }
+
+  isGhosting() { return this._ghostUntil > (this.scene.time.now || this._now || 0); }
+
+  _dashFx() {
+    const s = this.sprite;
+    s.scaleX = 1.45; s.scaleY = 0.68;   // horizontal stretch
+    const em = this.scene.add.particles(s.x, s.y, 'particle_spark', {
+      lifespan: 320, speedX: { min: -this._dashDir * 50, max: -this._dashDir * 190 }, speedY: { min: -25, max: 25 },
+      scale: { start: 0.6, end: 0 }, alpha: { start: 0.7, end: 0 }, tint: this.color, blendMode: 'ADD', quantity: 12, emitting: false,
+    }).setDepth(4);
+    em.explode(12);
+    this.scene.time.delayedCall(360, () => em.destroy());
+  }
+
+  _ghostFx() {
+    const s = this.sprite;
+    const ring = this.scene.add.circle(s.x, s.y, 14, 0x000000, 0).setStrokeStyle(2.5, 0xbdf6ff, 1).setDepth(6).setScale(0.4);
+    this.scene.tweens.add({ targets: ring, scale: 2.2, alpha: 0, duration: 420, ease: 'Cubic.out', onComplete: () => ring.destroy() });
   }
 
   _puff(x, y, n, tint, angle, wide) {
@@ -202,6 +255,7 @@ export class PlayerSystem {
     s.setVisible(true);
     this.faceParts?.forEach((p) => p.setVisible(true));
     s.body.setVelocity(0, 0);
+    s.body.setAllowGravity(true);
     s.setRotation(0);
     s.setScale(1);
     s.setPosition(x, y);
@@ -209,5 +263,7 @@ export class PlayerSystem {
     this._jumpQueuedAt = -9999;
     this._wasAir = false;
     this._fallVy = 0;
+    this._dashUntil = 0; this._dashWasOn = false; this._airDashAvail = false; this._ghostUntil = 0;
+    this.headFill?.setAlpha(this._skinAlpha); this.legL?.setAlpha(this._skinAlpha); this.legR?.setAlpha(this._skinAlpha);
   }
 }

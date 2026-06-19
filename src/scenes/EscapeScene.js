@@ -166,7 +166,7 @@ export class EscapeScene extends Phaser.Scene {
 
     // hazard overlap
     for (const s of this.hazards) {
-      if (this.physics.overlap(this.player.sprite, s)) { this._die(); break; }
+      if (this.physics.overlap(this.player.sprite, s) && !this.player.isGhosting()) { this._die(); break; }
     }
     // gate overlap → bank
     for (const g of this.gates) {

@@ -18,6 +18,8 @@ export const GameState = {
     stats: { totalDeaths: 0, totalLevelsCleared: 0, totalShardEarned: 0 },
     // ESCAPE — BACKDOOR KEYS meta (earned by clean clears) + permanent upgrades
     backdoor: { keys: 0, highScore: 0, upgrades: { speed: 0, jump: 0, slow: 0, bug: 0, platform: 0, alarm: 0, shield: 0, keymult: 0 } },
+    // permanent abilities earned by clearing a world (AIR DASH = alpha, GHOST STEP = beta)
+    unlocks: { airDash: false, ghostStep: false },
   },
 
   data: null,
@@ -85,6 +87,7 @@ export const GameState = {
     this.sessionLevelCount += 1;
 
     this.checkWorldUnlock();
+    this.checkAbilityUnlocks();
     this.save();
 
     return { stars, improved, starShards, deathShards: runDeathShards, shardsEarned: earned };
@@ -95,6 +98,15 @@ export const GameState = {
     this.data.totalShards += amount;
     this.data.stats.totalShardEarned += amount;
     this.save();
+  },
+
+  // AIR DASH unlocks on clearing all of SIM_ALPHA, GHOST STEP on all of SIM_BETA.
+  // Sets `newUnlock` (transient) so the clearing level can show a toast.
+  checkAbilityUnlocks() {
+    const allDone = (world) => Array.from({ length: CONFIG.LEVELS_PER_WORLD }, (_, i) =>
+      this.data.levelProgress[this.getLevelKey(world, i)]?.stars > 0).every(Boolean);
+    if (!this.data.unlocks.airDash && allDone('alpha')) { this.data.unlocks.airDash = true; this.newUnlock = 'airDash'; }
+    if (!this.data.unlocks.ghostStep && allDone('beta')) { this.data.unlocks.ghostStep = true; this.newUnlock = 'ghostStep'; }
   },
 
   checkWorldUnlock() {
