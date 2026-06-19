@@ -14,7 +14,7 @@ export class ShopScene extends Phaser.Scene {
   create() {
     hdCamera(this);
     this.add.image(0, 0, 'bg_menu').setOrigin(0, 0).setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(-10);
-    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1.1, 1.2, 6); } catch (_) { /* no bloom */ }
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.7, 1.5, 4); } catch (_) { /* tighter spread, punchier glow */ }
     backButton(this, () => this.scene.start('MenuScene'));
     this.add.text(CONFIG.WIDTH / 2, 22, 'CUSTOMIZE', { ...TXT, fontSize: '18px' }).setOrigin(0.5);
     this.badge = shardBadge(this, CONFIG.WIDTH - 14, 22);

@@ -22,7 +22,7 @@ export class MenuScene extends Phaser.Scene {
     hdCamera(this);
     const cx = CONFIG.WIDTH / 2;
     this.add.image(0, 0, 'bg_menu').setOrigin(0, 0).setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(-10);
-    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1.1, 1.3, 8); } catch (_) { /* no bloom */ }
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.7, 1.6, 4); } catch (_) { /* tighter spread, punchier glow */ }
 
     // cinematic ambience: drifting data-motes + a periodic corruption sweep behind everything
     this.add.particles(0, 0, 'particle_spark', {

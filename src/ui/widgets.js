@@ -87,8 +87,8 @@ export function card(scene, cx, cy, w, h, opts = {}) {
   const r = scene.add.rectangle(cx, cy, w, h, baseFill, fillA).setStrokeStyle(baseW, accent, baseA);
   if (opts.onClick) {
     r.setInteractive({ useHandCursor: true });
-    r.on('pointerover', () => r.setStrokeStyle(2.5, accent, 1).setFillStyle(0x0b131a, 0.95));
-    r.on('pointerout', () => r.setStrokeStyle(baseW, accent, baseA).setFillStyle(baseFill, fillA));
+    r.on('pointerover', () => r.setStrokeStyle(2.5, accent, 1));   // only the frame glows; inside stays
+    r.on('pointerout', () => r.setStrokeStyle(baseW, accent, baseA));
     r.on('pointerup', () => opts.onClick());
   }
   return r;

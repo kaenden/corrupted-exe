@@ -57,8 +57,8 @@ export class LevelSelectScene extends Phaser.Scene {
     }
 
     box.setInteractive({ useHandCursor: true })
-      .on('pointerover', () => box.setStrokeStyle(2.5, accent, 1).setFillStyle(0x0b131a, 0.95))
-      .on('pointerout', () => box.setStrokeStyle(1.5, accent, 0.7).setFillStyle(0x05080b, 0.92))
+      .on('pointerover', () => box.setStrokeStyle(2.5, accent, 1))
+      .on('pointerout', () => box.setStrokeStyle(1.5, accent, 0.7))
       .on('pointerup', () => { this.scene.stop('UIScene'); this.scene.start('GameScene', { world: this.world, levelIndex: index }); });
   }
 }
