@@ -1,6 +1,5 @@
 import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
-import { GameState } from '../state/GameState.js';
 import { SoundSystem } from '../systems/SoundSystem.js';
 import { textButton, addScanlines, hdCamera, FONT } from '../ui/widgets.js';
 
@@ -23,6 +22,15 @@ export class MenuScene extends Phaser.Scene {
     hdCamera(this);
     const cx = CONFIG.WIDTH / 2;
     this.add.image(0, 0, 'bg_menu').setOrigin(0, 0).setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(-10);
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 1.1, 1.3, 8); } catch (_) { /* no bloom */ }
+
+    // cinematic ambience: drifting data-motes + a periodic corruption sweep behind everything
+    this.add.particles(0, 0, 'particle_spark', {
+      x: { min: 0, max: CONFIG.WIDTH }, y: { min: 0, max: CONFIG.HEIGHT }, lifespan: 4200,
+      speedY: { min: -14, max: -4 }, scale: { start: 0.14, end: 0 }, alpha: { start: 0.22, end: 0 },
+      frequency: 230, quantity: 1, tint: 0x2affff, blendMode: 'ADD',
+    }).setDepth(-7);
+    this._corruptionSweep(cx);
 
     // Scrolling terminal log (faded, top)
     this.log = this.add.text(16, CONFIG.HEIGHT, LOG_LINES.join('\n'), {
@@ -38,16 +46,11 @@ export class MenuScene extends Phaser.Scene {
     this.add.text(cx, 152, 'a simulation is lying to you', { fontFamily: FONT, fontSize: '12px', color: '#5b8a93', resolution: 3 }).setOrigin(0.5);
     this._scheduleGlitch();
 
-    // Main buttons
-    textButton(this, cx, 196, '▶  CAMPAIGN', () => this._go(), { size: '22px', padX: 28, padY: 11 });
-    textButton(this, cx, 244, '∞  ESCAPE', () => this.scene.start('BackdoorScene'), { size: '18px', color: '#2affff', bg: '#0e1f2a', padX: 18, padY: 8 });
-    textButton(this, cx - 58, 296, 'WORLDS', () => this.scene.start('WorldSelectScene'), { size: '14px' });
-    textButton(this, cx + 58, 296, 'SHOP', () => this.scene.start('ShopScene'), { size: '14px' });
-
-    // Audio toggles + settings gear (bottom)
-    this.sesBtn = textButton(this, cx - 70, 360, this._lbl('SOUND', 'soundEnabled'), () => this._toggle('soundEnabled', this.sesBtn, 'SOUND'), { size: '13px' });
-    this.muzBtn = textButton(this, cx, 360, this._lbl('MUSIC', 'musicEnabled'), () => this._toggle('musicEnabled', this.muzBtn, 'MUSIC'), { size: '13px' });
-    textButton(this, cx + 80, 360, '⚙', () => this.scene.start('SettingsScene'), { size: '16px', padX: 10 });
+    // Main menu — Campaign / Escape / Shop / Settings, cascading in
+    this._menuBtn(cx, 200, '▶  CAMPAIGN', () => this._go(), { size: '22px', padX: 30, padY: 11 }, 0);
+    this._menuBtn(cx, 248, '∞  ESCAPE', () => this.scene.start('BackdoorScene'), { size: '18px', color: '#2affff', bg: '#0e1f2a', padX: 20, padY: 9 }, 90);
+    this._menuBtn(cx, 292, 'SHOP', () => this.scene.start('ShopScene'), { size: '16px', padX: 16, padY: 7 }, 180);
+    this._menuBtn(cx, 332, 'SETTINGS', () => this.scene.start('SettingsScene'), { size: '16px', padX: 16, padY: 7 }, 270);
 
     this.add.text(CONFIG.WIDTH - 8, CONFIG.HEIGHT - 6, 'v0.1', { fontFamily: FONT, fontSize: '10px', color: '#2a4a52' }).setOrigin(1, 1);
 
@@ -55,11 +58,24 @@ export class MenuScene extends Phaser.Scene {
     SoundSystem.playMusic('mus_menu');
   }
 
-  _lbl(name, key) { return `${name}: ${GameState.getSetting(key) ? 'ON' : 'OFF'}`; }
-  _toggle(key, btn, name) {
-    GameState.setSetting(key, !GameState.getSetting(key));
-    btn.setText(this._lbl(name, key));
-    SoundSystem.applySettings();
+  _menuBtn(x, y, label, cb, opts, delay) {
+    const b = textButton(this, x, y + 18, label, cb, opts).setAlpha(0);
+    this.tweens.add({ targets: b, alpha: 1, y, duration: 380, delay, ease: 'Cubic.out' });
+    return b;
+  }
+
+  // Periodic red corruption bar sweeping across the backdrop (cinematic, on-theme)
+  _corruptionSweep(cx) {
+    const bar = this.add.rectangle(-30, CONFIG.HEIGHT / 2, 14, CONFIG.HEIGHT * 1.4, 0xff2a4d, 0).setDepth(-6);
+    const run = () => {
+      bar.x = -30; bar.setAlpha(0.5);
+      this.tweens.add({
+        targets: bar, x: CONFIG.WIDTH + 30, duration: 1700, ease: 'Sine.inOut',
+        onUpdate: () => { bar.y = CONFIG.HEIGHT / 2 + Phaser.Math.Between(-3, 3); },
+        onComplete: () => { bar.setAlpha(0); this.time.delayedCall(Phaser.Math.Between(5000, 9000), run); },
+      });
+    };
+    this.time.delayedCall(3500, run);
   }
 
   _go() {
@@ -87,7 +103,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   _scheduleGlitch() {
-    const delay = Phaser.Math.Between(4000, 8000);
+    const delay = Phaser.Math.Between(2600, 5200);
     this.time.delayedCall(delay, () => { this._glitch(); this._scheduleGlitch(); });
   }
 
