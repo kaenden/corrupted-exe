@@ -41,8 +41,8 @@ export class PlayerSystem {
     // Iconic look: big rounded head + two stubby legs + eyes. Smooth (texture-based, not blocky).
     // Feet sit on the hull's bottom (y+10) so the character stands ON platforms, not below them.
     const HW = 26, HH = 20;
-    this.legL = this.scene.add.rectangle(x - 5, y + 6, 5, 7, this.color, 1).setDepth(4);
-    this.legR = this.scene.add.rectangle(x + 5, y + 6, 5, 7, this.color, 1).setDepth(4);
+    this.legL = this.scene.add.rectangle(x - 5, y + 7, 5, 7, this.color, 1).setDepth(4);
+    this.legR = this.scene.add.rectangle(x + 5, y + 7, 5, 7, this.color, 1).setDepth(4);
     this.headFill = this.scene.add.image(x, y, 'p_head').setDisplaySize(HW, HH).setTint(this.color).setAlpha(1).setDepth(5);
     this.eyeL = this.scene.add.ellipse(x - 5, y - 1, 5.5, 7.5, 0x05121a, 1).setDepth(7);
     this.eyeR = this.scene.add.ellipse(x + 5, y - 1, 5.5, 7.5, 0x05121a, 1).setDepth(7);
@@ -170,8 +170,6 @@ export class PlayerSystem {
     this.headFill.setTint(this.color).setAlpha(glitch ? 0.5 : this._skinAlpha);
     const eyeColor = scared ? 0xff3b5c : 0x06121a;
     this.eyeL.fillColor = eyeColor; this.eyeR.fillColor = eyeColor;
-    const moving = Math.abs(s.body.velocity.x) > 20 && (s.body.blocked.down || s.body.touching.down);
-    const wob = moving ? Math.sin(time / 55) * 2.2 : 0;
     const cos = Math.cos(s.rotation), sin = Math.sin(s.rotation);
     const jx = glitch ? Phaser.Math.Between(-3, 3) : 0, jy = glitch ? Phaser.Math.Between(-2, 2) : 0;
     const place = (obj, ox, oy, bs = 1) => {
@@ -182,9 +180,10 @@ export class PlayerSystem {
       obj.scaleX = (obj._dsx ?? 1) * s.scaleX * bs;
       obj.scaleY = (obj._dsy ?? 1) * s.scaleY * bs;
     };
-    // legs sit clearly BELOW the head (top ~+3) so they never show through a translucent body
-    place(this.legL, -5, 6.5 + wob);
-    place(this.legR, 5, 6.5 - wob);
+    // legs sit fully BELOW the head bottom (no tuck-under) so they never show through a translucent
+    // body (PHANTOM). No walk-shuffle wobble either — it read as a "trembling" jitter while moving.
+    place(this.legL, -5, 7);
+    place(this.legR, 5, 7);
     place(this.headFill, 0, -9);   // head bottom at +1, sits just above the legs
     const ew = scared ? 1.3 : 1;
     place(this.eyeL, -5, -10, ew);
