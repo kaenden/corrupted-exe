@@ -25,52 +25,63 @@ from corrupted_gen import enqueue, wait_for_item, output_images, download  # reu
 RAW_DIR = os.path.join(os.path.dirname(__file__), "art-gen", "raw", "covers")
 OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "covers")
 
-# Shared premium splash style — adapted from swingwreck coverx_neon2/coverx_smash2 to CORRUPTED.EXE:
-# sleek cyan-visor robot hero, deep-black glitching simulation, electric cyan + warning red neon.
-# Hero LARGE & centered with safe margins so the same master also crops cleanly to square/portrait.
-STYLE = (
-    ", premium high-quality video-game cover key-art of a sleek angular robot hero with a single bright "
-    "glowing electric-cyan visor eye-slit and dark gunmetal plating with glowing cyan circuit-seam edge "
-    "lines, polished cinematic rendering with real depth strong rim-light and volumetric neon glow NOT "
-    "flat, the hero LARGE and dominant in the dead center, extreme high contrast making the hero pop, "
-    "vivid highly saturated electric-cyan and warning-red neon over a deep near-black glitching digital "
-    "void, holographic scanlines chromatic-aberration RGB-split glitch artifacts and floating data "
-    "fragments, dramatic god-ray glow behind the hero, dynamic powerful and ominous, the action clustered "
-    "tightly around the central hero with generous safe margins on all sides so nothing critical touches "
-    "the frame edges and it still reads when cropped to a square or vertical, no text, no letters, no "
-    "numbers, no logo, no UI, no border, no frame, no watermark"
+# The actual in-game hero (procedural): a MINIMAL FLAT big-headed neon robot — not a 3D mech.
+HERO = (
+    "a minimal cute big-headed robot mascot built from clean flat geometric shapes: a large rounded-square "
+    "dark head with a bright crisp glowing electric-cyan outline, two big simple glowing cyan eyes, a thin "
+    "straight antenna with a small glowing tip, and a small simple rounded body with little stubby legs, "
+    "drawn as flat solid shapes with bright glowing cyan neon outlines (no metal, no rivets, no detail)"
 )
 
-# sid -> (subject_moment, render_w, render_h)
+# Shared style — matches the GAME's real look (see shot-game): FLAT 2D neon vector line-art, deep pure
+# black, faint cyan wireframe grid, lots of negative space, high contrast. Adapted from the swingwreck
+# coverx_ prompt TECHNIQUE (embedded style + palette + composition + hard negative list) — NOT its 3D look.
+STYLE = (
+    ", flat 2D neon-vector video-game cover key-art — clean glowing neon line-art, flat dark shapes with "
+    "bright crisp glowing neon outlines and a lush soft neon bloom, like a premium minimalist SYNTHWAVE "
+    "neon poster. STRICTLY NOT 3D, not realistic, not metallic, not painterly, no photographic detail. "
+    "Rich atmospheric sense of place INSIDE a corrupted digital simulation: a deep near-black world with a "
+    "glowing cyan wireframe grid floor receding into the distance, faint distant floating neon platforms "
+    "and data structures, soft layered neon haze and drifting glowing data-motes for depth, subtle "
+    "scanlines and small RGB-split glitch fragments. Cool vivid MULTI-neon palette — electric cyan and "
+    "teal with magenta and violet glow plus a touch of warning-red corruption — saturated gradient glow, "
+    "very high contrast, cinematic and moody yet still flat and clean. The hero is LARGE and dominant, "
+    "centered with safe margins so it still reads as a small thumbnail and crops to square or vertical. "
+    "no text, no letters, no numbers, no logo, no UI, no border, no frame, no watermark"
+)
+
+# sid -> (subject_moment, render_w, render_h). Each = HERO + a moment, then + STYLE.
 COVERS = {
-    # 1) THE CHASE — sprinting out of a collapsing corridor, a wall of red corruption surging behind.
+    # 1) THE CHASE — big dynamic hero fleeing a towering corruption wall through the neon world.
     "cover_escape": (
-        "the sleek cyan-visor robot hero sprinting and leaping straight toward the viewer out of a "
-        "collapsing neon-grid corridor, a towering churning wall of glitching blood-red datamosh "
-        "corruption surging up close behind it, fracturing cyan platforms and shattering data-blocks "
-        "flying past, sweeping cyan speed-streaks and motion energy, eyes wide and urgent, intense escape",
+        HERO + ", the hero LARGE in the foreground dynamically running and leaping to the right with wide "
+        "alarmed glowing eyes and a determined lean, a towering atmospheric wall of glitching warning-red "
+        "and magenta corruption with red datamosh static surging close behind through layered neon haze, "
+        "sweeping cyan and teal speed-streak lines, glowing neon platform bars and small red triangle "
+        "spikes rushing past along a receding grid corridor, drifting glitch motes, intense kinetic escape",
         1920, 1088),
-    # 2) THE REALITY TEAR — diving into a blazing cyan-magenta rift ripped open in the void.
+    # 2) THE REALITY TEAR — big hero leaping into a luminous multi-neon rift, atmospheric depth.
     "cover_tear": (
-        "the sleek cyan-visor robot hero caught mid-leap diving into a blazing jagged reality-tear rift "
-        "ripped open in a black glitch void, brilliant cyan and magenta energy pouring out of the crack, "
-        "shards of broken simulation and shattered grid-glass floating around it, electric arcs, a bright "
-        "white-hot core at the rift, heroic dynamic leap",
+        HERO + ", the hero LARGE and dramatic leaping toward a glowing jagged reality-tear ripped open in "
+        "the simulation — a brilliant cyan, magenta and violet vertical rift with luminous energy and light "
+        "pouring out and a bright white-hot core, neon shards and glowing data-motes swirling around it "
+        "through soft neon haze, a receding cyan grid and faint distant platforms behind, determined eyes",
         1920, 1088),
-    # 3) THE GLITCH — hero's own body fracturing into RGB-split fragments amid deceptive traps.
+    # 3) THE GLITCH/DECEPTION — big hero splitting into RGB glitch amid deceptive neon platforms.
     "cover_glitch": (
-        "the sleek cyan-visor robot hero standing defiant and large, its own angular body breaking apart "
-        "into glitching pixels and chromatic-aberration RGB-split fragments, surrounded by deceptive "
-        "floating neon platforms and glowing warning-red hazard spikes, radial bursts of electric cyan and "
-        "magenta neon light rays exploding outward behind it, a glowing wireframe grid floor, datamosh "
-        "corruption, fierce glowing visor",
+        HERO + ", the hero LARGE dead-center, its head and body splitting into vivid RGB-split chromatic "
+        "glitch slices and scattered flat square pixels, surrounded by deceptive floating neon platform "
+        "bars with cyan, magenta and violet outlines and a few small red triangle spikes, radial cyan and "
+        "violet neon light rays and drifting glitch pixels through neon haze, a glowing grid floor, "
+        "glitching eyes, atmospheric and ominous",
         1920, 1088),
-    # 4) THE HERO SHOT — clean iconic centered poster, red corruption creeping in at the edges.
+    # 4) THE HERO SHOT — big iconic confident hero with a rich atmospheric neon backdrop.
     "cover_hero": (
-        "the sleek cyan-visor robot hero in a confident iconic centered hero pose, a strong glowing cyan "
-        "rim-light and a bright focal glow outlining it, faint ominous blood-red corruption and glitch "
-        "static creeping inward only from the far screen edges, a deep dark digital-void grid receding "
-        "into fog behind, calm powerful and cool, premium poster composition",
+        HERO + ", the hero LARGE and heroic dead-center standing confident on a glowing neon platform, a "
+        "bright focal halo of cyan-and-violet glow blooming behind it, bright determined eyes looking at "
+        "the viewer, the corrupted-sim world glowing with atmosphere around it — a receding cyan grid, "
+        "faint distant floating platforms, soft neon haze and drifting data-motes, magenta and teal "
+        "accents, a faint warning-red glitch only at the far edges",
         1920, 1088),
 }
 
