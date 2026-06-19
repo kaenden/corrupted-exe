@@ -130,7 +130,12 @@ standard web formats: PNG or JPG for covers, MP4 for video.)
 no app/social icons, no fast‑forwarding — just clean gameplay.
 
 > There is **no** separate screenshot / logo / app‑icon spec in CG's public docs — exactly the 3 covers +
-> 2 videos above. Capture from the **`build:cg`** build at 1080p.
+> 2 videos above. Capture video from the **`build:cg`** build at 1080p.
+
+> ✅ **The 3 covers are DONE** (title baked in, exact CG sizes) in `covers/`:
+> `cover_landscape_1920x1080.png`, `cover_portrait_800x1200.png`, `cover_square_800x800.png`.
+> Generated via `tools/corrupted_cover_gen.py` (flat-neon mascot art) → sized by `tools/corrupted_cg_resize.py`
+> (masters kept in `covers/src/`). Still TODO by you: the 2 preview videos.
 
 ---
 

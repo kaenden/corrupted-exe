@@ -16,7 +16,7 @@ Output:
     covers/<sid>_1920x1080.png            (final, center-cropped)
 """
 from __future__ import annotations
-import argparse, os, sys, time
+import argparse, os, random, sys, time
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -28,9 +28,11 @@ OUT_DIR = os.path.join(os.path.dirname(__file__), "..", "covers")
 # The actual in-game hero (procedural): a MINIMAL FLAT big-headed neon robot — not a 3D mech.
 HERO = (
     "a minimal cute big-headed robot mascot built from clean flat geometric shapes: a large rounded-square "
-    "dark head with a bright crisp glowing electric-cyan outline, two big simple glowing cyan eyes, a thin "
-    "straight antenna with a small glowing tip, and a small simple rounded body with little stubby legs, "
-    "drawn as flat solid shapes with bright glowing cyan neon outlines (no metal, no rivets, no detail)"
+    "dark head with a bright crisp glowing electric-cyan outline, two big bright glowing expressive cyan "
+    "eyes (the soul of the character), a thin straight antenna with a small glowing tip, and a small simple "
+    "rounded body with little stubby legs — flat solid shapes with bright glowing cyan neon outlines, no "
+    "metal no rivets no detail; a charismatic appealing mascot with a strong clean instantly-readable "
+    "silhouette, NOT sad"
 )
 
 # Shared style — matches the GAME's real look (see shot-game): FLAT 2D neon vector line-art, deep pure
@@ -54,8 +56,8 @@ STYLE = (
 COVERS = {
     # 1) THE CHASE — big dynamic hero fleeing a towering corruption wall through the neon world.
     "cover_escape": (
-        HERO + ", the hero LARGE in the foreground dynamically running and leaping to the right with wide "
-        "alarmed glowing eyes and a determined lean, a towering atmospheric wall of glitching warning-red "
+        HERO + ", the hero LARGE in the foreground dynamically running and leaping to the right with big "
+        "focused determined glowing eyes and a confident urgent lean, a towering atmospheric wall of glitching warning-red "
         "and magenta corruption with red datamosh static surging close behind through layered neon haze, "
         "sweeping cyan and teal speed-streak lines, glowing neon platform bars and small red triangle "
         "spikes rushing past along a receding grid corridor, drifting glitch motes, intense kinetic escape",
@@ -73,13 +75,14 @@ COVERS = {
         "glitch slices and scattered flat square pixels, surrounded by deceptive floating neon platform "
         "bars with cyan, magenta and violet outlines and a few small red triangle spikes, radial cyan and "
         "violet neon light rays and drifting glitch pixels through neon haze, a glowing grid floor, "
-        "glitching eyes, atmospheric and ominous",
+        "one calm glowing cyan eye and one glitching split eye, an intense eerie expression, atmospheric and ominous",
         1920, 1088),
     # 4) THE HERO SHOT — big iconic confident hero with a rich atmospheric neon backdrop.
     "cover_hero": (
         HERO + ", the hero LARGE and heroic dead-center standing confident on a glowing neon platform, a "
-        "bright focal halo of cyan-and-violet glow blooming behind it, bright determined eyes looking at "
-        "the viewer, the corrupted-sim world glowing with atmosphere around it — a receding cyan grid, "
+        "bright focal halo of cyan-and-violet glow blooming behind it, big bright confident friendly "
+        "glowing eyes looking straight at the viewer with a cool calm-yet-powerful expression, the "
+        "corrupted-sim world glowing with atmosphere around it — a receding cyan grid, "
         "faint distant floating platforms, soft neon haze and drifting data-motes, magenta and teal "
         "accents, a faint warning-red glitch only at the far edges",
         1920, 1088),
@@ -88,7 +91,7 @@ COVERS = {
 GROUPS = {"all": list(COVERS)}
 
 
-def make_final(sid, raw_path):
+def make_final(label, raw_path):
     os.makedirs(OUT_DIR, exist_ok=True)
     im = Image.open(raw_path).convert("RGB")
     w, h = im.size
@@ -98,45 +101,50 @@ def make_final(sid, raw_path):
             im = im.crop((0, top, 1920, top + 1080))
         else:
             im = im.resize((1920, 1080), Image.LANCZOS)
-    out = os.path.join(OUT_DIR, f"{sid}_1920x1080.png")
+    out = os.path.join(OUT_DIR, f"{label}_1920x1080.png")
     im.save(out)
     print(f"  -> {out}  ({os.path.getsize(out)//1024}KB)", flush=True)
 
 
-def generate_one(sid):
+def generate_one(sid, label, seed):
     subject, rw, rh = COVERS[sid]
     os.makedirs(RAW_DIR, exist_ok=True)
     full = subject + STYLE
-    print(f"[cover] {sid:14} {rw}x{rh}", flush=True)
+    print(f"[cover] {label:18} {rw}x{rh} seed={seed}", flush=True)
     t0 = time.time()
-    item_id = enqueue(full, rw, rh)
+    item_id = enqueue(full, rw, rh, seed=seed)
     res = wait_for_item(item_id, timeout=900.0)
     if res.get("status") != "completed":
-        print(f"  ! {sid}: {res.get('status')} {res.get('error','')}", flush=True); return False
+        print(f"  ! {label}: {res.get('status')} {res.get('error','')}", flush=True); return False
     names = output_images(res.get("session") or {})
     if not names:
-        print(f"  ! {sid}: no image", flush=True); return False
-    raw = os.path.join(RAW_DIR, f"{sid}.png")
+        print(f"  ! {label}: no image", flush=True); return False
+    raw = os.path.join(RAW_DIR, f"{label}.png")
     download(names[0], raw)
-    print(f"  OK {sid} {time.time()-t0:.0f}s -> {raw}", flush=True)
-    make_final(sid, raw)
+    print(f"  OK {label} {time.time()-t0:.0f}s seed={seed} -> {raw}", flush=True)
+    make_final(label, raw)
     return True
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("group", nargs="?", default="all")
+    ap.add_argument("-n", "--variants", type=int, default=1, help="seed variations per concept")
+    ap.add_argument("--seed", type=int, default=None, help="fixed seed (single variant; reproduce a winner)")
     args = ap.parse_args()
     ids = GROUPS.get(args.group, [args.group])
     ok = 0
     for sid in ids:
         if sid not in COVERS:
             print(f"unknown: {sid}"); continue
-        try:
-            if generate_one(sid): ok += 1
-        except Exception as e:
-            print(f"  ! {sid} EXC: {e}", flush=True)
-    print(f"\nDone: {ok}/{len(ids)} -> {os.path.abspath(OUT_DIR)}", flush=True)
+        for i in range(args.variants):
+            seed = args.seed if args.seed is not None else random.randint(1, 2_000_000_000)
+            label = sid if args.variants == 1 and args.seed is None else f"{sid}_v{i+1}"
+            try:
+                if generate_one(sid, label, seed): ok += 1
+            except Exception as e:
+                print(f"  ! {label} EXC: {e}", flush=True)
+    print(f"\nDone: {ok} -> {os.path.abspath(OUT_DIR)}", flush=True)
 
 
 if __name__ == "__main__":
