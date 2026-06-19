@@ -190,12 +190,12 @@ export class GameScene extends Phaser.Scene {
     // death stinger: a slow zoom-punch holds on the moment so the chosen death FX actually reads
     const cam = this.cameras.main;
     this._deathZoom = cam.zoom;
-    cam.zoomTo(cam.zoom * 1.18, 220, 'Quad.out');
+    cam.zoomTo(cam.zoom * 1.18, 220, 'Quad.easeOut'); // camera effects need the FULL EaseMap key ('Quad.out' is tween-only → this.ease crash)
     SoundSystem.play('sfx_death');
     AdSystem.gameplayStop();
 
     const respawn = () => {
-      this.cameras.main.zoomTo(this._deathZoom || CONFIG.RENDER_SCALE, 160, 'Quad.out');
+      this.cameras.main.zoomTo(this._deathZoom || CONFIG.RENDER_SCALE, 160, 'Quad.easeOut');
       this.tricks.reset(this.player);
       this.player.respawn(this.levelData.spawnPoint.x, this.levelData.spawnPoint.y);
       this.player.sprite.body.enable = true;
