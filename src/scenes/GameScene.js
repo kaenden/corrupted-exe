@@ -365,6 +365,11 @@ export class GameScene extends Phaser.Scene {
 
   // Glitchy red "BREACH DETECTED" stinger while the wall is still parked (the chase delay).
   _chaseWarning() {
+    this.time.delayedCall(40, () => this._spawnWarning());  // defer 1 frame so worldView is settled
+  }
+
+  _spawnWarning() {
+    if (this.dying || this.finished) return;
     const v = this.cameras.main.worldView;
     const cx = v.centerX, cy = v.y + 92;
     this.cameras.main.flash(220, 90, 0, 8);
