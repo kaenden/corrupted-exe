@@ -435,27 +435,36 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  // Conceptual exit gateway — halo + rotating tick-ring + rising motes + a gentle gate pulse.
+  // Abstract neon portal (Q-style) — nested geometric rings spinning at different rates + a pulsing
+  // star core + halo. The literal "door" texture is hidden; an invisible body keeps the overlap.
   _decorateExit(x, y) {
-    const cy = y - 24;
-    this.exit.setDepth(4);
-    const c = this.add.container(x, cy).setDepth(3);
-    const halo = this.add.circle(0, 0, 26, 0x00ff88, 0.12);
-    this.tweens.add({ targets: halo, scale: 1.35, alpha: 0.24, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    const ring = this.add.container(0, 0);
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      const d = this.add.rectangle(Math.cos(a) * 30, Math.sin(a) * 30, 7, 2.5, 0x00ff88, 0.85);
-      d.rotation = a; ring.add(d);
-    }
-    this.tweens.add({ targets: ring, rotation: Math.PI * 2, duration: 7000, repeat: -1 });
-    const motes = this.add.particles(0, 22, 'particle_spark', {
-      y: { min: -40, max: 6 }, x: { min: -11, max: 11 }, lifespan: 1200, speedY: { min: -28, max: -10 },
-      scale: { start: 0.34, end: 0 }, alpha: { start: 0.55, end: 0 }, tint: 0x00ff88, frequency: 150, quantity: 1, blendMode: 'ADD',
-    });
-    c.add([halo, ring, motes]);
-    this.exitDecor = c;
-    this.tweens.add({ targets: this.exit, scale: 1.06, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    const cy = y - 26;
+    this.exit.setVisible(false);
+    this.exitDecor = this._buildPortal(x, cy, 1, [0x00ff88, 0x7affc0, 0xffffff]);
+  }
+
+  // a flat n-gon outline centred on its own origin (rotates cleanly)
+  _ngon(n, r, color, alpha, w) {
+    const pts = [];
+    for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 - Math.PI / 2; pts.push(Math.cos(a) * r, Math.sin(a) * r); }
+    return this.add.polygon(0, 0, pts, 0x000000, 0).setStrokeStyle(w || 2.5, color, alpha).setOrigin(0.5, 0.5);
+  }
+
+  _buildPortal(x, y, s, cols) {
+    const [c1, c2, c3] = cols;
+    const c = this.add.container(x, y).setDepth(3).setScale(s);
+    const halo = this.add.circle(0, 0, 28, c1, 0.12);
+    const hex = this._ngon(6, 27, c1, 0.9, 2.5);     // outer hexagon
+    const sq = this._ngon(4, 18, c2, 0.85, 2.5);     // mid square
+    const tri = this._ngon(3, 11, c3, 0.95, 2.5);    // inner triangle
+    const core = this.add.star(0, 0, 4, 2.4, 6.5, c1, 1); // diamond/star core
+    c.add([halo, hex, sq, tri, core]);
+    this.tweens.add({ targets: halo, scale: 1.3, alpha: 0.22, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.tweens.add({ targets: hex, rotation: Math.PI * 2, duration: 9000, repeat: -1 });
+    this.tweens.add({ targets: sq, rotation: -Math.PI * 2, duration: 6000, repeat: -1 });
+    this.tweens.add({ targets: tri, rotation: Math.PI * 2, duration: 4200, repeat: -1 });
+    this.tweens.add({ targets: core, scale: 1.7, alpha: 0.55, angle: 90, duration: 750, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    return c;
   }
 
   // ---- BUG / BACKDOOR KEY pickups ----

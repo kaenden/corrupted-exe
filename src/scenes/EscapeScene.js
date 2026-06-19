@@ -91,13 +91,31 @@ export class EscapeScene extends Phaser.Scene {
   }
 
   _gate(x, y) {
-    const img = this.add.image(x, y, 'exit_gate').setOrigin(0.5, 1).setDepth(4);
-    this.physics.add.existing(img, true);
-    img.body.setSize(30, 46).setOffset(1, 2);
-    img.body.updateFromGameObject();
-    const halo = this.add.circle(x, y - 24, 22, 0x00ff88, 0.16).setDepth(3);
-    this.tweens.add({ targets: halo, scale: 1.4, alpha: 0.28, duration: 900, yoyo: true, repeat: -1 });
-    this.gates.push({ img, halo, x, banked: false });
+    const cy = y - 26;
+    const body = this.add.rectangle(x, cy, 30, 52, 0x000000, 0).setDepth(4); // invisible hull for overlap
+    this.physics.add.existing(body, true);
+    body.body.updateFromGameObject();
+    const portal = this._gatePortal(x, cy);
+    this.gates.push({ img: body, portal, x, banked: false });
+  }
+
+  _gatePortal(x, y) {
+    const c = this.add.container(x, y).setDepth(3);
+    const ng = (n, r, col, w) => {
+      const pts = [];
+      for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 - Math.PI / 2; pts.push(Math.cos(a) * r, Math.sin(a) * r); }
+      return this.add.polygon(0, 0, pts, 0x000000, 0).setStrokeStyle(w, col, 1).setOrigin(0.5, 0.5);
+    };
+    const halo = this.add.circle(0, 0, 22, 0x2affff, 0.14);
+    const sq = ng(4, 20, 0x2affff, 2.5);
+    const di = ng(4, 12, 0xffffff, 2);
+    const core = this.add.star(0, 0, 4, 2, 6, 0x2affff, 1);
+    c.add([halo, sq, di, core]);
+    this.tweens.add({ targets: sq, rotation: Math.PI * 2, duration: 6000, repeat: -1 });
+    this.tweens.add({ targets: di, rotation: -Math.PI * 2, duration: 4000, repeat: -1 });
+    this.tweens.add({ targets: core, scale: 1.6, alpha: 0.55, angle: 90, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.tweens.add({ targets: halo, scale: 1.35, alpha: 0.24, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    return c;
   }
 
   // ---- corruption wall ----
@@ -154,7 +172,7 @@ export class EscapeScene extends Phaser.Scene {
     for (const g of this.gates) {
       if (!g.banked && this.physics.overlap(this.player.sprite, g.img)) this._bank(g);
     }
-    this.gates = this.gates.filter((g) => { if (g.x < v.x - 300) { g.img.destroy(); g.halo.destroy(); return false; } return true; });
+    this.gates = this.gates.filter((g) => { if (g.x < v.x - 300) { g.img.destroy(); g.portal.destroy(); return false; } return true; });
 
     // fell off the world
     if (this.player.sprite.y > DEATH_Y) this._die();
@@ -168,7 +186,7 @@ export class EscapeScene extends Phaser.Scene {
   _bank(g) {
     g.banked = true;
     this.banked = Math.max(this.banked, this.score);
-    g.img.setTint(0x335544); g.halo.setAlpha(0.06);
+    g.portal.setAlpha(0.3);
     SoundSystem.play('sfx_win');
     this._flash('BANKED  ' + this.banked, '#00ff88');
   }
