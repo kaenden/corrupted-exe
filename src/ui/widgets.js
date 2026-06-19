@@ -27,6 +27,7 @@ export function addScanlines(scene) {
 export const FONT = 'monospace';
 export const RES = 3; // render text at 3× → crisp under the smooth (non-pixelArt) upscale
 export const TXT = { fontFamily: FONT, color: '#dffcff', resolution: RES };
+export const HOVER = '#4dff5a'; // neon-green hover highlight (thematic — matches the menu title)
 
 // A simple terminal-style button. Returns the Text game object.
 export function textButton(scene, x, y, label, cb, opts = {}) {
@@ -43,7 +44,7 @@ export function textButton(scene, x, y, label, cb, opts = {}) {
   if (opts.disabled) { t.setAlpha(0.4); return t; }
 
   t.setInteractive({ useHandCursor: true })
-    .on('pointerover', () => t.setColor('#ffffff'))
+    .on('pointerover', () => t.setColor(HOVER))
     .on('pointerout', () => t.setColor(opts.color || '#dffcff'))
     .on('pointerdown', () => { t.setScale(0.96); })
     .on('pointerup', () => { t.setScale(1); cb?.(); });
@@ -63,7 +64,7 @@ export function menuButton(scene, x, y, label, cb, opts = {}) {
   const mkR = scene.add.text(x, y, '◂', { fontFamily: FONT, fontSize: '14px', color: accentHex, resolution: RES }).setOrigin(0.5).setAlpha(0);
   t.setInteractive({ useHandCursor: true });
   t.on('pointerover', () => {
-    t.setColor('#ffffff'); const w = t.width;
+    t.setColor(HOVER); const w = t.width;
     mkL.setX(x - w / 2 - 18).setAlpha(1); mkR.setX(x + w / 2 + 18).setAlpha(1);
     scene.tweens.add({ targets: t, scale: 1.1, duration: 130, ease: 'Quad.out' });
     scene.tweens.add({ targets: line, width: w + 12, alpha: 0.95, duration: 180, ease: 'Cubic.out' });
@@ -105,7 +106,7 @@ export function card(scene, cx, cy, w, h, opts = {}) {
 export function backButton(scene, cb) {
   const t = scene.add.text(16, 22, '‹ BACK', { fontFamily: FONT, fontSize: '14px', color: '#7fb8c2', resolution: RES })
     .setOrigin(0, 0.5).setInteractive({ useHandCursor: true });
-  t.on('pointerover', () => t.setColor('#ffffff'));
+  t.on('pointerover', () => t.setColor(HOVER));
   t.on('pointerout', () => t.setColor('#7fb8c2'));
   t.on('pointerup', cb);
   return t;

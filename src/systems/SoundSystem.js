@@ -89,19 +89,61 @@ export const SoundSystem = {
     if (!this.unlocked || !this.ctx) return;
     this._stopMusic();
     if (!GameState.getSetting('musicEnabled')) return;
-    const root = key === 'mus_beta' ? 110 : key === 'mus_menu' ? 87 : 98; // A2 / F2 / G2
-    const scale = [0, 3, 5, 7, 10]; // minor pentatonic
-    this._musicOn = true;
-    let step = 0;
+    this._musicOn = true; this._step = 0; this._arp = 0;
+    if (key === 'mus_menu') this._loopMenu();   // calm + atmospheric
+    else this._loopGameplay(key);               // energetic (levels + escape)
+  },
+
+  // MENU — slow, atmospheric: a soft sustained sine pad + sparse high pentatonic shimmer.
+  _loopMenu() {
+    const root = 87;                 // F2
+    const pent = [0, 3, 5, 7, 10];
     const beat = () => {
       if (!this._musicOn) return;
-      this._tone(root, root, 0.5, 'sine', 0.5, this.musicGain);
-      const semi = scale[(step * 2) % scale.length];
-      this._tone(root * 4 * Math.pow(2, semi / 12), 0, 0.22, 'triangle', 0.22, this.musicGain);
-      step++;
-      this._musicTimer = setTimeout(beat, 420);
+      const s = this._step++;
+      if (s % 2 === 0) this._tone(root, root, 1.8, 'sine', 0.5, this.musicGain);          // slow pad
+      if (s % 4 === 1 || s % 4 === 3) {                                                   // sparse shimmer
+        const semi = pent[s % pent.length];
+        this._tone(root * 4 * Math.pow(2, semi / 12), 0, 1.0, 'sine', 0.13, this.musicGain);
+      }
+      this._musicTimer = setTimeout(beat, 600);
     };
     beat();
+  },
+
+  // LEVELS — energetic driving loop: four-on-the-floor kick + offbeat hat + staccato bassline + arp lead.
+  _loopGameplay(key) {
+    const beta = key === 'mus_beta';
+    const root = beta ? 110 : 98;                                       // A2 / G2
+    const stepMs = beta ? 134 : 148;                                   // beta a touch faster/harder
+    const arp = [0, 3, 7, 10, 12, 10, 7, 3];                           // minor-pentatonic arp run
+    const bass = [0, 0, 7, 0, 5, 0, 7, 0, 0, 0, 10, 0, 5, 7, 5, 3];    // 16-step bassline (semitones)
+    const beat = () => {
+      if (!this._musicOn) return;
+      const s = this._step++ % 16;
+      if (s % 4 === 0) this._kick();                                   // four-on-the-floor pulse
+      if (s % 2 === 1) this._hat();                                    // offbeat hi-hat for drive
+      const b = root * Math.pow(2, bass[s] / 12);
+      this._tone(b, b, 0.13, 'sawtooth', 0.30, this.musicGain);        // staccato bass
+      if (s % 2 === 0) {                                               // arpeggiated lead
+        const semi = arp[this._arp++ % arp.length];
+        this._tone(root * 4 * Math.pow(2, semi / 12), 0, 0.17, 'square', 0.15, this.musicGain);
+      }
+      this._musicTimer = setTimeout(beat, stepMs);
+    };
+    beat();
+  },
+
+  _kick() { this._tone(150, 48, 0.16, 'sine', 0.6, this.musicGain); },  // pitch-drop = kick drum
+  _hat() {
+    const ctx = this.ctx; if (!ctx) return;
+    const n = Math.floor(ctx.sampleRate * 0.025);
+    const buf = ctx.createBuffer(1, n, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const g = ctx.createGain(); g.gain.value = 0.05;
+    src.connect(g).connect(this.musicGain); src.start();
   },
 
   _stopMusic() {
@@ -112,7 +154,7 @@ export const SoundSystem = {
   muteForAd(on) {
     if (!this.ctx) return;
     this.sfxGain.gain.value = on ? 0 : 0.5;
-    this.musicGain.gain.value = on ? 0 : (GameState.getSetting('musicEnabled') ? 0.14 : 0);
+    this.musicGain.gain.value = on ? 0 : (GameState.getSetting('musicEnabled') ? 0.16 : 0);
   },
 
   pauseForMenu() {},
@@ -120,7 +162,7 @@ export const SoundSystem = {
 
   applySettings() {
     if (!this.ctx) return;
-    this.musicGain.gain.value = GameState.getSetting('musicEnabled') ? 0.14 : 0;
+    this.musicGain.gain.value = GameState.getSetting('musicEnabled') ? 0.16 : 0;
     if (!GameState.getSetting('musicEnabled')) this._stopMusic();
     else if (this._musicKey && !this._musicOn) this.playMusic(this._musicKey);
   },

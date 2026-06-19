@@ -37,8 +37,8 @@ export class MenuScene extends Phaser.Scene {
 
     this._buildMascot(cx, 58);
 
-    // Title + chromatic glitch copies (fade in when the curtain opens)
-    this.title = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#dffcff', resolution: 3 }).setOrigin(0.5).setAlpha(0);
+    // Title (neon green, pre-corruption) + chromatic glitch copies (fade in when the curtain opens)
+    this.title = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#4dff5a', resolution: 3 }).setOrigin(0.5).setAlpha(0);
     this.titleR = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#ff2a55', resolution: 3 }).setOrigin(0.5).setAlpha(0);
     this.titleB = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#2affff', resolution: 3 }).setOrigin(0.5).setAlpha(0);
     this.sub = this.add.text(cx, 152, 'a simulation is lying to you', { fontFamily: FONT, fontSize: '12px', color: '#5b8a93', resolution: 3 }).setOrigin(0.5).setAlpha(0);
