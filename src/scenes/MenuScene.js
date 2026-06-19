@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { SoundSystem } from '../systems/SoundSystem.js';
-import { textButton, addScanlines, hdCamera, FONT } from '../ui/widgets.js';
+import { neonButton, addScanlines, hdCamera, FONT } from '../ui/widgets.js';
 
 const LOG_LINES = [
   'SIM_ALPHA initializing...',
@@ -47,10 +47,10 @@ export class MenuScene extends Phaser.Scene {
     this._scheduleGlitch();
 
     // Main menu — Campaign / Escape / Shop / Settings, cascading in
-    this._menuBtn(cx, 200, '▶  CAMPAIGN', () => this._go(), { size: '22px', padX: 30, padY: 11 }, 0);
-    this._menuBtn(cx, 248, '∞  ESCAPE', () => this.scene.start('BackdoorScene'), { size: '18px', color: '#2affff', bg: '#0e1f2a', padX: 20, padY: 9 }, 90);
-    this._menuBtn(cx, 292, 'SHOP', () => this.scene.start('ShopScene'), { size: '16px', padX: 16, padY: 7 }, 180);
-    this._menuBtn(cx, 332, 'SETTINGS', () => this.scene.start('SettingsScene'), { size: '16px', padX: 16, padY: 7 }, 270);
+    this._menuBtn(cx, 202, '▶  CAMPAIGN', () => this._go(), { w: 264, size: '20px', accent: 0x00ff88 }, 0);
+    this._menuBtn(cx, 252, '∞  ESCAPE', () => this.scene.start('BackdoorScene'), { w: 264, size: '18px', accent: 0x2affff, color: '#bdf6ff' }, 90);
+    this._menuBtn(cx, 300, 'SHOP', () => this.scene.start('ShopScene'), { w: 264, size: '17px', accent: 0xffd24a }, 180);
+    this._menuBtn(cx, 346, 'SETTINGS', () => this.scene.start('SettingsScene'), { w: 264, size: '17px', accent: 0x9b8aff }, 270);
 
     this.add.text(CONFIG.WIDTH - 8, CONFIG.HEIGHT - 6, 'v0.1', { fontFamily: FONT, fontSize: '10px', color: '#2a4a52' }).setOrigin(1, 1);
 
@@ -59,7 +59,7 @@ export class MenuScene extends Phaser.Scene {
   }
 
   _menuBtn(x, y, label, cb, opts, delay) {
-    const b = textButton(this, x, y + 18, label, cb, opts).setAlpha(0);
+    const b = neonButton(this, x, y + 18, label, cb, opts).setAlpha(0);
     this.tweens.add({ targets: b, alpha: 1, y, duration: 380, delay, ease: 'Cubic.out' });
     return b;
   }

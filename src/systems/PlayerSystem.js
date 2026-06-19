@@ -53,18 +53,22 @@ export class PlayerSystem {
 
   applyCosmetics(equipped) {
     const skin = COSMETICS.skins[equipped.skin] || COSMETICS.skins.skin_default;
-    this.color = skin.color || 0x00ffff;
+    this.color = skin.color || 0xffb43b;
     this._skinAlpha = skin.alpha ?? 0.92;
+    this._skinAnim = skin.anim || null;
     this.headFill?.setTint(this.color);
     if (this.legL) { this.legL.fillColor = this.color; this.legR.fillColor = this.color; }
 
-    this.trail?.destroy();
-    this.trail = this.scene.add.particles(0, 0, 'particle_spark', {
-      follow: this.sprite, frequency: 28, lifespan: 320,
-      scale: { start: 0.5, end: 0 }, alpha: { start: 0.6, end: 0 },
-      tint: this.color, speed: 0, blendMode: 'ADD', emitting: false,
-    });
-    this.trail.setDepth(4);
+    this.trail?.destroy(); this.trail = null;
+    const tr = COSMETICS.trails[equipped.trail];   // each trail carries its own colour + motion
+    if (tr) {
+      this.trail = this.scene.add.particles(0, 0, 'particle_spark', {
+        follow: this.sprite, frequency: tr.frequency ?? 28, lifespan: tr.lifespan ?? 320,
+        scale: { start: tr.scale ?? 0.5, end: 0 }, alpha: { start: tr.alpha ?? 0.6, end: 0 },
+        tint: tr.tint ?? this.color, gravityY: tr.gravityY ?? 0, speed: 0,
+        blendMode: 'ADD', emitting: false,
+      }).setDepth(4);
+    }
   }
 
   update(time, mobileInput) {
@@ -125,6 +129,10 @@ export class PlayerSystem {
   _updateRobot(time) {
     const s = this.sprite;
     if (!this.faceParts) return;
+    if (this._skinAnim === 'prism') {   // animated PRISM skin — cycle hue
+      const c = Phaser.Display.Color.HSVToRGB(((time / 16) % 360) / 360, 0.85, 1).color;
+      this.color = c; this.legL.fillColor = c; this.legR.fillColor = c;
+    }
     const prox = this.scene._wallProx || 0;
     const scared = prox > 0.45;
     if (time - this._glitchAt > this._glitchGap) { this._glitchAt = time; this._glitchGap = Math.max(180, Phaser.Math.Between(500, 1100) - prox * 350); }
@@ -167,10 +175,11 @@ export class PlayerSystem {
   playDeathFx(deathFxId) {
     const fx = COSMETICS.deathFx[deathFxId] || COSMETICS.deathFx.fx_default;
     const { x, y } = this.sprite;
-    const count = fx.kind === 'explode' ? 28 : 18;
+    const big = fx.kind === 'explode' || fx.kind === 'nova';
+    const count = big ? 26 : 18;
     const em = this.scene.add.particles(x, y, 'particle_spark', {
       lifespan: fx.kind === 'melt' ? 600 : 420,
-      speed: { min: fx.kind === 'yeet' ? 160 : 50, max: fx.kind === 'explode' ? 340 : 200 },
+      speed: { min: fx.kind === 'yeet' ? 160 : 50, max: big ? 340 : 200 },
       gravityY: fx.kind === 'melt' ? 500 : 0,
       angle: fx.kind === 'yeet' ? { min: -100, max: -80 } : { min: 0, max: 360 },
       scale: { start: 0.9, end: 0 }, blendMode: 'ADD',
@@ -178,6 +187,10 @@ export class PlayerSystem {
       quantity: count, emitting: false,
     });
     em.explode(count);
+    if (fx.kind === 'nova') {
+      const ring = this.scene.add.circle(x, y, 24, 0x000000, 0).setStrokeStyle(3, this.color, 1).setDepth(6).setScale(0.2);
+      this.scene.tweens.add({ targets: ring, scale: 2.1, alpha: 0, duration: 440, ease: 'Cubic.out', onComplete: () => ring.destroy() });
+    }
     this.scene.time.delayedCall(700, () => em.destroy());
     this.sprite.setVisible(false);
     this.faceParts?.forEach((p) => p.setVisible(false));

@@ -4,12 +4,12 @@ export const SHOP = {
   skin: {
     slot: 'skin', label: 'SKIN',
     items: [
-      { id: 'skin_default', name: 'MODEL_00', cost: 0,   unlock: 'always',      desc: 'Standard cyan build' },
-      { id: 'skin_gold',    name: 'MODEL_AU', cost: 300, unlock: 'purchase',    desc: 'Gilded gold chassis' },
-      { id: 'skin_glitch',  name: 'MODEL_GL', cost: 500, unlock: 'purchase',    desc: 'Magenta corruption glitch' },
-      { id: 'skin_red',     name: 'MODEL_CR', cost: 400, unlock: 'purchase',    desc: 'Crimson alert unit' },
-      { id: 'skin_ghost',   name: 'MODEL_GH', cost: 800, unlock: 'purchase',    desc: 'Translucent phantom shell' },
-      { id: 'skin_void',    name: 'MODEL_VD', cost: 0,   unlock: 'achievement', desc: 'Violet void core', hint: 'Clear an ALPHA level deathless' },
+      { id: 'skin_default', name: 'AMBER',   cost: 0,   unlock: 'always',      desc: 'Standard amber core' },
+      { id: 'skin_gold',    name: 'SOLAR',    cost: 300, unlock: 'purchase',    desc: 'Molten gold plating' },
+      { id: 'skin_glitch',  name: 'PRISM',    cost: 650, unlock: 'purchase',    desc: 'Shifts through every colour' },
+      { id: 'skin_red',     name: 'EMBER',    cost: 400, unlock: 'purchase',    desc: 'Burning orange-red shell' },
+      { id: 'skin_ghost',   name: 'PHANTOM',  cost: 800, unlock: 'purchase',    desc: 'Half-rendered, translucent' },
+      { id: 'skin_void',    name: 'VOID',     cost: 0,   unlock: 'achievement', desc: 'Violet void core', hint: 'Clear an ALPHA level deathless' },
     ],
   },
   deathFx: {
@@ -20,16 +20,18 @@ export const SHOP = {
       { id: 'fx_explode', name: 'OVERLOAD', cost: 350, unlock: 'purchase', desc: 'Violent particle burst' },
       { id: 'fx_glitch',  name: 'CORRUPT',  cost: 250, unlock: 'purchase', desc: 'Dissolves into glitch noise' },
       { id: 'fx_yeet',    name: 'YEET',     cost: 150, unlock: 'purchase', desc: 'Launched clean off-screen' },
+      { id: 'fx_nova',    name: 'NOVA',     cost: 500, unlock: 'purchase', desc: 'Bright shock-ring detonation' },
     ],
   },
   trail: {
     slot: 'trail', label: 'TRAIL',
     items: [
       { id: 'trail_none',  name: 'NO_TRAIL', cost: 0,   unlock: 'always',   desc: 'No trail' },
-      { id: 'trail_spark', name: 'SPARK',    cost: 150, unlock: 'purchase', desc: 'White spark trail' },
+      { id: 'trail_spark', name: 'SPARK',    cost: 150, unlock: 'purchase', desc: 'White spark wake' },
       { id: 'trail_neon',  name: 'NEON',     cost: 200, unlock: 'purchase', desc: 'Cyan neon streak' },
-      { id: 'trail_code',  name: 'CODE',     cost: 300, unlock: 'purchase', desc: 'Green datastream' },
-      { id: 'trail_fire',  name: 'PLASMA',   cost: 400, unlock: 'purchase', desc: 'Blue plasma wake' },
+      { id: 'trail_code',  name: 'CODE',     cost: 300, unlock: 'purchase', desc: 'Falling green datastream' },
+      { id: 'trail_fire',  name: 'PLASMA',   cost: 400, unlock: 'purchase', desc: 'Violet plasma wake' },
+      { id: 'trail_ember', name: 'EMBER',    cost: 450, unlock: 'purchase', desc: 'Orange sparks that rise' },
     ],
   },
 };
