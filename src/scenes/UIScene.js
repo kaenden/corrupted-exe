@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
 import { AdSystem } from '../systems/ad/AdSystem.js';
-import { neonPanel, hdCamera } from '../ui/widgets.js';
+import { card, hdCamera } from '../ui/widgets.js';
 import { getStoryBeat } from '../data/story.js';
 import { getTutorial } from '../data/tutorial.js';
 
@@ -179,7 +179,7 @@ export class UIScene extends Phaser.Scene {
       if (i >= steps.length) { finish(); return; }
       const s = steps[i];
       objs.push(this.add.rectangle(cx, cy, CONFIG.WIDTH, CONFIG.HEIGHT, 0x010407, 0.55).setDepth(69));
-      objs.push(neonPanel(this, cx, cy, 392, 156).setDepth(70));
+      objs.push(card(this, cx, cy, 392, 156, { active: true }).setDepth(70));
       objs.push(this.add.text(cx, cy - 46, s.title, { ...FONT, fontSize: '18px', color: '#2affff' }).setOrigin(0.5).setDepth(71));
       objs.push(this.add.text(cx, cy - 4, s.body, { ...FONT, fontSize: '12px', color: '#cfeaf0', align: 'center', wordWrap: { width: 348 }, lineSpacing: 5 }).setOrigin(0.5).setDepth(71));
       objs.push(this.add.text(cx, cy + 58, `TAP / SPACE TO CONTINUE   (${i + 1}/${steps.length})`, { ...FONT, fontSize: '10px', color: '#6f9aa3' }).setOrigin(0.5).setDepth(71));
@@ -239,7 +239,7 @@ export class UIScene extends Phaser.Scene {
   showComplete(lvl, r, onContinue, onReward) {
     const cx = CONFIG.WIDTH / 2, cy = CONFIG.HEIGHT / 2;
     const panel = this.add.container(0, 0).setDepth(50);
-    panel.add(neonPanel(this, cx, cy, 360, 280, COLORS.green));
+    panel.add(card(this, cx, cy, 360, 280, { accent: COLORS.green, active: true }));
     panel.add(this.add.text(cx, cy - 100, 'PROCESS_TERMINATED', { ...FONT, fontSize: '12px', color: '#5b8a93' }).setOrigin(0.5));
     panel.add(this.add.text(cx, cy - 80, `${lvl.code} — CLEARED`, { ...FONT, fontSize: '16px', color: '#00ff88' }).setOrigin(0.5));
 
@@ -263,13 +263,19 @@ export class UIScene extends Phaser.Scene {
       row += 38;
     }
 
-    panel.add(this.add.text(cx, row, '[ CONTINUE ▶ ]', { ...FONT, fontSize: '16px', backgroundColor: '#0a3a44', padding: { x: 12, y: 6 } })
-      .setOrigin(0.5).setInteractive({ useHandCursor: true })
-      .on('pointerup', () => { panel.destroy(); onContinue(); }));
+    const cont = this.add.text(cx, row, 'CONTINUE  ▶', { ...FONT, fontSize: '17px', color: '#bdf6ff' })
+      .setOrigin(0.5).setInteractive({ useHandCursor: true });
+    cont.on('pointerover', () => { cont.setColor('#ffffff'); cont.setScale(1.08); });
+    cont.on('pointerout', () => { cont.setColor('#bdf6ff'); cont.setScale(1); });
+    cont.on('pointerup', () => { panel.destroy(); onContinue(); });
+    panel.add(cont);
 
-    panel.add(this.add.text(cx, row + 34, 'LEVELS', { ...FONT, fontSize: '12px', color: '#7fb8c2' })
-      .setOrigin(0.5).setInteractive({ useHandCursor: true })
-      .on('pointerup', () => { panel.destroy(); this.gameScene.goLevelSelect(); }));
+    const lv = this.add.text(cx, row + 34, 'LEVELS', { ...FONT, fontSize: '12px', color: '#7fb8c2' })
+      .setOrigin(0.5).setInteractive({ useHandCursor: true });
+    lv.on('pointerover', () => lv.setColor('#ffffff'));
+    lv.on('pointerout', () => lv.setColor('#7fb8c2'));
+    lv.on('pointerup', () => { panel.destroy(); this.gameScene.goLevelSelect(); });
+    panel.add(lv);
   }
 
   _animStars(panel, cx, y, count) {
@@ -288,7 +294,7 @@ export class UIScene extends Phaser.Scene {
     const n = buttons.length;
     const h = 50 + n * 40;
     const panel = this.add.container(0, 0).setDepth(50);
-    panel.add(neonPanel(this, cx, cy, 320, h));
+    panel.add(card(this, cx, cy, 320, h, { active: true }));
     const startY = cy - ((n - 1) * 40) / 2;
     buttons.forEach(([label, cb], i) => {
       const t = this.add.text(cx, startY + i * 40, label, { ...FONT, fontSize: '15px' })

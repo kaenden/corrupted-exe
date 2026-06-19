@@ -78,11 +78,11 @@ export function menuButton(scene, x, y, label, cb, opts = {}) {
   return t;
 }
 
-// Dark-grey content card (thin accent frame) — separates panels from the backdrop.
+// Dark content card (thin accent frame) — separates panels from the backdrop.
 export function card(scene, cx, cy, w, h, opts = {}) {
   const accent = opts.accent ?? COLORS.cyan;
   const active = !!opts.active;
-  return scene.add.rectangle(cx, cy, w, h, 0x161d24, active ? 0.95 : 0.82)
+  return scene.add.rectangle(cx, cy, w, h, 0x080b0f, active ? 0.97 : 0.9)
     .setStrokeStyle(active ? 2 : 1.5, accent, active ? 1 : 0.5);
 }
 
