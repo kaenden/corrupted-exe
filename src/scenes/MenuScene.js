@@ -22,7 +22,7 @@ export class MenuScene extends Phaser.Scene {
     hdCamera(this);
     const cx = CONFIG.WIDTH / 2;
     this.add.image(0, 0, 'bg_menu').setOrigin(0, 0).setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(-10);
-    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.7, 1.6, 4); } catch (_) { /* tighter spread, punchier glow */ }
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.5, 1.8, 3); } catch (_) { /* tighter spread, punchier glow */ }
 
     // cinematic ambience: drifting data-motes + a periodic corruption sweep behind everything
     this.add.particles(0, 0, 'particle_spark', {
@@ -84,13 +84,12 @@ export class MenuScene extends Phaser.Scene {
   // Mascot — same big-head character as the player, bobbing above the title
   _buildMascot(cx, y) {
     const HW = 58, HH = 52;
-    const legL = this.add.rectangle(cx - 10, y + 25, 9, 13, 0xffb43b, 0.95);
-    const legR = this.add.rectangle(cx + 10, y + 25, 9, 13, 0xffb43b, 0.95);
-    const head = this.add.image(cx, y, 'p_head').setDisplaySize(HW, HH).setTint(0xffb43b).setAlpha(0.92);
-    const line = this.add.image(cx, y, 'p_head_line').setDisplaySize(HW, HH);
-    const eyeL = this.add.ellipse(cx - 10, y - 3, 10, 13, 0x06121a, 1);
-    const eyeR = this.add.ellipse(cx + 10, y - 3, 10, 13, 0x06121a, 1);
-    const parts = [legL, legR, head, line, eyeL, eyeR];
+    const legL = this.add.rectangle(cx - 10, y + 25, 9, 13, 0xffa81a, 1);
+    const legR = this.add.rectangle(cx + 10, y + 25, 9, 13, 0xffa81a, 1);
+    const head = this.add.image(cx, y, 'p_head').setDisplaySize(HW, HH).setTint(0xffa81a).setAlpha(1);
+    const eyeL = this.add.ellipse(cx - 10, y - 3, 11, 14, 0x05121a, 1);
+    const eyeR = this.add.ellipse(cx + 10, y - 3, 11, 14, 0x05121a, 1);
+    const parts = [legL, legR, head, eyeL, eyeR];
     this.tweens.add({ targets: parts, y: '-=7', duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.time.addEvent({
       delay: 2600, loop: true, callback: () => {

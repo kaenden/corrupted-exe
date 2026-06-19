@@ -14,7 +14,7 @@ export class ShopScene extends Phaser.Scene {
   create() {
     hdCamera(this);
     this.add.image(0, 0, 'bg_menu').setOrigin(0, 0).setDisplaySize(CONFIG.WIDTH, CONFIG.HEIGHT).setDepth(-10);
-    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.7, 1.5, 4); } catch (_) { /* tighter spread, punchier glow */ }
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.5, 1.7, 3); } catch (_) { /* tighter spread, punchier glow */ }
     backButton(this, () => this.scene.start('MenuScene'));
     this.add.text(CONFIG.WIDTH / 2, 22, 'CUSTOMIZE', { ...TXT, fontSize: '18px' }).setOrigin(0.5);
     this.badge = shardBadge(this, CONFIG.WIDTH - 14, 22);
@@ -84,7 +84,7 @@ export class ShopScene extends Phaser.Scene {
     this.grid.add(card(this, x, y, w, h, { accent, active: equipped, onClick }));
     this._preview(slot, item, x, y - 30);
     this.grid.add(this.add.text(x, y + 6, item.name, { ...TXT, fontSize: '13px', color: locked ? '#7a8a90' : '#eafdff' }).setOrigin(0.5));
-    this.grid.add(this.add.text(x, y + 22, (locked ? item.hint : item.desc) || '', { ...TXT, fontSize: '8px', color: '#6f8a92', align: 'center', wordWrap: { width: w - 26 } }).setOrigin(0.5, 0));
+    this.grid.add(this.add.text(x, y + 22, (locked ? item.hint : item.desc) || '', { ...TXT, fontSize: '8.5px', color: '#a9cdd6', align: 'center', wordWrap: { width: w - 26 } }).setOrigin(0.5, 0));
     this.grid.add(this.add.text(x, y + h / 2 - 14, label, { ...TXT, fontSize: '13px', color }).setOrigin(0.5));
   }
 
@@ -103,9 +103,8 @@ export class ShopScene extends Phaser.Scene {
     this.grid.add(this.add.rectangle(cx + 6, cy + 16, 5, 8, col, al));
     const head = this.add.image(cx, cy, 'p_head').setDisplaySize(HW, HH).setTint(col).setAlpha(al);
     this.grid.add(head);
-    this.grid.add(this.add.image(cx, cy, 'p_head_line').setDisplaySize(HW, HH));
-    this.grid.add(this.add.ellipse(cx - 6, cy - 1, 5, 7, 0x06121a));
-    this.grid.add(this.add.ellipse(cx + 6, cy - 1, 5, 7, 0x06121a));
+    this.grid.add(this.add.ellipse(cx - 6, cy - 1, 6, 8, 0x05121a));
+    this.grid.add(this.add.ellipse(cx + 6, cy - 1, 6, 8, 0x05121a));
     if (s.anim === 'prism') this._prismHeads.push(head);
   }
 

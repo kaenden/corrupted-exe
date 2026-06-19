@@ -46,7 +46,7 @@ export class EscapeScene extends Phaser.Scene {
     cam.startFollow(this.player.sprite, true, 0.12, 0.12);
     cam.setFollowOffset(-110, 36);
 
-    try { cam.postFX?.addBloom(0xffffff, 1, 1, 0.7, 1.7, 4); } catch (_) { /* tighter spread, punchier glow */ }
+    try { cam.postFX?.addBloom(0xffffff, 1, 1, 0.5, 1.9, 3); } catch (_) { /* tighter spread, punchier glow */ }
 
     this._setupWall();
     this._buildHud();

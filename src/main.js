@@ -14,12 +14,12 @@ import { EscapeOverScene } from './scenes/EscapeOverScene.js';
 
 // Global: every text renders at RENDER_SCALE+1× resolution so it stays crisp under the
 // camera's HD zoom (no per-call `resolution` needed). Texts that set their own keep it.
+const GAME_FONT = "'Chakra Petch', monospace"; // techy display font (loaded in index.html)
 const _textFactory = Phaser.GameObjects.GameObjectFactory.prototype.text;
 Phaser.GameObjects.GameObjectFactory.prototype.text = function (x, y, text, style) {
   style = style || {};
   if (style.resolution == null) style.resolution = CONFIG.RENDER_SCALE + 1;
-  // Dark outline on every label → stays crisp/high-contrast against the bloom (no wash-out).
-  if (style.stroke == null) { style.stroke = '#04070b'; style.strokeThickness = style.strokeThickness ?? 2.5; }
+  if (!style.fontFamily || style.fontFamily === 'monospace') style.fontFamily = GAME_FONT;
   return _textFactory.call(this, x, y, text, style);
 };
 
@@ -46,9 +46,19 @@ const config = {
   scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, BackdoorScene, EscapeScene, EscapeOverScene],
 };
 
-const game = new Phaser.Game(config);
-window.game = game; // exposed for debugging / automated tests
-import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
+// Boot once the display font is ready (fallback timer if it fails) so text never renders in the
+// fallback face and gets stuck there (Phaser doesn't re-render text on late font load).
+let _started = false;
+const startGame = () => {
+  if (_started) return; _started = true;
+  const game = new Phaser.Game(config);
+  window.game = game; // exposed for debugging / automated tests
+  import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
+};
+if (document.fonts?.load) {
+  document.fonts.load("600 16px 'Chakra Petch'").then(startGame).catch(startGame);
+  setTimeout(startGame, 1400);
+} else { startGame(); }
 
 // Mobile: on the first tap, enter fullscreen + lock landscape (Android Chrome). iOS blocks
 // fullscreen / orientation lock → it gracefully falls back to the rotate prompt + FIT.

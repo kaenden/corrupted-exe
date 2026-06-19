@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
 
@@ -78,20 +79,27 @@ export function menuButton(scene, x, y, label, cb, opts = {}) {
   return t;
 }
 
-// Dark content card (thin accent frame) — separates panels from the backdrop.
-// opts.onClick → the WHOLE card is tappable; the frame glows on hover.
+// Dark content card — rounded corners (joined, soft), thick accent frame. opts.onClick makes the
+// WHOLE card tappable; on hover only the frame brightens (the fill stays).
 export function card(scene, cx, cy, w, h, opts = {}) {
   const accent = opts.accent ?? COLORS.cyan;
   const active = !!opts.active;
-  const baseW = active ? 2 : 1.5, baseA = active ? 1 : 0.45, baseFill = 0x05080b, fillA = active ? 0.97 : 0.92;
-  const r = scene.add.rectangle(cx, cy, w, h, baseFill, fillA).setStrokeStyle(baseW, accent, baseA);
+  const x = cx - w / 2, y = cy - h / 2, rad = Math.min(14, h / 4);
+  const baseW = active ? 2.6 : 2.1, baseA = active ? 1 : 0.6, fillA = active ? 0.97 : 0.92;
+  const g = scene.add.graphics();
+  const paint = (sw, sa) => {
+    g.clear();
+    g.fillStyle(0x05080b, fillA).fillRoundedRect(x, y, w, h, rad);
+    g.lineStyle(sw, accent, sa).strokeRoundedRect(x, y, w, h, rad);
+  };
+  paint(baseW, baseA);
   if (opts.onClick) {
-    r.setInteractive({ useHandCursor: true });
-    r.on('pointerover', () => r.setStrokeStyle(2.5, accent, 1));   // only the frame glows; inside stays
-    r.on('pointerout', () => r.setStrokeStyle(baseW, accent, baseA));
-    r.on('pointerup', () => opts.onClick());
+    g.setInteractive(new Phaser.Geom.Rectangle(x, y, w, h), Phaser.Geom.Rectangle.Contains);
+    g.on('pointerover', () => paint(baseW + 1.2, 1));
+    g.on('pointerout', () => paint(baseW, baseA));
+    g.on('pointerup', () => opts.onClick());
   }
-  return r;
+  return g;
 }
 
 export function backButton(scene, cb) {

@@ -47,7 +47,7 @@ export class GameScene extends Phaser.Scene {
       tint: this.chapterColor, frequency: 300, quantity: 1, blendMode: 'ADD',
     }).setDepth(-8);
     // Global neon bloom — makes every outline glow (WebGL only; guarded for flaky mobile GPUs)
-    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.7, 1.7, 4); } catch (_) { /* tighter spread, punchier glow */ }
+    try { this.cameras.main.postFX?.addBloom(0xffffff, 1, 1, 0.5, 1.9, 3); } catch (_) { /* tighter spread, punchier glow */ }
 
     this._startGlitchFx(); // atmospheric "the system is watching/lying" background glitches
 

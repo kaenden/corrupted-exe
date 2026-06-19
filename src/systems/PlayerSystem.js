@@ -30,20 +30,18 @@ export class PlayerSystem {
     s.body.setMaxVelocity(this._speed, CONFIG.PLAYER_MAX_FALL);
     this.sprite = s;
     this.color = 0xffb43b;
-    this._skinAlpha = 0.92;
+    this._skinAlpha = 1;
 
     // Iconic look: big rounded head + two stubby legs + eyes. Smooth (texture-based, not blocky).
     // Feet sit on the hull's bottom (y+10) so the character stands ON platforms, not below them.
     const HW = 26, HH = 20;
-    this.legL = this.scene.add.rectangle(x - 5, y + 6, 5, 9, this.color, 0.95).setDepth(4);
-    this.legR = this.scene.add.rectangle(x + 5, y + 6, 5, 9, this.color, 0.95).setDepth(4);
-    this.headFill = this.scene.add.image(x, y, 'p_head').setDisplaySize(HW, HH).setTint(this.color).setAlpha(0.92).setDepth(5);
-    this.headLine = this.scene.add.image(x, y, 'p_head_line').setDisplaySize(HW, HH).setDepth(6);
-    this.eyeL = this.scene.add.ellipse(x - 5, y - 1, 5, 7, 0x06121a, 1).setDepth(7);
-    this.eyeR = this.scene.add.ellipse(x + 5, y - 1, 5, 7, 0x06121a, 1).setDepth(7);
+    this.legL = this.scene.add.rectangle(x - 5, y + 6, 5, 9, this.color, 1).setDepth(4);
+    this.legR = this.scene.add.rectangle(x + 5, y + 6, 5, 9, this.color, 1).setDepth(4);
+    this.headFill = this.scene.add.image(x, y, 'p_head').setDisplaySize(HW, HH).setTint(this.color).setAlpha(1).setDepth(5);
+    this.eyeL = this.scene.add.ellipse(x - 5, y - 1, 5.5, 7.5, 0x05121a, 1).setDepth(7);
+    this.eyeR = this.scene.add.ellipse(x + 5, y - 1, 5.5, 7.5, 0x05121a, 1).setDepth(7);
     this.headFill._dsx = this.headFill.scaleX; this.headFill._dsy = this.headFill.scaleY;
-    this.headLine._dsx = this.headLine.scaleX; this.headLine._dsy = this.headLine.scaleY;
-    this.faceParts = [this.legL, this.legR, this.headFill, this.headLine, this.eyeL, this.eyeR];
+    this.faceParts = [this.legL, this.legR, this.headFill, this.eyeL, this.eyeR];
     this._glitchAt = 0; this._glitchGap = 800;
 
     const k = this.scene.input.keyboard;
@@ -54,7 +52,7 @@ export class PlayerSystem {
   applyCosmetics(equipped) {
     const skin = COSMETICS.skins[equipped.skin] || COSMETICS.skins.skin_default;
     this.color = skin.color || 0xffb43b;
-    this._skinAlpha = skin.alpha ?? 0.92;
+    this._skinAlpha = skin.alpha ?? 1;
     this._skinAnim = skin.anim || null;
     this.headFill?.setTint(this.color);
     if (this.legL) { this.legL.fillColor = this.color; this.legR.fillColor = this.color; }
@@ -156,7 +154,6 @@ export class PlayerSystem {
     place(this.legL, -5, 5.5 + wob);
     place(this.legR, 5, 5.5 - wob);
     place(this.headFill, 0, -9);   // head bottom at +1, sits just above the legs
-    place(this.headLine, 0, -9);
     const ew = scared ? 1.3 : 1;
     place(this.eyeL, -5, -10, ew);
     place(this.eyeR, 5, -10, ew);

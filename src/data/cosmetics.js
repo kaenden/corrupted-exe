@@ -4,12 +4,12 @@
 export const COSMETICS = {
   // Player head tint (the big-head robot). `anim:'prism'` cycles hue every frame.
   skins: {
-    skin_default: { color: 0xffb43b },                  // AMBER
-    skin_gold:    { color: 0xffd24a },                  // SOLAR
+    skin_default: { color: 0xffa81a },                  // AMBER (vivid)
+    skin_gold:    { color: 0xffc400 },                  // SOLAR
     skin_glitch:  { color: 0xff3df0, anim: 'prism' },   // PRISM — shifts through the spectrum
-    skin_red:     { color: 0xff5a3b },                  // EMBER
-    skin_ghost:   { color: 0xcfffff, alpha: 0.5 },      // PHANTOM
-    skin_void:    { color: 0x9b6bff },                  // VOID
+    skin_red:     { color: 0xff3320 },                  // EMBER
+    skin_ghost:   { color: 0xc8ffff, alpha: 0.5 },      // PHANTOM
+    skin_void:    { color: 0xa64dff },                  // VOID (vivid violet)
   },
   deathFx: {
     fx_default: { kind: 'scatter' },
