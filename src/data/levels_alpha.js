@@ -92,9 +92,14 @@ export const LEVELS_ALPHA = [
     platforms: [floor(0, 200),
       plat(290, 320, 'falling', 54), plat(450, 306, 'falling', 54), plat(610, 320, 'falling', 54), plat(770, 306, 'falling', 54),
       floor(880, 400)] }),
-  // 10 — BOSS (single = ghost): ghost stepping-stones with wide gaps over a pit
-  lvl({ name: 'PHANTOM', par: 3, hint: 'SOMETHING IS IN THE AIR', exit: { x: 660, y: 258 },
-    platforms: [floor(0, 200), plat(290, 326, 'ghost', 58), plat(455, 300, 'ghost', 56), plat(600, 258, 'solid', 80)] }),
+  // 10 — BOSS (ghost gauntlet, WIDE): blind ghost stepping-stones over spike pits, solid rests between
+  lvl({ name: 'PHANTOM', par: 3, hint: 'SOMETHING IS IN THE AIR', bounds: { width: 1500, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1450, y: 330 },
+    platforms: [floor(0, 240),
+      plat(310, 336, 'ghost', 72), plat(470, 300, 'ghost', 66), floor(620, 210),
+      plat(890, 330, 'ghost', 66), plat(1050, 300, 'solid', 72), plat(1210, 330, 'ghost', 72),
+      floor(1360, 140)],
+    hazards: [sr(670, 374), sr(710, 374), sr(750, 374)] }),
 
   // ── CHAPTER 3 (lime) ── visual lies + gravity
   // 11 — INVERSE: a spiky-LOOKING bar that is actually the safe path over a real spike pit
@@ -127,11 +132,18 @@ export const LEVELS_ALPHA = [
     env: [{ type: 'scroll_fake', wallX: 300, hint: 'INVALID COORDINATE — JUMP' }] }),
 
   // ── CHAPTER 4 (amber) ── speed, portals, gauntlets
-  // 16 — SHIFTING: ride a moving platform; a hidden spike + real spike to read
-  lvl({ name: 'SLIDE', par: 2, exit: { x: 670, y: 250 },
-    platforms: [floor(0, 200), { x: 260, y: 300, w: 96, h: 12, type: 'shifting', pathIndex: 0 }, plat(540, 250, 'solid', 96)],
-    paths: [{ axis: 'h', from: { x: 260, y: 300 }, to: { x: 440, y: 300 }, speed: 120 }],
-    hazards: [sr(420, 374)] }),
+  // 16 — SHIFTING gauntlet (WIDE): ride moving platforms, a fake/real stack, then a hidden spike near the exit
+  lvl({ name: 'SLIDE', par: 3, hint: 'TIMING MATTERS', bounds: { width: 1480, height: 405 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1430, y: 330 },
+    platforms: [floor(0, 280),
+      { x: 340, y: 300, w: 96, h: 12, type: 'shifting', pathIndex: 0 },
+      floor(600, 210),
+      plat(840, 330, 'fake', 58), plat(840, 300, 'solid', 58),
+      { x: 1010, y: 300, w: 96, h: 12, type: 'shifting', pathIndex: 1 },
+      floor(1280, 200)],
+    paths: [{ axis: 'h', from: { x: 340, y: 300 }, to: { x: 470, y: 300 }, speed: 115 },
+      { axis: 'h', from: { x: 1010, y: 300 }, to: { x: 1140, y: 300 }, speed: 115 }],
+    hazards: [sr(640, 374), sr(680, 374), hidden(1340)] }),
   // 17 — PORTAL intro (SIDE-SCROLL): an unjumpable gap; walk into the portal to cross
   lvl({ name: 'GATEWAY', par: 3, hint: 'THE GATE CARRIES YOU ACROSS', bounds: { width: 1120, height: 405 },
     spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },

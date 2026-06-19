@@ -154,7 +154,11 @@ export class TrickSystem {
       obj.setFlipY(true); obj.setVisible(false); obj.setData('lethal', false); obj.setData('state', 'armed');
       obj.setData('armProximity', h.armProximity ?? 64); obj.setData('dropDistance', h.dropDistance ?? 48);
       obj.setData('homeY', h.y);
-      this.scene.add.rectangle(h.x + 8, h.y + 2, 20, 2, 0x335a66).setDepth(1);
+      // visible DROP PORT so the player can read where the ceiling trap fires from
+      const port = this.scene.add.rectangle(h.x + 8, h.y, 26, 7, 0x1a0c10, 0.92).setStrokeStyle(2, 0xff5a44, 0.95).setDepth(1);
+      this.scene.add.rectangle(h.x + 8, h.y, 16, 2, 0xff5a44, 0.7).setDepth(1);
+      const arrow = this.scene.add.text(h.x + 8, h.y + 9, '▼', { fontFamily: 'monospace', fontSize: '9px', color: '#ff7a4d', resolution: 3 }).setOrigin(0.5).setDepth(1);
+      this.scene.tweens.add({ targets: [port, arrow], alpha: 0.45, duration: 720, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     }
     this.hazards.push(obj);
     this._maybeHint(h.type);

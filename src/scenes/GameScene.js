@@ -142,6 +142,7 @@ export class GameScene extends Phaser.Scene {
     this.tricks.update(time, this.player);
     this._updateChase(delta);
     this._updateAlarm();
+    this._updateTear();
     if (this.chaseEdge) {
       const gap = this.player.sprite.x - this.chaseX;
       this._wallProx = Phaser.Math.Clamp(1 - gap / 280, 0, 1); // 1 = wall on top of you
@@ -201,6 +202,7 @@ export class GameScene extends Phaser.Scene {
       this.dying = false;
       this._resetChase();
       this._resetPickups();
+      this._resetTear();
       AdSystem.gameplayStart();
     };
 
@@ -469,36 +471,55 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  // Abstract neon portal (Q-style) — nested geometric rings spinning at different rates + a pulsing
-  // star core + halo. The literal "door" texture is hidden; an invisible body keeps the overlap.
+  // EXIT = a reality TEAR. Dormant it's a small shimmering sliver; when the player gets close it
+  // RIPS open (tall glitching rift) and stepping into it (the overlap body) ends the level.
   _decorateExit(x, y) {
     const cy = y - 26;
     this.exit.setVisible(false);
-    this.exitDecor = this._buildPortal(x, cy, 1, [0x00ff88, 0x7affc0, 0xffffff]);
+    const c = this.add.container(x, cy).setDepth(4);
+    const glow = this.add.ellipse(0, 0, 30, 66, 0x9b6bff, 0).setName('glow');
+    const slitB = this.add.rectangle(0, 0, 6, 58, 0x2affff, 0.55);
+    const slitR = this.add.rectangle(0, 0, 6, 58, 0xff2a8c, 0.55);
+    const slit = this.add.rectangle(0, 0, 4, 58, 0xffffff, 0.95);
+    c.add([glow, slitB, slitR, slit]);
+    c.setScale(0.7, 0.16);                       // dormant: a short faint sliver
+    this.exitDecor = c;
+    this._tear = { c, glow, slit, slitR, slitB };
+    this._tearOpen = false;
+    this._tearShimmer = this.tweens.add({ targets: slit, alpha: 0.45, duration: 700, yoyo: true, repeat: -1 });
   }
 
-  // a flat n-gon outline centred on its own origin (rotates cleanly)
-  _ngon(n, r, color, alpha, w) {
-    const pts = [];
-    for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 - Math.PI / 2; pts.push(Math.cos(a) * r, Math.sin(a) * r); }
-    return this.add.polygon(0, 0, pts, 0x000000, 0).setStrokeStyle(w || 2.5, color, alpha).setOrigin(0.5, 0.5);
+  _updateTear() {
+    if (!this._tear || this._tearOpen || this.dying || this.finished) return;
+    const dx = this.player.sprite.x - this.exitDecor.x, dy = this.player.sprite.y - this.exitDecor.y;
+    if (dx * dx + dy * dy > 178 * 178) return;
+    this._tearOpen = true;
+    this._tearShimmer?.stop();
+    this.tweens.add({ targets: this.exitDecor, scaleX: 1.25, scaleY: 1, duration: 320, ease: 'Back.out' });
+    this._tear.glow.setAlpha(0.2);
+    this.tweens.add({ targets: this._tear.glow, scaleX: 1.4, alpha: 0.34, duration: 900, yoyo: true, repeat: -1 });
+    this._tear.slit.setAlpha(1);
+    this._tearJit = this.time.addEvent({ delay: 45, loop: true, callback: () => {
+      const o = Phaser.Math.Between(-3, 3);
+      this._tear.slitR.x = -3 + o; this._tear.slitB.x = 3 - o;
+      this._tear.slit.scaleX = Phaser.Math.FloatBetween(0.6, 1.5);
+    } });
+    this._tearPs = this.add.particles(this.exitDecor.x, this.exitDecor.y, 'particle_spark', {
+      lifespan: 480, speed: { min: 30, max: 95 }, angle: { min: 0, max: 360 }, scale: { start: 0.5, end: 0 },
+      alpha: { start: 0.6, end: 0 }, tint: [0x2affff, 0xff2a8c, 0xffffff], blendMode: 'ADD', frequency: 40, quantity: 1,
+    }).setDepth(3);
+    SoundSystem.play('sfx_portal');
   }
 
-  _buildPortal(x, y, s, cols) {
-    const [c1, c2, c3] = cols;
-    const c = this.add.container(x, y).setDepth(3).setScale(s);
-    const halo = this.add.circle(0, 0, 28, c1, 0.12);
-    const hex = this._ngon(6, 27, c1, 0.9, 2.5);     // outer hexagon
-    const sq = this._ngon(4, 18, c2, 0.85, 2.5);     // mid square
-    const tri = this._ngon(3, 11, c3, 0.95, 2.5);    // inner triangle
-    const core = this.add.star(0, 0, 4, 2.4, 6.5, c1, 1); // diamond/star core
-    c.add([halo, hex, sq, tri, core]);
-    this.tweens.add({ targets: halo, scale: 1.3, alpha: 0.22, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    this.tweens.add({ targets: hex, rotation: Math.PI * 2, duration: 9000, repeat: -1 });
-    this.tweens.add({ targets: sq, rotation: -Math.PI * 2, duration: 6000, repeat: -1 });
-    this.tweens.add({ targets: tri, rotation: Math.PI * 2, duration: 4200, repeat: -1 });
-    this.tweens.add({ targets: core, scale: 1.7, alpha: 0.55, angle: 90, duration: 750, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    return c;
+  _resetTear() {
+    if (!this._tear) return;
+    this._tearOpen = false;
+    this._tearJit?.remove(); this._tearJit = null;
+    this._tearPs?.destroy(); this._tearPs = null;
+    this.exitDecor.setScale(0.7, 0.16);
+    this._tear.slitR.x = 0; this._tear.slitB.x = 0;
+    this._tear.slit.setScale(1).setAlpha(0.7);
+    this._tearShimmer = this.tweens.add({ targets: this._tear.slit, alpha: 0.45, duration: 700, yoyo: true, repeat: -1 });
   }
 
   // ---- BUG / BACKDOOR KEY pickups ----
