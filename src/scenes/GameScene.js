@@ -218,29 +218,33 @@ export class GameScene extends Phaser.Scene {
     const tick = () => {
       if (!this.scene.isActive()) return;
       if (!this.finished && !this.dying) this._spawnGlitch();
-      this.time.delayedCall(Phaser.Math.Between(3500, 8000), tick);
+      this.time.delayedCall(Phaser.Math.Between(7000, 14000), tick);   // sparser — was 3500-8000 (too busy)
     };
-    this.time.delayedCall(Phaser.Math.Between(2200, 4500), tick);
+    this.time.delayedCall(Phaser.Math.Between(5000, 9000), tick);      // let the intro card + story beat breathe first
   }
 
   _spawnGlitch() {
     const v = this.cameras.main.worldView;
     const roll = Math.random();
-    if (roll < 0.55) this._glitchText(v);
-    else if (roll < 0.82) this._glitchBar(v);
+    // Floating glitch TEXT is the most overlap-prone, so keep it rare; favour the quieter bar/surge.
+    if (roll < 0.28) this._glitchText(v);
+    else if (roll < 0.64) this._glitchBar(v);
     else this._colorSurge();
   }
 
   _glitchText(v) {
+    if (this._gtActive) return;                 // only ONE floating glitch text at a time (no pile-up)
     const msgs = ['TRUST_THE_FLOOR', 'SAFE?', 'ERR0R', '0110_1001', 'FOLLOW', 'LIE', 'REBOOT…',
       "DON'T_FALL", 'NULL_REF', 'VERIFIED?', 'HELP_ME', 'WATCHING', '↑ ?', 'NO_EXIT', 'TRUST_ME'];
     const m = msgs[Phaser.Math.Between(0, msgs.length - 1)];
+    // keep it OUT of the top HUD band (y < v.y+120) so it never tangles with the code/story/warning text
     const x = Phaser.Math.Between(v.x + 70, v.right - 70);
-    const y = Phaser.Math.Between(v.y + 50, v.bottom - 70);
+    const y = Phaser.Math.Between(v.y + 130, v.bottom - 70);
     const color = Math.random() < 0.4 ? '#ff3b6b' : '#' + this.chapterColor.toString(16).padStart(6, '0');
     const t = this.add.text(x, y, m, { fontFamily: 'monospace', fontSize: '24px', color })
       .setOrigin(0.5).setDepth(-7).setAlpha(0).setBlendMode('ADD');
-    this.tweens.add({ targets: t, alpha: 0.3, duration: 110, yoyo: true, hold: 240, repeat: 1, onComplete: () => t.destroy() });
+    this._gtActive = true;
+    this.tweens.add({ targets: t, alpha: 0.3, duration: 110, yoyo: true, hold: 240, repeat: 1, onComplete: () => { this._gtActive = false; t.destroy(); } });
     this.time.addEvent({ delay: 55, repeat: 7, callback: () => { if (t.active) t.x = x + Phaser.Math.Between(-5, 5); } });
   }
 
