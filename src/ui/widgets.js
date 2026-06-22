@@ -29,6 +29,49 @@ export const RES = 3; // render text at 3× → crisp under the smooth (non-pixe
 export const TXT = { fontFamily: FONT, color: '#dffcff', resolution: RES };
 export const HOVER = '#4dff5a'; // neon-green hover highlight (thematic — matches the menu title)
 
+// Shared on-screen touch controls: joystick (left) + JUMP (right) + optional PHASE (above JUMP).
+// MUST run in a STATIC hd-camera scene (logical 0..720 / 0..405 coords) so pointer regions are
+// screen-fixed — a following/zoomed camera makes pointer.x a scrolling world coord (the old escape
+// bug). Writes to `input` {left,right,jump,jumpJustPressed,ghostJustPressed}; the gameplay scene
+// consumes jumpJustPressed/ghostJustPressed after reading. opts: { hasGhost, gameKey }.
+export function buildTouchControls(scene, input, opts = {}) {
+  const { hasGhost = false, gameKey = null } = opts;
+  scene.input.addPointer(3); // multi-touch: move + jump (+ phase) together
+  const jx = 78, jy = CONFIG.HEIGHT - 64, R = 46;
+  scene.add.circle(jx, jy, R, 0x0a2a33, 0.28).setStrokeStyle(2, 0x2affff, 0.4).setDepth(30);
+  const thumb = scene.add.circle(jx, jy, 22, 0x2affff, 0.5).setStrokeStyle(2, 0x2affff, 0.8).setDepth(31);
+  const jbx = CONFIG.WIDTH - 70, jby = CONFIG.HEIGHT - 64;
+  const jbtn = scene.add.circle(jbx, jby, 40, 0x0a2a33, 0.3).setStrokeStyle(2, 0x2affff, 0.5).setDepth(30);
+  scene.add.text(jbx, jby, 'JUMP', { fontFamily: FONT, fontSize: '13px', color: '#dffcff', resolution: RES }).setOrigin(0.5).setDepth(31);
+  let ghostBtn = null;
+  if (hasGhost) {                                   // PHASE (GHOST STEP) — only shown once the skill is unlocked
+    const gx = CONFIG.WIDTH - 70, gy = CONFIG.HEIGHT - 144;
+    scene.add.circle(gx, gy, 30, 0x1a0e2e, 0.32).setStrokeStyle(2, 0xbd8aff, 0.6).setDepth(30);
+    scene.add.text(gx, gy, 'PHASE', { fontFamily: FONT, fontSize: '11px', color: '#d6c2ff', resolution: RES }).setOrigin(0.5).setDepth(31);
+    ghostBtn = { gx, gy, r: 34 };
+  }
+  let joyId = -1, jumpId = -1;
+  const moveThumb = (lx) => { const dx = Phaser.Math.Clamp(lx - jx, -R, R); thumb.x = jx + dx; input.left = dx < -12; input.right = dx > 12; };
+  // pointer.x/y are in the GAME BASE resolution (CONFIG.WIDTH*RENDER_SCALE); divide by the zoom to get
+  // the LOGICAL coords the controls + regions are laid out in. (Without this the PHASE hit-test never
+  // matched and the jump/joystick split was off — the mobile control bug.)
+  const RS = CONFIG.RENDER_SCALE;
+  scene.input.on('pointerdown', (p) => {
+    const lx = p.x / RS, ly = p.y / RS;
+    if ((gameKey && scene.scene.isPaused(gameKey)) || ly < CONFIG.HEIGHT * 0.4) return; // ignore HUD/top band
+    if (ghostBtn && Phaser.Math.Distance.Between(lx, ly, ghostBtn.gx, ghostBtn.gy) < ghostBtn.r) { input.ghostJustPressed = true; return; }
+    if (lx >= CONFIG.WIDTH * 0.5) { jumpId = p.id; input.jump = true; input.jumpJustPressed = true; jbtn.setFillStyle(0x2affff, 0.45); }
+    else { joyId = p.id; moveThumb(lx); }
+  });
+  scene.input.on('pointermove', (p) => { if (p.id === joyId) moveThumb(p.x / RS); });
+  const up = (p) => {
+    if (p.id === jumpId) { jumpId = -1; input.jump = false; jbtn.setFillStyle(0x0a2a33, 0.3); }
+    if (p.id === joyId) { joyId = -1; thumb.x = jx; input.left = false; input.right = false; }
+  };
+  scene.input.on('pointerup', up);
+  scene.input.on('pointerupoutside', up);
+}
+
 // A simple terminal-style button. Returns the Text game object.
 export function textButton(scene, x, y, label, cb, opts = {}) {
   const t = scene.add.text(x, y, label, {

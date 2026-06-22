@@ -88,9 +88,15 @@ export class GameScene extends Phaser.Scene {
 
     // Camera follows on larger levels
     // Side-scroll levels (wider than the screen): bound the camera + follow the player.
+    // MOBILE: extend the bottom bound + lift the follow so the action sits higher in the viewport,
+    // leaving the bottom band for the thumbs/controls (does NOT move the level — only the framing).
+    const lift = CONFIG.IS_MOBILE ? 64 : 0;
     if (lvl.bounds.width > CONFIG.WIDTH || lvl.bounds.height > CONFIG.HEIGHT) {
-      this.cameras.main.setBounds(0, 0, lvl.bounds.width, lvl.bounds.height);
+      this.cameras.main.setBounds(0, 0, lvl.bounds.width, lvl.bounds.height + (CONFIG.IS_MOBILE ? 200 : 0));
       this.cameras.main.startFollow(this.player.sprite, true, 0.12, 0.12);
+      if (lift) this.cameras.main.setFollowOffset(0, -lift);
+    } else if (lift) {
+      this.cameras.main.centerOn(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + lift);
     }
 
     // HUD (parallel scene) — flush the level/first-trick hint once UIScene is up

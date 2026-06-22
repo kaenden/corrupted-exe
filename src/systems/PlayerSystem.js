@@ -210,8 +210,11 @@ export class PlayerSystem {
 
   _ghostFx() {
     const s = this.sprite;
-    const ring = this.scene.add.circle(s.x, s.y, 14, 0x000000, 0).setStrokeStyle(2.5, 0xbdf6ff, 1).setDepth(6).setScale(0.4);
-    this.scene.tweens.add({ targets: ring, scale: 2.2, alpha: 0, duration: 420, ease: 'Cubic.out', onComplete: () => ring.destroy() });
+    // bright twin-ring burst (violet + cyan) so the PHASE clearly reads as a deliberate move
+    for (const [r0, col, sc, d] of [[15, 0xbd8aff, 3.1, 470], [10, 0x2affff, 2.3, 380]]) {
+      const ring = this.scene.add.circle(s.x, s.y, r0, 0x000000, 0).setStrokeStyle(2.5, col, 1).setDepth(6).setScale(0.4).setBlendMode('ADD');
+      this.scene.tweens.add({ targets: ring, scale: sc, alpha: 0, duration: d, ease: 'Cubic.out', onComplete: () => ring.destroy() });
+    }
   }
 
   _puff(x, y, n, tint, angle, wide) {

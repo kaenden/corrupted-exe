@@ -44,7 +44,8 @@ export class EscapeScene extends Phaser.Scene {
     this.physics.add.collider(this.player.sprite, this.platforms);
 
     cam.startFollow(this.player.sprite, true, 0.12, 0.12);
-    cam.setFollowOffset(-110, 36);
+    // mobile: lift the framing so the player/ground sit higher, clear of the bottom thumb/controls zone
+    cam.setFollowOffset(-110, CONFIG.IS_MOBILE ? -28 : 36);
 
     try { cam.postFX?.addBloom(0xffffff, 1, 1, 0.5, 1.9, 3); } catch (_) { /* tighter spread, punchier glow */ }
 
@@ -53,6 +54,7 @@ export class EscapeScene extends Phaser.Scene {
     addScanlines(this);
     SoundSystem.playMusic('mus_beta');
     AdSystem.gameplayStart();
+    this.events.once('shutdown', () => this.scene.stop('ControlsScene'));
   }
 
   // ---- procedural generation ----
@@ -150,7 +152,7 @@ export class EscapeScene extends Phaser.Scene {
   update(time, delta) {
     if (this.dead || !this.player?.sprite) return;
     this.player.update(time, this._mobile);
-    if (this._mobile) this._mobile.jumpJustPressed = false;
+    if (this._mobile) { this._mobile.jumpJustPressed = false; this._mobile.ghostJustPressed = false; }
     this._updateWall(delta);
 
     // keep the grid covering the view
@@ -203,7 +205,13 @@ export class EscapeScene extends Phaser.Scene {
     this.bankText = this.add.text(0, 0, 'BANKED 0', { ...TXT, fontSize: '11px', color: '#00ff88' }).setOrigin(0.5, 0).setDepth(50);
     this.bestText = this.add.text(0, 0, `BEST ${GameState.data.backdoor.highScore} m`, { ...TXT, fontSize: '11px', color: '#ffe27a' }).setOrigin(0, 0).setDepth(50);
     this.keyHud = this.add.text(0, 0, `🔑 ${GameState.data.backdoor.keys}`, { ...TXT, fontSize: '12px', color: '#ffd24a' }).setOrigin(1, 0).setDepth(50);
-    this._mobile = (this.sys.game.device.input.touch || navigator.maxTouchPoints > 0) ? this._touch() : null;
+    // touch: visible joystick + JUMP (+ PHASE if unlocked) live in a STATIC overlay scene (this scene's
+    // camera follows the player, so it can't host screen-fixed controls). It writes to this._mobile.
+    const touch = this.sys.game.device.input.touch || navigator.maxTouchPoints > 0;
+    if (touch) {
+      this._mobile = { left: false, right: false, jump: false, jumpJustPressed: false, ghostJustPressed: false };
+      this.scene.launch('ControlsScene', { input: this._mobile, hasGhost: !!GameState.data.unlocks?.ghostStep, gameKey: 'EscapeScene' });
+    } else { this._mobile = null; }
   }
 
   _layoutHud(v) {
@@ -213,21 +221,10 @@ export class EscapeScene extends Phaser.Scene {
     this.keyHud.setPosition(v.right - 14, v.y + 10);
   }
 
-  // region-based touch: left half = run right (held), right half = jump. Same coord space as UIScene.
-  _touch() {
-    const mi = { left: false, right: false, jump: false, jumpJustPressed: false };
-    this.input.addPointer(3);
-    this.input.on('pointerdown', (p) => {
-      if (p.x >= CONFIG.WIDTH * 0.5) { mi.jump = true; mi.jumpJustPressed = true; } else { mi.right = true; }
-    });
-    this.input.on('pointerup', () => { mi.right = false; mi.jump = false; });
-    this.input.on('pointerupoutside', () => { mi.right = false; mi.jump = false; });
-    return mi;
-  }
-
   _die() {
     if (this.dead) return;
     this.dead = true;
+    this.scene.stop('ControlsScene');
     this.player.playDeathFx(GameState.getEquipped('deathFx'));
     this.cameras.main.shake(200, 0.012);
     this.cameras.main.flash(140, 90, 0, 16);

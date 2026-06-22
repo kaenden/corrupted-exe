@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { CONFIG, COLORS } from '../config/game.js';
 import { GameState } from '../state/GameState.js';
 import { AdSystem } from '../systems/ad/AdSystem.js';
-import { card, hdCamera } from '../ui/widgets.js';
+import { card, hdCamera, buildTouchControls } from '../ui/widgets.js';
 import { getStoryBeat } from '../data/story.js';
 import { getTutorial } from '../data/tutorial.js';
 
@@ -78,53 +78,7 @@ export class UIScene extends Phaser.Scene {
   }
 
   _buildTouchControls() {
-    this.input.addPointer(3); // multi-touch: move + jump at the same time
-    const jx = 78, jy = CONFIG.HEIGHT - 64, R = 46;
-
-    // Visuals only (input is REGION-based below — GameObject hit-tests are unreliable under the
-    // zoomed camera, which is why the jump button wasn't registering taps).
-    this.add.circle(jx, jy, R, 0x0a2a33, 0.28).setStrokeStyle(2, 0x2affff, 0.4).setDepth(30);
-    const thumb = this.add.circle(jx, jy, 22, 0x2affff, 0.5).setStrokeStyle(2, 0x2affff, 0.8).setDepth(31);
-    const jbx = CONFIG.WIDTH - 70, jby = CONFIG.HEIGHT - 64;
-    const jbtn = this.add.circle(jbx, jby, 40, 0x0a2a33, 0.3).setStrokeStyle(2, 0x2affff, 0.5).setDepth(30);
-    this.add.text(jbx, jby, 'JUMP', { ...FONT, fontSize: '13px' }).setOrigin(0.5).setDepth(31);
-
-    // PHASE button (GHOST STEP) above jump — only once unlocked
-    if (GameState.data.unlocks?.ghostStep) {
-      const gx = CONFIG.WIDTH - 70, gy = CONFIG.HEIGHT - 144;
-      this.add.circle(gx, gy, 30, 0x1a0e2e, 0.32).setStrokeStyle(2, 0xbd8aff, 0.6).setDepth(30);
-      this.add.text(gx, gy, 'PHASE', { ...FONT, fontSize: '11px', color: '#d6c2ff' }).setOrigin(0.5).setDepth(31);
-      this._ghostBtn = { gx, gy, r: 34 };
-    }
-
-    // Left bottom = joystick, right bottom = jump. Tracked by pointer id for multi-touch.
-    this._joyId = -1; this._jumpId = -1;
-    const moveThumb = (x) => {
-      const dx = Phaser.Math.Clamp(x - jx, -R, R);
-      thumb.x = jx + dx;
-      this.mobileInput.left = dx < -12;
-      this.mobileInput.right = dx > 12;
-    };
-    this.input.on('pointerdown', (p) => {
-      if (this.scene.isPaused('GameScene') || p.y < CONFIG.HEIGHT * 0.4) return; // ignore HUD/top
-      if (this._ghostBtn && Phaser.Math.Distance.Between(p.x, p.y, this._ghostBtn.gx, this._ghostBtn.gy) < this._ghostBtn.r) {
-        this.mobileInput.ghostJustPressed = true; return;
-      }
-      if (p.x >= CONFIG.WIDTH * 0.5) {
-        this._jumpId = p.id;
-        this.mobileInput.jump = true; this.mobileInput.jumpJustPressed = true;
-        jbtn.setFillStyle(0x2affff, 0.45);
-      } else {
-        this._joyId = p.id; moveThumb(p.x);
-      }
-    });
-    this.input.on('pointermove', (p) => { if (p.id === this._joyId) moveThumb(p.x); });
-    const up = (p) => {
-      if (p.id === this._jumpId) { this._jumpId = -1; this.mobileInput.jump = false; jbtn.setFillStyle(0x0a2a33, 0.3); }
-      if (p.id === this._joyId) { this._joyId = -1; thumb.x = jx; this.mobileInput.left = false; this.mobileInput.right = false; }
-    };
-    this.input.on('pointerup', up);
-    this.input.on('pointerupoutside', up);
+    buildTouchControls(this, this.mobileInput, { hasGhost: !!GameState.data.unlocks?.ghostStep, gameKey: 'GameScene' });
   }
 
   // NOTE: the jump latch is consumed by GameScene.update (which runs BEFORE UIScene's input
