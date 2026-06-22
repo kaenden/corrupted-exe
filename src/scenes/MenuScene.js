@@ -41,7 +41,7 @@ export class MenuScene extends Phaser.Scene {
     this.title = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#4dff5a', resolution: 3 }).setOrigin(0.5).setAlpha(0);
     this.titleR = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#ff2a55', resolution: 3 }).setOrigin(0.5).setAlpha(0);
     this.titleB = this.add.text(cx, 120, 'CORRUPTED.EXE', { fontFamily: FONT, fontSize: '40px', color: '#2affff', resolution: 3 }).setOrigin(0.5).setAlpha(0);
-    this.sub = this.add.text(cx, 152, 'a simulation is lying to you', { fontFamily: FONT, fontSize: '12px', color: '#5b8a93', resolution: 3 }).setOrigin(0.5).setAlpha(0);
+    this.sub = this.add.text(cx, 153, 'the simulation lies — every glitch is a trap', { fontFamily: FONT, fontSize: '13px', color: '#8fe9f2', resolution: 3 }).setOrigin(0.5).setAlpha(0);
     this.tweens.add({ targets: [this.title, this.sub], alpha: 1, duration: 520, delay: REVEAL });
     this._scheduleGlitch();
 

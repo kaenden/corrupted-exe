@@ -52,9 +52,10 @@ export const LEVELS_ALPHA = [
     platforms: [floor(),
       plat(170, 338, 'solid', 56), plat(345, 302, 'solid', 50), plat(440, 246, 'solid', 48),
       plat(575, 212, 'solid', 60), plat(455, 162, 'solid', 48), plat(300, 130, 'solid', 70)] }),
-  // 3 — FAKE (single): the obvious low step is fake; the real sits just above. The wall AWAKENS here (gentle).
+  // 3 — FAKE (single): the obvious low step is fake; the real sits just above. The wall AWAKENS here —
+  // VERY gentle (big head start + long delay) so the player learns the fake-platform trick before any time pressure.
   lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'FALSE FLOOR :: DO NOT TRUST', exit: { x: 660, y: 258 },
-    chase: { speed: 72, headStart: 330, delay: 2600 },
+    chase: { speed: 60, headStart: 420, delay: 4200 },
     platforms: [floor(),
       plat(180, 336, 'solid', 52), plat(340, 326, 'fake', 50), plat(340, 290, 'solid', 50),
       plat(505, 290, 'solid', 50), plat(625, 258, 'solid', 64)] }),

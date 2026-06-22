@@ -37,8 +37,8 @@ export const CONFIG = {
   CAMERA_SHAKE_TRICK: { duration: 100, intensity: 0.006 },
 
   // Death
-  DEATH_FREEZE_MS: 400,       // freeze frame on death
-  RESPAWN_DELAY_MS: 880,      // total delay from death to respawn (lets the death FX play out)
+  DEATH_FREEZE_MS: 180,       // brief freeze frame on death (snappy — death must be cheap to be tolerable)
+  RESPAWN_DELAY_MS: 480,      // total delay from death to respawn (FX still reads, but you're back fast)
 
   // Economy — calibrated to the shop (~5100 shards of items). A clean 3★ run of the whole 60-level
   // campaign (×2 with the bonus claim) roughly funds the shop; without the bonus it funds ~half, so

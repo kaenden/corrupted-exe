@@ -87,8 +87,9 @@ export class TrickSystem {
 
   // ---- shape helpers (origin 0,0 → level data x,y is top-left) ----
   _rect(x, y, w, h, stroke, isStatic) {
-    // stronger platforms: a touch lighter fill + thicker bright outline (bloom does the glow)
-    const r = this.scene.add.rectangle(x, y, w, h, 0x09202e, 0.9).setOrigin(0, 0);
+    // SOLID neon bars: a clearly-lit fill (not near-black) so platforms read as finished pieces,
+    // not hollow wireframe outlines, + thick bright stroke (bloom adds the glow).
+    const r = this.scene.add.rectangle(x, y, w, h, 0x12384a, 0.96).setOrigin(0, 0);
     r.setStrokeStyle(3, stroke, 1);
     this.scene.physics.add.existing(r, isStatic);
     r.body.setSize(w, h);
@@ -245,6 +246,16 @@ export class TrickSystem {
   onFakeContact(fake) {
     if (fake.getData('flickering')) return;
     fake.setData('flickering', true);
+    // SHATTER burst on contact → the player reads "that platform was FAKE" (a trick), not "I fell
+    // through a broken collision". This is what makes the deception land as intentional, not buggy.
+    const cx = fake.x + fake.width / 2, cy = fake.y + (fake.height || 12) / 2;
+    const em = this.scene.add.particles(cx, cy, 'particle_spark', {
+      lifespan: 380, speed: { min: 40, max: 160 }, angle: { min: 200, max: 340 },
+      scale: { start: 0.55, end: 0 }, alpha: { start: 0.95, end: 0 },
+      tint: [this.accent, 0xffffff], quantity: 14, blendMode: 'ADD', emitting: false,
+    }).setDepth(5);
+    em.explode(14);
+    this.scene.time.delayedCall(420, () => em.destroy());
     this.scene.tweens.add({ targets: fake, alpha: 0.25, duration: CONFIG.FAKE_PLATFORM_REVEAL, yoyo: true,
       onComplete: () => { fake.setData('flickering', false); fake.setAlpha(1); } });
     this.scene.cameras.main.shake(CONFIG.CAMERA_SHAKE_TRICK.duration, CONFIG.CAMERA_SHAKE_TRICK.intensity);

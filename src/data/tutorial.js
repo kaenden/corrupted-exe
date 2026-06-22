@@ -3,6 +3,7 @@
 export const TUTORIAL = {
   alpha: {
     0: [
+      { title: 'THE SIMULATION LIES', body: 'This world is rigged. Some platforms are fake, some spikes are bait, some exits run away.\nWhat looks BROKEN is a TRAP — not a bug. Read it, and outsmart it.' },
       { title: 'MOVE', body: 'Arrow keys / A D to move.\nOn touch: hold the LEFT half of the screen.' },
       { title: 'JUMP', body: 'SPACE / UP, or tap the RIGHT half of the screen.\nReach the green EXIT gate to clear the room.' },
     ],
