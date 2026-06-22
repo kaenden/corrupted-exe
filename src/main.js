@@ -54,6 +54,11 @@ let game = null; // module-scoped so the fullscreen/resize handlers below reach 
 const startGame = () => {
   if (_started) return; _started = true;
   game = new Phaser.Game(config);
+  // Drop the static first-paint loader once Phaser has booted (its in-engine boot curtain takes over).
+  game.events.once('ready', () => {
+    const el = document.getElementById('boot');
+    if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 450); }
+  });
   // Debug/test handles exist everywhere EXCEPT the portal release build (build:cg) — so the GitHub
   // Pages QA mirror keeps window.game (Playwright tests) + window.GameState, while the CrazyGames
   // upload exposes neither (tree-shaken out → no console level-skipping / save-cheating).

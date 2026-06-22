@@ -10,6 +10,10 @@ const FONT = { fontFamily: 'monospace', color: '#dffcff', resolution: 3 };
 const ERR_CODES = ['SEGMENTATION_FAULT', 'NULL_REFERENCE', 'STACK_OVERFLOW', 'ACCESS_VIOLATION',
   'DIVIDE_BY_ZERO', 'KERNEL_PANIC', 'ILLEGAL_INSTRUCTION', 'BUS_ERROR', 'TIMEOUT_EXCEEDED'];
 const ENCOURAGE = ['ANALYZING... keep going', 'SO CLOSE :: try again', 'CRACK THE PATTERN :: again', 'YOU ARE LEARNING :: continue'];
+// Chapter-1 deaths read as "the sim tricked you" (a trap, on purpose) — NOT a crash code, so a new
+// player / reviewer never reads the death as a broken build during onboarding.
+const TRAP_LINES = ['THE SIM TRICKED YOU :: try again', 'THAT WAS A LIE :: learn it', 'TRAP SPRUNG :: go again',
+  "IT CHEATED — NOT YOU :: retry", 'READ IT NEXT TIME :: again'];
 
 // Parallel HUD overlay (GDD §10.6). No physics. Reads/writes simple state for GameScene.
 export class UIScene extends Phaser.Scene {
@@ -90,8 +94,13 @@ export class UIScene extends Phaser.Scene {
 
   // Death feedback: snarky error code, softening to encouragement at 8+; paid-hint off-ramp at 10.
   onDeath(n) {
+    // Chapter 1 (alpha, first 5 rooms) is the teaching chapter: deaths read as "the sim tricked you"
+    // — a deliberate trap, not a crash code — so a first-timer never mistakes a death for a broken build.
+    // From chapter 2 on, the corruption mocks you with crash codes; many deaths soften to encouragement.
+    const ch1 = this.gameScene.world === 'alpha' && this.gameScene.levelIndex < 5;
     const soft = n >= CONFIG.MOCKERY_SOFTEN_AFTER;
-    this._flash(soft ? Phaser.Utils.Array.GetRandom(ENCOURAGE) : Phaser.Utils.Array.GetRandom(ERR_CODES),
+    if (ch1 && !soft) this._flash(Phaser.Utils.Array.GetRandom(TRAP_LINES), '#ffd24a');
+    else this._flash(soft ? Phaser.Utils.Array.GetRandom(ENCOURAGE) : Phaser.Utils.Array.GetRandom(ERR_CODES),
       soft ? '#7fd6a0' : '#ff6a8a');
     if (n >= CONFIG.HINT_PURCHASE_AFTER_DEATHS && !this._hintBtn) this._showHintButton();
   }
