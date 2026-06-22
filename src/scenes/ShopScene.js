@@ -37,10 +37,11 @@ export class ShopScene extends Phaser.Scene {
   }
 
   update(time) {
-    // animated PRISM skin preview(s) cycle hue
-    for (const h of this._prismHeads) {
-      h.setTint(Phaser.Display.Color.HSVToRGB(((time / 16) % 360) / 360, 0.85, 1).color);
-    }
+    // animated PRISM skin preview(s) cycle hue — head AND legs share the SAME colour each frame
+    if (!this._prismHeads?.length) return;
+    const c = Phaser.Display.Color.HSVToRGB(((time / 16) % 360) / 360, 0.85, 1).color;
+    for (const h of this._prismHeads) h.setTint(c);
+    for (const l of this._prismLegs) l.fillColor = c;
   }
 
   _setTab(tab) {
@@ -56,6 +57,7 @@ export class ShopScene extends Phaser.Scene {
   _render() {
     this.grid.removeAll(true);
     this._prismHeads = [];
+    this._prismLegs = [];
     const cfg = SHOP[this.activeTab];
     const slot = cfg.slot;
     const cols = 3, cw = 200, ch = 122, gapX = 14, gapY = 14;
@@ -99,13 +101,16 @@ export class ShopScene extends Phaser.Scene {
     const s = COSMETICS.skins[item.id] || {};
     const col = s.color ?? 0xffb43b, al = s.alpha ?? 0.95;
     const HW = 34, HH = 30;
-    this.grid.add(this.add.rectangle(cx - 6, cy + 16, 5, 8, col, al));
-    this.grid.add(this.add.rectangle(cx + 6, cy + 16, 5, 8, col, al));
+    // Legs sit fully BELOW the head bottom (cy + HH/2 = cy+15) so they never show through a
+    // translucent body (PHANTOM). Legs drawn first, head on top.
+    const legL = this.add.rectangle(cx - 6, cy + 19, 5, 8, col, al);
+    const legR = this.add.rectangle(cx + 6, cy + 19, 5, 8, col, al);
     const head = this.add.image(cx, cy, 'p_head').setDisplaySize(HW, HH).setTint(col).setAlpha(al);
-    this.grid.add(head);
+    this.grid.add(legL); this.grid.add(legR); this.grid.add(head);
     this.grid.add(this.add.ellipse(cx - 6, cy - 1, 6, 8, 0x05121a));
     this.grid.add(this.add.ellipse(cx + 6, cy - 1, 6, 8, 0x05121a));
-    if (s.anim === 'prism') this._prismHeads.push(head);
+    // PRISM cycles hue: animate the LEGS in lockstep with the head so body + feet always match.
+    if (s.anim === 'prism') { this._prismHeads.push(head); this._prismLegs.push(legL, legR); }
   }
 
   _trailPreview(item, cx, cy) {
