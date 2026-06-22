@@ -307,9 +307,9 @@ export class TrickSystem {
     for (const hz of this.hazards) {
       if (hz.getData('type') !== 'spike_hidden' || hz.getData('state') !== 'armed') continue;
       const tz = hz.getData('trigger');
-      // ground-band trigger: near the spike horizontally + roughly at floor level (don't arm from a
-      // high fly-over — that read as "the air killed me").
-      if (px > tz.x && px < tz.x + tz.w && py > tz.y - 6 && py < tz.y + tz.h + 30) {
+      // ground-band trigger: near the spike horizontally + AT the surface (not a high fly-over above
+      // nor falling past below) — both used to feel like "the air killed me".
+      if (px > tz.x && px < tz.x + tz.w && py > tz.y - 6 && py < tz.y + tz.h + 8) {
         hz.setData('state', 'warning');
         const homeY = hz.getData('homeY');
         hz.setVisible(true).setAlpha(0.92);
@@ -339,7 +339,10 @@ export class TrickSystem {
     hz.getData('riseTween')?.stop(); hz.getData('flickTween')?.stop();
     hz.getData('socket')?.setAlpha(0.45);
     this.scene.tweens.add({ targets: hz, alpha: 0, duration: 150, onComplete: () => {
-      hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12; hz.setData('state', 'armed');
+      hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12;
+      // back in its socket → brief COOLDOWN, then re-arm; if it sees the player in range again it fires anew.
+      hz.setData('state', 'cooldown');
+      this.scene.time.delayedCall(450, () => { if (hz.getData('state') === 'cooldown') hz.setData('state', 'armed'); });
     } });
   }
 

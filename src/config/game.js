@@ -69,10 +69,14 @@ export const CONFIG = {
   // feel. The wall ramps over distance; collecting corruption-BUGS buys breathing room, so the run is a
   // push-your-luck flow (grab the slower / risk the gap) instead of a flat damage-race.
   ESCAPE: {
-    WALL_BASE: 128,          // px/s at the start (gentle — learn the flow)
-    WALL_MAX: 192,           // px/s at full ramp
+    WALL_BASE: 150,          // px/s at the start
+    WALL_MAX: 210,           // px/s at full ramp
     RAMP_DIST: 9000,         // px over which the wall accelerates BASE→MAX
-    HEAD_START: 320,         // px runway before the wall becomes a threat
+    HEAD_START: 300,         // px runway before the wall becomes a threat
+    MAX_GAP: 380,            // RUBBER-BAND: the wall never falls further than this behind the player, so
+                             // it stays a visible, looming threat instead of being outrun off-screen
+    LAUNCH_VY: -560,         // upward velocity a launch pad gives (reach a higher path / clear a big gap)
+    SPECIAL_CHANCE: 52,      // % of post-runway chunks that use a special pattern (launch/portal/ghost/crumble)
     UPGRADE_SLOW: 0.06,      // wall slowdown per backdoor 'slow' upgrade level (capped 0.40)
     BUG_SLOW_MS: 1900,       // how long a collected corruption-BUG slows the wall
     BUG_SLOW_FACTOR: 0.30,   // wall speed multiplier while a bug-slow is active (70% slow)

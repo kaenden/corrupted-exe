@@ -28,6 +28,9 @@ export class EscapeScene extends Phaser.Scene {
     this.hazards = [];
     this.pickups = [];
     this.gates = [];
+    this.pads = [];        // launch pads (boost up)
+    this.portals = [];     // teleport pairs (cross a big gap)
+    this._lastSpecial = false;
     this._genX = 0;
     this._lastY = GROUND;
     this.dead = false;
@@ -66,8 +69,15 @@ export class EscapeScene extends Phaser.Scene {
     r.body.setSize(w, 16).setOffset(0, 0);
     r.body.updateFromGameObject();
     this.platforms.add(r);
+    this._lastPlat = { x, y, w };   // for gate placement
     return r;
   }
+
+  // Reachability helpers — every gap/step is kept inside the jump envelope (≤~140px gap, ≤~46px rise)
+  // so a generated layout is ALWAYS traversable. Specials that need a bigger gap (launch/portal) supply
+  // their own way across.
+  _nextY(up = 44, down = 64) { return Phaser.Math.Clamp(this._lastY + Phaser.Math.Between(-up, down), 264, 372); }
+  _gap(d, mob) { return Phaser.Math.Between(72, 116) + Math.round(d * 16) - (mob ? 20 : 0); }
 
   _spike(x, y) {
     // base SOCKET (dark slot + red rim) so the spike reads as a MOUNTED hazard ON the platform, not a
@@ -81,31 +91,107 @@ export class EscapeScene extends Phaser.Scene {
     this.hazards.push(s);
   }
 
+  // Pattern dispatcher — the run is built from varied "chunks" so endless draws on the whole campaign
+  // toolbox (launch pads, teleport portals, ghost platforms, crumbling floors) instead of platform+spike.
   _genChunk() {
     const E = CONFIG.ESCAPE;
-    const d = Math.min(1, this._genX / E.RAMP_DIST);     // 0→1 difficulty ramp
+    const d = Math.min(1, this._genX / E.RAMP_DIST);
     const mob = CONFIG.IS_MOBILE;
-    const w = Phaser.Math.Between(150, 300) - Math.round(d * 60) + (mob ? 80 : 0); // wider on touch
-    let y = Phaser.Math.Clamp(this._lastY + Phaser.Math.Between(-34, 34), 270, 372);
-    const fl = this._floor(this._genX, y, w);
-    let used = false;
-    // CRUMBLING platform (amber/unstable look = a fair tell) — collapses shortly after you land, so you
-    // keep flowing forward instead of camping. Wide platforms only, past the opening runway.
-    if (w > 170 && this._genX > 900 && Phaser.Math.Between(0, 100) < E.CRUMBLE_CHANCE) {
-      fl._crumble = true; fl.setFillStyle(0x2a1a06, 0.92).setStrokeStyle(3, 0xffae3d, 1); used = true;
+    let kind = 'flat';
+    if (this._genX > 1200 && !this._lastSpecial && Phaser.Math.Between(0, 100) < E.SPECIAL_CHANCE) {
+      kind = ['launch', 'portal', 'ghost', 'crumble', 'launch', 'ghost'][Phaser.Math.Between(0, 5)];
     }
-    // occasional spike on a SOLID wider platform (rarer on touch)
-    if (!used && w > 170 && Phaser.Math.Between(0, 100) < (mob ? 18 : 30 + d * 30)) { this._spike(this._genX + w / 2, y); used = true; }
-    // corruption-BUG pickup (slows the wall) — raised so grabbing it is a small risk/reward detour
-    if (!used && Phaser.Math.Between(0, 100) < E.BUG_CHANCE) this._bug(this._genX + w / 2, y - Phaser.Math.Between(22, 44));
-    // gate roughly every ~1300px of generated track
-    if (this._genX - (this._lastGateX || 0) > 1300) {
+    this._lastSpecial = kind !== 'flat';
+    this[`_gen_${kind}`](d, mob);
+    // periodic gate (banking checkpoint) on whatever platform we just laid
+    if (this._genX - (this._lastGateX || 0) > 1300 && this._lastPlat) {
       this._lastGateX = this._genX;
-      this._gate(this._genX + w / 2, y);
+      this._gate(this._lastPlat.x + this._lastPlat.w / 2, this._lastPlat.y);
     }
-    this._genX += w + Phaser.Math.Between(80, 130) + Math.round(d * 45) - (mob ? 28 : 0); // gap (smaller on touch)
+  }
+
+  _gen_flat(d, mob) {
+    const w = Phaser.Math.Between(140, 240) - Math.round(d * 30) + (mob ? 70 : 0);
+    const y = this._nextY();
+    this._floor(this._genX, y, w);
+    const r = Phaser.Math.Between(0, 100);
+    if (w > 150 && r < (mob ? 16 : 24 + d * 18)) this._spike(this._genX + w / 2, y);
+    else if (r < 52) this._bug(this._genX + w / 2, y - Phaser.Math.Between(24, 46));
+    this._genX += w + this._gap(d, mob);
     this._lastY = y;
   }
+
+  _gen_crumble(d, mob) {
+    // narrower than before + a normal jumpable gap after, so you can land-and-go before it drops
+    const w = Phaser.Math.Between(128, 172) + (mob ? 44 : 0);
+    const y = this._nextY();
+    const fl = this._floor(this._genX, y, w);
+    fl._crumble = true; fl.setFillStyle(0x2a1a06, 0.92).setStrokeStyle(3, 0xffae3d, 1);
+    this._genX += w + this._gap(d, mob);
+    this._lastY = y;
+  }
+
+  _gen_ghost(d, mob) {
+    // platform stays invisible + non-solid until you get close, then materialises (trust jump)
+    const w = Phaser.Math.Between(150, 210) + (mob ? 55 : 0);
+    const y = this._nextY();
+    const fl = this._floor(this._genX, y, w);
+    fl._ghost = true; fl.setAlpha(0); fl.body.enable = false;
+    this._genX += w + this._gap(d, mob);
+    this._lastY = y;
+  }
+
+  _gen_launch(d, mob) {
+    // launch pad flings you UP onto a higher landing platform you couldn't reach by jumping. Build BOTH
+    // platforms here (wide landing, controlled height/distance) so the boost always lands cleanly.
+    const w = Phaser.Math.Between(150, 190) + (mob ? 50 : 0);
+    const y = this._nextY();
+    this._floor(this._genX, y, w);
+    this._launchPad(this._genX + w - 24, y);
+    this._genX += w + Phaser.Math.Between(44, 74);
+    const ly = Phaser.Math.Clamp(y - Phaser.Math.Between(58, 90), 250, 360);   // higher landing
+    const lw = Phaser.Math.Between(180, 240) + (mob ? 50 : 0);                  // wide → easy to land on
+    this._floor(this._genX, ly, lw);
+    this._genX += lw + this._gap(d, mob);
+    this._lastY = ly;
+  }
+
+  _gen_portal(d, mob) {
+    // a gap too wide to jump — a teleport portal carries you across it
+    const wA = Phaser.Math.Between(120, 160) + (mob ? 40 : 0);
+    const yA = this._nextY();
+    this._floor(this._genX, yA, wA);
+    const ax = this._genX + wA - 16, ay = yA - 18;
+    this._genX += wA + Phaser.Math.Between(200, 260);   // un-jumpable gap → portal required
+    const yB = this._nextY(50, 50);
+    const wB = Phaser.Math.Between(150, 210) + (mob ? 55 : 0);
+    this._floor(this._genX, yB, wB);
+    this._portalPair(ax, ay, this._genX + 20, yB - 18);
+    this._genX += wB + this._gap(d, mob);
+    this._lastY = yB;
+  }
+
+  // launch pad — boosts the player straight up on contact
+  _launchPad(x, y) {
+    const pad = this.add.rectangle(x, y, 32, 6, 0x0a2a14, 0.92).setOrigin(0.5, 1).setStrokeStyle(2.5, 0x8cff3d, 1).setDepth(3);
+    const chev = this.add.text(x, y - 9, '▲', { fontFamily: 'monospace', fontSize: '13px', color: '#8cff3d', resolution: 3 }).setOrigin(0.5);
+    pad._chev = chev; pad._cd = 0;
+    pad._tw = this.tweens.add({ targets: chev, y: y - 14, alpha: 0.45, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.pads.push(pad);
+  }
+
+  // teleport portal pair — entering A warps you to B (one-way, forward)
+  _portalPair(ax, ay, bx, by) {
+    const mk = (x, y) => {
+      const r = this.add.circle(x, y, 15, 0x000000, 0).setStrokeStyle(3, 0xbb6bff, 1).setDepth(3);
+      const i = this.add.circle(x, y, 8, 0x000000, 0).setStrokeStyle(2, 0xe0b0ff, 1).setDepth(3);
+      const tw = this.tweens.add({ targets: r, scale: 1.18, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      return { x, y, r, i, tw };
+    };
+    this.portals.push({ a: mk(ax, ay), b: mk(bx, by), used: false });
+  }
+
+  _dimPortal(g) { g.tw?.pause(); g.r.setScale(1).setStrokeStyle(2, 0x5a4a72, 0.4); g.i.setStrokeStyle(1.5, 0x5a4a72, 0.4); }
 
   // corruption-BUG pickup — collect to slow the chasing wall (the only tactical breather in a run)
   _bug(x, y) {
@@ -197,6 +283,10 @@ export class EscapeScene extends Phaser.Scene {
     let factor = 1 - upg;
     if (this._wallT < this._slowUntil) factor *= E.BUG_SLOW_FACTOR; // active corruption-slow (bug/gate)
     this.wallX += this.wallSpeed * factor * (delta / 1000);
+    // RUBBER-BAND: never let the wall fall further than MAX_GAP behind — so you can't outrun it into
+    // irrelevance; it stays a looming threat at the left edge and surges the moment you slow down.
+    const minX = this.player.sprite.x - E.MAX_GAP;
+    if (this.wallX < minX) this.wallX = minX;
     const top = this.cameras.main.worldView.y - CONFIG.HEIGHT;
     this.wallFill.setPosition(this.wallX, top);
     this.wallEdge.setPosition(this.wallX, top).setX(this.wallX + Phaser.Math.Between(-3, 3));
@@ -237,6 +327,42 @@ export class EscapeScene extends Phaser.Scene {
     this.pickups = this.pickups.filter((b) => {
       if (b.x < v.x - 300) { b._tw?.remove(); b._ring?.destroy(); b.destroy(); return false; }
       if (Phaser.Math.Distance.Between(this.player.sprite.x, this.player.sprite.y, b.x, b.y) < 20) { this._collectBug(b); return false; }
+      return true;
+    });
+
+    const px = this.player.sprite.x, py = this.player.sprite.y;
+    // GHOST platforms: materialise + turn solid as the player nears (trust jump)
+    this.platforms.getChildren().forEach((p) => {
+      if (p._ghost && !p._revealed && px > p.x - 150) {
+        p._revealed = true; p.body.enable = true;
+        this.tweens.add({ targets: p, alpha: 1, duration: 170 });
+      }
+    });
+    // LAUNCH PADS: boost straight up on contact (with a short cooldown so it fires once)
+    this.pads = this.pads.filter((pad) => {
+      if (pad.x < v.x - 300) { pad._tw?.remove(); pad._chev?.destroy(); pad.destroy(); return false; }
+      if (time > pad._cd && Math.abs(px - pad.x) < 20 && py > pad.y - 34 && py < pad.y + 8) {
+        this.player.sprite.body.setVelocityY(CONFIG.ESCAPE.LAUNCH_VY);
+        pad._cd = time + 500;
+        const em = this.add.particles(pad.x, pad.y, 'particle_spark', { lifespan: 360, speedY: { min: -150, max: -40 }, speedX: { min: -40, max: 40 }, scale: { start: 0.5, end: 0 }, alpha: { start: 0.9, end: 0 }, tint: [0x8cff3d, 0xffffff], quantity: 10, blendMode: 'ADD', emitting: false }).setDepth(5);
+        em.explode(10); this.time.delayedCall(380, () => em.destroy());
+        SoundSystem.play('sfx_jump');
+      }
+      return true;
+    });
+    // TELEPORT PORTALS: entering A warps you to B across an un-jumpable gap (one-way, forward)
+    this.portals = this.portals.filter((p) => {
+      if (p.b.x < v.x - 300) { [p.a, p.b].forEach((g) => { g.tw?.remove(); g.r.destroy(); g.i.destroy(); }); return false; }
+      if (!p.used && Phaser.Math.Distance.Between(px, py, p.a.x, p.a.y) < 28) {
+        p.used = true;
+        const vx = Math.max(150, this.player.sprite.body.velocity.x);
+        this.player.sprite.setPosition(p.b.x, p.b.y);
+        this.player.sprite.body.setVelocity(vx, 0);
+        this._dimPortal(p.a); this._dimPortal(p.b);
+        const em = this.add.particles(p.b.x, p.b.y, 'particle_spark', { lifespan: 340, speed: { min: 30, max: 140 }, scale: { start: 0.6, end: 0 }, alpha: { start: 0.9, end: 0 }, tint: [0xbb6bff, 0xffffff], quantity: 14, blendMode: 'ADD', emitting: false }).setDepth(8);
+        em.explode(14); this.time.delayedCall(360, () => em.destroy());
+        SoundSystem.play('sfx_portal');
+      }
       return true;
     });
 
@@ -314,6 +440,8 @@ export class EscapeScene extends Phaser.Scene {
     this.wallPs?.destroy(); this.wallFill?.destroy(); this.wallEdge?.destroy();
     this.gates?.forEach((g) => g.portal?.tws?.forEach((t) => t?.stop()));
     this.pickups?.forEach((b) => b._tw?.remove());
+    this.pads?.forEach((pad) => pad._tw?.remove());
+    this.portals?.forEach((p) => { p.a.tw?.remove(); p.b.tw?.remove(); });
   }
 
   _die() {
