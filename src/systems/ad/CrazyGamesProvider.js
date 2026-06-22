@@ -3,11 +3,15 @@ export class CrazyGamesProvider {
   constructor(sound) { this.sound = sound; this.sdk = null; }
 
   async init() {
+    // The SDK is loaded STATICALLY from index.html <head> (CrazyGames' prescribed integration, so their
+    // automated checks detect it at page load). Wait for window.CrazyGames.SDK, then init.
     await new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = 'https://sdk.crazygames.com/crazygames-sdk-v3.js';
-      s.onload = res; s.onerror = rej;
-      document.head.appendChild(s);
+      if (window.CrazyGames?.SDK) return res();
+      const t0 = Date.now();
+      const iv = setInterval(() => {
+        if (window.CrazyGames?.SDK) { clearInterval(iv); res(); }
+        else if (Date.now() - t0 > 6000) { clearInterval(iv); rej(new Error('CrazyGames SDK script not loaded')); }
+      }, 50);
     });
     const sdk = window.CrazyGames?.SDK;
     if (!sdk) throw new Error('CrazyGames SDK missing');
