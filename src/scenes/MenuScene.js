@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { CONFIG } from '../config/game.js';
+import { GameState } from '../state/GameState.js';
 import { SoundSystem } from '../systems/SoundSystem.js';
 import { menuButton, addScanlines, hdCamera, FONT } from '../ui/widgets.js';
 
@@ -45,11 +46,14 @@ export class MenuScene extends Phaser.Scene {
     this.tweens.add({ targets: [this.title, this.sub], alpha: 1, duration: 520, delay: REVEAL });
     this._scheduleGlitch();
 
-    this._menuBtn(192, 'CAMPAIGN', () => this._go(), 0x00ff88, REVEAL + 0);
-    this._menuBtn(230, 'ESCAPE', () => this.scene.start('EscapeScene'), 0x2affff, REVEAL + 70);
-    this._menuBtn(268, 'UPGRADES', () => this.scene.start('BackdoorScene'), 0xff5a9e, REVEAL + 140);
-    this._menuBtn(306, 'SHOP', () => this.scene.start('ShopScene'), 0xffd24a, REVEAL + 210);
-    this._menuBtn(344, 'SETTINGS', () => this.scene.start('SettingsScene'), 0x9b8aff, REVEAL + 280);
+    // CAMPAIGN lands you straight in the next unplayed level (CrazyGames: ≤1 click to gameplay).
+    // LEVELS opens the world/level picker for replaying / chapter select.
+    this._menuBtn(182, 'CAMPAIGN', () => this._play(), 0x00ff88, REVEAL + 0);
+    this._menuBtn(216, 'LEVELS', () => this._go(), 0x5ad1ff, REVEAL + 55);
+    this._menuBtn(250, 'ESCAPE', () => this.scene.start('EscapeScene'), 0x2affff, REVEAL + 110);
+    this._menuBtn(284, 'UPGRADES', () => this.scene.start('BackdoorScene'), 0xff5a9e, REVEAL + 165);
+    this._menuBtn(318, 'SHOP', () => this.scene.start('ShopScene'), 0xffd24a, REVEAL + 220);
+    this._menuBtn(352, 'SETTINGS', () => this.scene.start('SettingsScene'), 0x9b8aff, REVEAL + 275);
 
     this.add.text(CONFIG.WIDTH - 8, CONFIG.HEIGHT - 6, 'v0.1', { fontFamily: FONT, fontSize: '10px', color: '#2a4a52' }).setOrigin(1, 1);
     addScanlines(this);
@@ -109,6 +113,18 @@ export class MenuScene extends Phaser.Scene {
   }
 
   _go() { this.scene.start('WorldSelectScene'); }
+
+  // 1-click "land in gameplay": jump straight into the first unlocked-but-unplayed level (the player's
+  // next step), falling back to alpha-0 for a brand-new save or a fully-cleared one.
+  _play() { this.scene.start('GameScene', this._nextLevel()); }
+  _nextLevel() {
+    const N = CONFIG.LEVELS_PER_WORLD;
+    for (const world of ['alpha', 'beta']) {
+      if (!GameState.data.unlockedWorlds.includes(world)) continue;
+      for (let i = 0; i < N; i++) if (GameState.getStars(world, i) === 0) return { world, levelIndex: i };
+    }
+    return { world: 'alpha', levelIndex: 0 };
+  }
 
   // Mascot — big-head character with emoji-like expressions (squint, smile, blink) + glitch.
   _buildMascot(cx, y) {

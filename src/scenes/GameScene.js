@@ -118,7 +118,11 @@ export class GameScene extends Phaser.Scene {
       if (lvl.hint) ui?.showHint?.(lvl.hint);
       else if (this._pendingHints.length) ui?.showHint?.(this._pendingHints[0]);
     });
-    this.input.keyboard.on('keydown-ESC', () => this.scene.get('UIScene')?._togglePause());
+    const pause = () => this.scene.get('UIScene')?._togglePause();
+    this.input.keyboard.on('keydown-ESC', pause);
+    // CrazyGames advises against ESC (it exits fullscreen) — offer a non-ESC pause key. In the QA build
+    // P is the dev prev-level shortcut, so only bind P as pause in the release build (dev keys off there).
+    if (!CONFIG.DEV_UNLOCK_ALL) this.input.keyboard.on('keydown-P', pause);
 
     addScanlines(this);
     // ambient data-motes drifting up — subtle atmospheric depth
