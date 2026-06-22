@@ -156,8 +156,8 @@ export class TrickSystem {
       // never "out of nowhere inside the platform") and learnable, so a death never feels cheap.
       const sx = h.x + 8, sy = h.y + 13;
       const socket = this.scene.add.rectangle(sx, sy, 19, 4, 0x1a0c10, 0.85).setStrokeStyle(1.5, 0xff3b3b, 0.45).setDepth(2);
-      this.scene.tweens.add({ targets: socket, alpha: 0.4, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-      obj.setData('socket', socket);
+      const socketTw = this.scene.tweens.add({ targets: socket, alpha: 0.4, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      obj.setData('socket', socket); obj.setData('socketTween', socketTw);
     } else if (h.type === 'ceiling_trap') {
       obj.setFlipY(true); obj.setVisible(false); obj.setData('lethal', false); obj.setData('state', 'armed');
       obj.setData('armProximity', h.armProximity ?? 64); obj.setData('dropDistance', h.dropDistance ?? 48);
@@ -309,7 +309,7 @@ export class TrickSystem {
       const tz = hz.getData('trigger');
       // ground-band trigger: near the spike horizontally + roughly at floor level (don't arm from a
       // high fly-over — that read as "the air killed me").
-      if (px > tz.x && px < tz.x + tz.w && py > tz.y - 18 && py < tz.y + tz.h + 30) {
+      if (px > tz.x && px < tz.x + tz.w && py > tz.y - 6 && py < tz.y + tz.h + 30) {
         hz.setData('state', 'warning');
         const homeY = hz.getData('homeY');
         hz.setVisible(true).setAlpha(0.92);
@@ -318,6 +318,7 @@ export class TrickSystem {
         // entire way up, so the player watches it rise and walks away. Avoidable by design.
         const rise = this.scene.tweens.add({ targets: hz, y: homeY, duration: CONFIG.SPIKE_BLINK_WARN, ease: 'Sine.out' });
         const flick = this.scene.tweens.add({ targets: hz, alpha: 0.5, duration: 140, yoyo: true, repeat: -1 });
+        hz.setData('riseTween', rise); hz.setData('flickTween', flick);
         this.scene.time.delayedCall(CONFIG.SPIKE_BLINK_WARN, () => {
           flick?.stop(); hz.setAlpha(1);
           if (!(player.sprite.x > tz.x && player.sprite.x < tz.x + tz.w)) { rise?.stop(); this._retractHidden(hz); return; }
@@ -333,10 +334,12 @@ export class TrickSystem {
   }
 
   _retractHidden(hz) {
-    hz.setData('lethal', false); hz.setData('state', 'armed');
+    // 'retracting' (not 'armed') during the fade so a re-entry can't queue a 2nd rise/flick on top.
+    hz.setData('lethal', false); hz.setData('state', 'retracting');
+    hz.getData('riseTween')?.stop(); hz.getData('flickTween')?.stop();
     hz.getData('socket')?.setAlpha(0.45);
     this.scene.tweens.add({ targets: hz, alpha: 0, duration: 150, onComplete: () => {
-      hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12;
+      hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12; hz.setData('state', 'armed');
     } });
   }
 
@@ -420,7 +423,7 @@ export class TrickSystem {
     }
     for (const hz of this.hazards) {
       const type = hz.getData('type');
-      if (type === 'spike_hidden') { hz.setData('lethal', false); hz.setData('state', 'armed'); hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12; hz.getData('socket')?.setAlpha(0.45); }
+      if (type === 'spike_hidden') { hz.getData('riseTween')?.stop(); hz.getData('flickTween')?.stop(); hz.setData('lethal', false); hz.setData('state', 'armed'); hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12; hz.getData('socket')?.setAlpha(0.45); }
       else if (type === 'ceiling_trap') { hz.setData('lethal', false); hz.setData('state', 'armed'); hz.setVisible(false); hz.y = hz.getData('homeY'); }
     }
     for (const e of this.env) { e.active = false; e.fired = false; }

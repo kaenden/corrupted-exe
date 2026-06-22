@@ -56,7 +56,7 @@ export class EscapeScene extends Phaser.Scene {
     SoundSystem.playMusic('mus_beta');
     AdSystem.gameplayStart();
     this._announceSkills();
-    this.events.once('shutdown', () => this.scene.stop('ControlsScene'));
+    this.events.once('shutdown', () => this._teardown());
   }
 
   // ---- procedural generation ----
@@ -91,7 +91,7 @@ export class EscapeScene extends Phaser.Scene {
     let used = false;
     // CRUMBLING platform (amber/unstable look = a fair tell) — collapses shortly after you land, so you
     // keep flowing forward instead of camping. Wide platforms only, past the opening runway.
-    if (w > 170 && this._genX > 900 && Phaser.Math.Between(0, 100) < E.FAKE_CHANCE) {
+    if (w > 170 && this._genX > 900 && Phaser.Math.Between(0, 100) < E.CRUMBLE_CHANCE) {
       fl._crumble = true; fl.setFillStyle(0x2a1a06, 0.92).setStrokeStyle(3, 0xffae3d, 1); used = true;
     }
     // occasional spike on a SOLID wider platform (rarer on touch)
@@ -130,7 +130,9 @@ export class EscapeScene extends Phaser.Scene {
     if (!plat._crumble || plat._crumbling) return;
     plat._crumbling = true;
     this.tweens.add({ targets: plat, alpha: 0.5, duration: 80, yoyo: true, repeat: 2 });
-    this.time.delayedCall(330, () => {
+    // grace scales with width — wider platforms (more landing room) give a touch more reaction time,
+    // so a narrow crumble platform never feels like an instant drop.
+    this.time.delayedCall(Math.round(300 + plat.width * 0.5), () => {
       if (!plat.active) return;
       plat.body.checkCollision.none = true; plat.body.enable = false;
       const em = this.add.particles(plat.x + plat.width / 2, plat.y + 6, 'particle_spark', { lifespan: 360, speed: { min: 30, max: 150 }, angle: { min: 200, max: 340 }, scale: { start: 0.5, end: 0 }, alpha: { start: 0.9, end: 0 }, tint: [0xffae3d, 0xffffff], quantity: 10, blendMode: 'ADD', emitting: false }).setDepth(5);
@@ -160,10 +162,14 @@ export class EscapeScene extends Phaser.Scene {
     const di = ng(4, 12, 0xffffff, 2);
     const core = this.add.star(0, 0, 4, 2, 6, 0x2affff, 1);
     c.add([halo, sq, di, core]);
-    this.tweens.add({ targets: sq, rotation: Math.PI * 2, duration: 6000, repeat: -1 });
-    this.tweens.add({ targets: di, rotation: -Math.PI * 2, duration: 4000, repeat: -1 });
-    this.tweens.add({ targets: core, scale: 1.6, alpha: 0.55, angle: 90, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    this.tweens.add({ targets: halo, scale: 1.35, alpha: 0.24, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    // keep tween refs so they can be STOPPED when the gate is culled — otherwise these infinite
+    // (repeat:-1) tweens pile up in the tween manager over a long run (a gate every ~1300px).
+    c.tws = [
+      this.tweens.add({ targets: sq, rotation: Math.PI * 2, duration: 6000, repeat: -1 }),
+      this.tweens.add({ targets: di, rotation: -Math.PI * 2, duration: 4000, repeat: -1 }),
+      this.tweens.add({ targets: core, scale: 1.6, alpha: 0.55, angle: 90, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' }),
+      this.tweens.add({ targets: halo, scale: 1.35, alpha: 0.24, duration: 1100, yoyo: true, repeat: -1, ease: 'Sine.inOut' }),
+    ];
     return c;
   }
 
@@ -225,7 +231,7 @@ export class EscapeScene extends Phaser.Scene {
     for (const g of this.gates) {
       if (!g.banked && this.physics.overlap(this.player.sprite, g.img)) this._bank(g);
     }
-    this.gates = this.gates.filter((g) => { if (g.x < v.x - 300) { g.img.destroy(); g.portal.destroy(); return false; } return true; });
+    this.gates = this.gates.filter((g) => { if (g.x < v.x - 300) { g.portal.tws?.forEach((t) => t?.stop()); g.img.destroy(); g.portal.destroy(); return false; } return true; });
 
     // corruption-BUG pickups: cull behind, collect on touch (proximity — no body needed)
     this.pickups = this.pickups.filter((b) => {
@@ -299,6 +305,15 @@ export class EscapeScene extends Phaser.Scene {
     this.bankText.setPosition(v.centerX, v.y + 38);
     this.bestText.setPosition(v.x + 30, v.y + 10);
     this.keyHud.setPosition(v.right - 14, v.y + 10);
+  }
+
+  // explicit teardown on scene shutdown — stop the wall + any leftover infinite tweens (gate portals,
+  // uncollected bug pickups) so nothing keeps ticking after the run ends.
+  _teardown() {
+    this.scene.stop('ControlsScene');
+    this.wallPs?.destroy(); this.wallFill?.destroy(); this.wallEdge?.destroy();
+    this.gates?.forEach((g) => g.portal?.tws?.forEach((t) => t?.stop()));
+    this.pickups?.forEach((b) => b._tw?.remove());
   }
 
   _die() {

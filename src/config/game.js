@@ -77,7 +77,7 @@ export const CONFIG = {
     BUG_SLOW_MS: 1900,       // how long a collected corruption-BUG slows the wall
     BUG_SLOW_FACTOR: 0.30,   // wall speed multiplier while a bug-slow is active (70% slow)
     BUG_CHANCE: 30,          // % chance a generated chunk drops a corruption-BUG pickup
-    FAKE_CHANCE: 15,         // % chance a (non-spiked, wide) platform is FAKE — collapses on contact
+    CRUMBLE_CHANCE: 15,      // % chance a (non-spiked, wide) platform CRUMBLES — collapses shortly after contact
     GATE_SLOW_MS: 900,       // banking a gate briefly slows the wall (reward for reaching it)
   },
 
