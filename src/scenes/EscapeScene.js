@@ -26,6 +26,7 @@ export class EscapeScene extends Phaser.Scene {
 
     this.platforms = this.add.group();
     this.hazards = [];
+    this.pickups = [];
     this.gates = [];
     this._genX = 0;
     this._lastY = GROUND;
@@ -41,7 +42,7 @@ export class EscapeScene extends Phaser.Scene {
     this.player = new PlayerSystem(this);
     this.player.create(this.startX, GROUND - 40);
     this.player.applyCosmetics(GameState.data.equippedItems);
-    this.physics.add.collider(this.player.sprite, this.platforms);
+    this.physics.add.collider(this.player.sprite, this.platforms, (_pl, plat) => this._onPlatform(plat));
 
     cam.startFollow(this.player.sprite, true, 0.12, 0.12);
     // mobile: lift the framing so the player/ground sit higher, clear of the bottom thumb/controls zone
@@ -54,6 +55,7 @@ export class EscapeScene extends Phaser.Scene {
     addScanlines(this);
     SoundSystem.playMusic('mus_beta');
     AdSystem.gameplayStart();
+    this._announceSkills();
     this.events.once('shutdown', () => this.scene.stop('ControlsScene'));
   }
 
@@ -80,13 +82,22 @@ export class EscapeScene extends Phaser.Scene {
   }
 
   _genChunk() {
-    const d = Math.min(1, this._genX / 9000);            // 0→1 difficulty ramp
+    const E = CONFIG.ESCAPE;
+    const d = Math.min(1, this._genX / E.RAMP_DIST);     // 0→1 difficulty ramp
     const mob = CONFIG.IS_MOBILE;
     const w = Phaser.Math.Between(150, 300) - Math.round(d * 60) + (mob ? 80 : 0); // wider on touch
     let y = Phaser.Math.Clamp(this._lastY + Phaser.Math.Between(-34, 34), 270, 372);
-    this._floor(this._genX, y, w);
-    // occasional spike on wider platforms (rarer on touch)
-    if (w > 170 && Phaser.Math.Between(0, 100) < (mob ? 18 : 30 + d * 30)) this._spike(this._genX + w / 2, y);
+    const fl = this._floor(this._genX, y, w);
+    let used = false;
+    // CRUMBLING platform (amber/unstable look = a fair tell) — collapses shortly after you land, so you
+    // keep flowing forward instead of camping. Wide platforms only, past the opening runway.
+    if (w > 170 && this._genX > 900 && Phaser.Math.Between(0, 100) < E.FAKE_CHANCE) {
+      fl._crumble = true; fl.setFillStyle(0x2a1a06, 0.92).setStrokeStyle(3, 0xffae3d, 1); used = true;
+    }
+    // occasional spike on a SOLID wider platform (rarer on touch)
+    if (!used && w > 170 && Phaser.Math.Between(0, 100) < (mob ? 18 : 30 + d * 30)) { this._spike(this._genX + w / 2, y); used = true; }
+    // corruption-BUG pickup (slows the wall) — raised so grabbing it is a small risk/reward detour
+    if (!used && Phaser.Math.Between(0, 100) < E.BUG_CHANCE) this._bug(this._genX + w / 2, y - Phaser.Math.Between(22, 44));
     // gate roughly every ~1300px of generated track
     if (this._genX - (this._lastGateX || 0) > 1300) {
       this._lastGateX = this._genX;
@@ -94,6 +105,38 @@ export class EscapeScene extends Phaser.Scene {
     }
     this._genX += w + Phaser.Math.Between(80, 130) + Math.round(d * 45) - (mob ? 28 : 0); // gap (smaller on touch)
     this._lastY = y;
+  }
+
+  // corruption-BUG pickup — collect to slow the chasing wall (the only tactical breather in a run)
+  _bug(x, y) {
+    const b = this.add.image(x, y, 'item_bug').setDepth(3);
+    const ring = this.add.circle(x, y, 11, 0x2affff, 0.12).setDepth(2);
+    b._ring = ring;
+    b._tw = this.tweens.add({ targets: [b, ring], y: y - 6, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.pickups.push(b);
+  }
+
+  _collectBug(b) {
+    this._slowUntil = this._wallT + CONFIG.ESCAPE.BUG_SLOW_MS;
+    const em = this.add.particles(b.x, b.y, 'particle_spark', { lifespan: 420, speed: { min: 30, max: 150 }, scale: { start: 0.5, end: 0 }, alpha: { start: 0.9, end: 0 }, tint: [0x2affff, 0xffffff], quantity: 12, blendMode: 'ADD', emitting: false }).setDepth(5);
+    em.explode(12); this.time.delayedCall(440, () => em.destroy());
+    SoundSystem.play('sfx_shard');
+    this._flash('CORRUPTION SLOWED', '#2affff');
+    b._tw?.remove(); b._ring?.destroy(); b.destroy();
+  }
+
+  // a crumbling platform flashes then drops out from under you a moment after contact
+  _onPlatform(plat) {
+    if (!plat._crumble || plat._crumbling) return;
+    plat._crumbling = true;
+    this.tweens.add({ targets: plat, alpha: 0.5, duration: 80, yoyo: true, repeat: 2 });
+    this.time.delayedCall(330, () => {
+      if (!plat.active) return;
+      plat.body.checkCollision.none = true; plat.body.enable = false;
+      const em = this.add.particles(plat.x + plat.width / 2, plat.y + 6, 'particle_spark', { lifespan: 360, speed: { min: 30, max: 150 }, angle: { min: 200, max: 340 }, scale: { start: 0.5, end: 0 }, alpha: { start: 0.9, end: 0 }, tint: [0xffae3d, 0xffffff], quantity: 10, blendMode: 'ADD', emitting: false }).setDepth(5);
+      em.explode(10); this.time.delayedCall(400, () => em.destroy());
+      this.tweens.add({ targets: plat, alpha: 0, y: plat.y + 60, duration: 320, onComplete: () => plat.destroy() });
+    });
   }
 
   _gate(x, y) {
@@ -127,9 +170,10 @@ export class EscapeScene extends Phaser.Scene {
   // ---- corruption wall ----
   _setupWall() {
     const h = CONFIG.HEIGHT;
-    this.wallX = this.startX - 300;
-    this.wallSpeed = 130;
+    this.wallX = this.startX - CONFIG.ESCAPE.HEAD_START;
+    this.wallSpeed = CONFIG.ESCAPE.WALL_BASE;
     this._wallT = 0;
+    this._slowUntil = 0;
     this.wallFill = this.add.rectangle(0, 0, 10, h * 3, 0x3a0014, 0.45).setOrigin(1, 0).setDepth(6);
     this.wallEdge = this.add.rectangle(0, 0, 10, h * 3, 0xff2a4d, 0.95).setOrigin(0, 0).setDepth(7);
     this.wallPs = this.add.particles(0, 0, 'particle_spark', {
@@ -140,10 +184,13 @@ export class EscapeScene extends Phaser.Scene {
 
   _updateWall(delta) {
     this._wallT += delta;
-    const d = Math.min(1, this.player.sprite.x / 9000);
-    this.wallSpeed = 130 + d * 70;                       // accelerates over the run
-    const slow = (GameState.data.backdoor.upgrades.slow || 0) * 0.06;
-    this.wallX += this.wallSpeed * (1 - Math.min(0.4, slow)) * (delta / 1000);
+    const E = CONFIG.ESCAPE;
+    const d = Math.min(1, this.player.sprite.x / E.RAMP_DIST);
+    this.wallSpeed = E.WALL_BASE + d * (E.WALL_MAX - E.WALL_BASE); // accelerates over the run
+    const upg = Math.min(0.4, (GameState.data.backdoor.upgrades.slow || 0) * E.UPGRADE_SLOW);
+    let factor = 1 - upg;
+    if (this._wallT < this._slowUntil) factor *= E.BUG_SLOW_FACTOR; // active corruption-slow (bug/gate)
+    this.wallX += this.wallSpeed * factor * (delta / 1000);
     const top = this.cameras.main.worldView.y - CONFIG.HEIGHT;
     this.wallFill.setPosition(this.wallX, top);
     this.wallEdge.setPosition(this.wallX, top).setX(this.wallX + Phaser.Math.Between(-3, 3));
@@ -180,6 +227,13 @@ export class EscapeScene extends Phaser.Scene {
     }
     this.gates = this.gates.filter((g) => { if (g.x < v.x - 300) { g.img.destroy(); g.portal.destroy(); return false; } return true; });
 
+    // corruption-BUG pickups: cull behind, collect on touch (proximity — no body needed)
+    this.pickups = this.pickups.filter((b) => {
+      if (b.x < v.x - 300) { b._tw?.remove(); b._ring?.destroy(); b.destroy(); return false; }
+      if (Phaser.Math.Distance.Between(this.player.sprite.x, this.player.sprite.y, b.x, b.y) < 20) { this._collectBug(b); return false; }
+      return true;
+    });
+
     // fell off the world
     if (this.player.sprite.y > DEATH_Y) this._die();
 
@@ -193,8 +247,30 @@ export class EscapeScene extends Phaser.Scene {
     g.banked = true;
     this.banked = Math.max(this.banked, this.score);
     g.portal.setAlpha(0.3);
+    // reward: reaching a gate buys a brief breather (wall slows) + a celebratory burst
+    this._slowUntil = Math.max(this._slowUntil, this._wallT + CONFIG.ESCAPE.GATE_SLOW_MS);
+    const em = this.add.particles(g.x, g.portal.y, 'particle_spark', { lifespan: 520, speed: { min: 40, max: 170 }, scale: { start: 0.6, end: 0 }, alpha: { start: 0.9, end: 0 }, tint: [0x2affff, 0x00ff88, 0xffffff], quantity: 16, blendMode: 'ADD', emitting: false }).setDepth(8);
+    em.explode(16); this.time.delayedCall(560, () => em.destroy());
     SoundSystem.play('sfx_win');
     this._flash('BANKED  ' + this.banked, '#00ff88');
+  }
+
+  // Campaign-earned skills carry into endless — tell the player so the run plays to them.
+  _announceSkills() {
+    const u = GameState.data.unlocks || {};
+    const mob = CONFIG.IS_MOBILE;
+    const lines = [];
+    if (u.airDash) lines.push(`AIR-DASH  ·  ${mob ? 'tap JUMP again midair' : 'jump again midair'}`);
+    if (u.ghostStep) lines.push(`PHASE  ·  ${mob ? 'tap PHASE through hazards' : 'SHIFT / X through hazards'}`);
+    if (!lines.length) return;
+    this.time.delayedCall(650, () => {
+      const v = this.cameras.main.worldView;
+      lines.forEach((ln, i) => {
+        const t = this.add.text(v.centerX, v.y + 150 + i * 22, ln, { ...TXT, fontSize: '13px', color: '#bd8aff' }).setOrigin(0.5).setDepth(60).setAlpha(0);
+        this.tweens.add({ targets: t, alpha: 1, duration: 240, delay: i * 120 });
+        this.tweens.add({ targets: t, alpha: 0, duration: 500, delay: 2200 + i * 120, onComplete: () => t.destroy() });
+      });
+    });
   }
 
   _flash(text, color) {
