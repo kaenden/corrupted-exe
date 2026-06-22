@@ -36,7 +36,7 @@ export class UIScene extends Phaser.Scene {
     this.add.text(8, 8, '⏸', { ...FONT, fontSize: '20px' }).setInteractive({ useHandCursor: true })
       .on('pointerdown', () => this._togglePause());
     this.add.text(40, 11, `${worldName} · ${lvl.code}${lvl.name ? ' · ' + lvl.name : ''}`, { ...FONT, fontSize: '12px' });
-    if (CONFIG.DEV_UNLOCK_ALL) {
+    if (CONFIG.DEV_UNLOCK_ALL && !CONFIG.CAPTURE_MODE) {
       this.add.text(8, CONFIG.HEIGHT - 12, 'DEV: N→next  P→prev  R→restart', { ...FONT, fontSize: '10px', color: '#3a6a72' }).setOrigin(0, 1);
     }
     this.deathText = this.add.text(CONFIG.WIDTH / 2, 11, 'DEATHS: 0', { ...FONT, fontSize: '13px' }).setOrigin(0.5, 0);

@@ -88,6 +88,10 @@ export const CONFIG = {
   // Unlock-all + N/P/R skip keys: ON for dev AND the GitHub Pages QA mirror, OFF only in the portal
   // release build (build:cg). No manual flag — driven off RELEASE_BUILD above (tree-shaken in release).
   DEV_UNLOCK_ALL: !RELEASE_BUILD,
+  // TEMPORARY (video capture on the live GitHub Pages site): hide the on-screen "DEV: N→next…" hint so
+  // nothing dev appears in the recording, while keeping unlock-all + N/P/R navigation (both invisible)
+  // so any level / endless / skin can be reached for the shots. Set back to false after recording.
+  CAPTURE_MODE: true,
   DEBUG_SKIP_MENU: false,     // dev-only (gated): boot straight into DEBUG_START instead of MenuScene
   DEBUG_START: { world: 'alpha', levelIndex: 0 },
 };
