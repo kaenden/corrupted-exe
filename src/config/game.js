@@ -28,7 +28,9 @@ export const CONFIG = {
   FALL_PLATFORM_DELAY: 800,   // ms before a falling platform drops
   FAKE_PLATFORM_REVEAL: 200,  // ms flicker on fake-platform contact
   SHIFT_PLATFORM_SPEED: 120,  // px/s for moving platforms
-  SPIKE_BLINK_WARN: 450,      // ms warning before a hidden spike emerges (Alpha; Beta may tighten)
+  SPIKE_BLINK_WARN: 620,      // ms the hidden spike SLOWLY emerges (non-lethal) before it strikes — a
+                              // fair, readable telegraph: you watch it rise out of its socket and step away
+  SPIKE_LETHAL_MS: 600,       // ms the hidden spike stays up + lethal after striking, then retracts
   GHOST_PROXIMITY: 60,        // px fade-in radius for ghost platforms
   GRAVITY_PULSE_ACCEL: 260,   // net UPWARD accel during a gravity pulse (gentle float, not a rocket)
 
@@ -62,6 +64,22 @@ export const CONFIG = {
 
   // Per-chapter neon color (each 5-level chapter gets its own vivid accent — "Q Neon" reference)
   CHAPTER_COLORS: [0x00ffff, 0xff3df0, 0x8cff3d, 0xffb13d, 0x9b6bff, 0xff5a4d, 0x3df0ff, 0xffe24a],
+
+  // ENDLESS (Escape) — tuned SEPARATELY from the campaign chase for a faster, tactical "flow/action"
+  // feel. The wall ramps over distance; collecting corruption-BUGS buys breathing room, so the run is a
+  // push-your-luck flow (grab the slower / risk the gap) instead of a flat damage-race.
+  ESCAPE: {
+    WALL_BASE: 128,          // px/s at the start (gentle — learn the flow)
+    WALL_MAX: 192,           // px/s at full ramp
+    RAMP_DIST: 9000,         // px over which the wall accelerates BASE→MAX
+    HEAD_START: 320,         // px runway before the wall becomes a threat
+    UPGRADE_SLOW: 0.06,      // wall slowdown per backdoor 'slow' upgrade level (capped 0.40)
+    BUG_SLOW_MS: 1900,       // how long a collected corruption-BUG slows the wall
+    BUG_SLOW_FACTOR: 0.30,   // wall speed multiplier while a bug-slow is active (70% slow)
+    BUG_CHANCE: 30,          // % chance a generated chunk drops a corruption-BUG pickup
+    FAKE_CHANCE: 15,         // % chance a (non-spiked, wide) platform is FAKE — collapses on contact
+    GATE_SLOW_MS: 900,       // banking a gate briefly slows the wall (reward for reaching it)
+  },
 
   // Ads — retention first, revenue second. (Platforms ALSO auto-throttle: CrazyGames max 1/3min.)
   AD_INTERSTITIAL_EVERY_N: 5,    // signal a midgame opportunity every N completions (first at level N → clean start)

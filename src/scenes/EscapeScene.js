@@ -68,7 +68,11 @@ export class EscapeScene extends Phaser.Scene {
   }
 
   _spike(x, y) {
+    // base SOCKET (dark slot + red rim) so the spike reads as a MOUNTED hazard ON the platform, not a
+    // red speck blended into the floor — the "is that part of the platform?" ambiguity, fixed.
+    const socket = this.add.rectangle(x + 8, y, 22, 5, 0x1a0c10, 0.95).setOrigin(0.5, 1).setStrokeStyle(1.5, 0xff3b3b, 0.6).setDepth(2);
     const s = this.add.image(x, y, 'spike_neon').setOrigin(0, 1).setDepth(3);
+    s._socket = socket;
     this.physics.add.existing(s, true);
     if (CONFIG.IS_MOBILE) s.body.setSize(8, 9).setOffset(4, 6); else s.body.setSize(12, 12).setOffset(2, 4);
     s.body.updateFromGameObject();
@@ -164,7 +168,7 @@ export class EscapeScene extends Phaser.Scene {
     // stream generation + cull behind
     while (this._genX < v.right + 500) this._genChunk();
     this.platforms.getChildren().forEach((p) => { if (p.x + p.width < v.x - 300) { p.destroy(); } });
-    this.hazards = this.hazards.filter((s) => { if (s.x < v.x - 300) { s.destroy(); return false; } return true; });
+    this.hazards = this.hazards.filter((s) => { if (s.x < v.x - 300) { s._socket?.destroy(); s.destroy(); return false; } return true; });
 
     // hazard overlap
     for (const s of this.hazards) {

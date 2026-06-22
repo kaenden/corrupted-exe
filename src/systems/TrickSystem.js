@@ -151,6 +151,13 @@ export class TrickSystem {
       obj.setVisible(false); obj.setData('lethal', false); obj.setData('state', 'armed');
       obj.setData('trigger', h.trigger || { x: h.x - 8, y: h.y - 12, w: 32, h: 24 });
       obj.setData('homeY', h.y); obj.y = h.y + 12;
+      // SOCKET tell: a faint slot on the surface marks where the spike lurks. Subtle enough to stay a
+      // trap for the careless, but it makes the spike's emergence READABLE (it rises FROM the socket —
+      // never "out of nowhere inside the platform") and learnable, so a death never feels cheap.
+      const sx = h.x + 8, sy = h.y + 13;
+      const socket = this.scene.add.rectangle(sx, sy, 19, 4, 0x1a0c10, 0.85).setStrokeStyle(1.5, 0xff3b3b, 0.45).setDepth(2);
+      this.scene.tweens.add({ targets: socket, alpha: 0.4, duration: 950, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+      obj.setData('socket', socket);
     } else if (h.type === 'ceiling_trap') {
       obj.setFlipY(true); obj.setVisible(false); obj.setData('lethal', false); obj.setData('state', 'armed');
       obj.setData('armProximity', h.armProximity ?? 64); obj.setData('dropDistance', h.dropDistance ?? 48);
@@ -300,22 +307,37 @@ export class TrickSystem {
     for (const hz of this.hazards) {
       if (hz.getData('type') !== 'spike_hidden' || hz.getData('state') !== 'armed') continue;
       const tz = hz.getData('trigger');
-      if (px > tz.x && px < tz.x + tz.w && py > tz.y - 40 && py < tz.y + tz.h + 40) {
-        hz.setData('state', 'warning'); hz.setVisible(true).setAlpha(0.3);
-        this.scene.tweens.add({ targets: hz, alpha: 1, duration: 120, yoyo: true, repeat: 2 });
+      // ground-band trigger: near the spike horizontally + roughly at floor level (don't arm from a
+      // high fly-over — that read as "the air killed me").
+      if (px > tz.x && px < tz.x + tz.w && py > tz.y - 18 && py < tz.y + tz.h + 30) {
+        hz.setData('state', 'warning');
+        const homeY = hz.getData('homeY');
+        hz.setVisible(true).setAlpha(0.92);
+        hz.getData('socket')?.setAlpha(0.95);
+        // SLOW emerge from the socket over the whole warn window — clearly visible + NON-LETHAL the
+        // entire way up, so the player watches it rise and walks away. Avoidable by design.
+        const rise = this.scene.tweens.add({ targets: hz, y: homeY, duration: CONFIG.SPIKE_BLINK_WARN, ease: 'Sine.out' });
+        const flick = this.scene.tweens.add({ targets: hz, alpha: 0.5, duration: 140, yoyo: true, repeat: -1 });
         this.scene.time.delayedCall(CONFIG.SPIKE_BLINK_WARN, () => {
-          if (!(player.sprite.x > tz.x && player.sprite.x < tz.x + tz.w)) {
-            hz.setVisible(false).setAlpha(1); hz.setData('state', 'armed'); return;
-          }
-          hz.setData('lethal', true); hz.setData('state', 'active');
-          this.scene.tweens.add({ targets: hz, y: hz.getData('homeY'), duration: 80 });
-          this.scene.time.delayedCall(700, () => {
-            hz.setData('lethal', false); hz.setVisible(false);
-            hz.y = hz.getData('homeY') + 12; hz.setData('state', 'armed');
-          });
+          flick?.stop(); hz.setAlpha(1);
+          if (!(player.sprite.x > tz.x && player.sprite.x < tz.x + tz.w)) { rise?.stop(); this._retractHidden(hz); return; }
+          // STRIKE — now fully up + lethal (hitbox already matches the risen visual). A pop + nudge
+          // makes the "it's live now" moment unmistakable.
+          hz.y = homeY; hz.setData('lethal', true); hz.setData('state', 'active');
+          hz.setScale(1.18); this.scene.tweens.add({ targets: hz, scale: 1, duration: 110, ease: 'Quad.out' });
+          this.scene.cameras.main.shake(60, 0.004);
+          this.scene.time.delayedCall(CONFIG.SPIKE_LETHAL_MS, () => this._retractHidden(hz));
         });
       }
     }
+  }
+
+  _retractHidden(hz) {
+    hz.setData('lethal', false); hz.setData('state', 'armed');
+    hz.getData('socket')?.setAlpha(0.45);
+    this.scene.tweens.add({ targets: hz, alpha: 0, duration: 150, onComplete: () => {
+      hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12;
+    } });
   }
 
   _updateCeiling(px, py, player) {
@@ -398,7 +420,7 @@ export class TrickSystem {
     }
     for (const hz of this.hazards) {
       const type = hz.getData('type');
-      if (type === 'spike_hidden') { hz.setData('lethal', false); hz.setData('state', 'armed'); hz.setVisible(false).setAlpha(1); hz.y = hz.getData('homeY') + 12; }
+      if (type === 'spike_hidden') { hz.setData('lethal', false); hz.setData('state', 'armed'); hz.setVisible(false).setAlpha(1).setScale(1); hz.y = hz.getData('homeY') + 12; hz.getData('socket')?.setAlpha(0.45); }
       else if (type === 'ceiling_trap') { hz.setData('lethal', false); hz.setData('state', 'armed'); hz.setVisible(false); hz.y = hz.getData('homeY'); }
     }
     for (const e of this.env) { e.active = false; e.fired = false; }
