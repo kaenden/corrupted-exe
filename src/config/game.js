@@ -95,7 +95,7 @@ export const CONFIG = {
   // TEMPORARY (video capture on the live GitHub Pages site): hide the on-screen "DEV: N→next…" hint so
   // nothing dev appears in the recording, while keeping unlock-all + N/P/R navigation (both invisible)
   // so any level / endless / skin can be reached for the shots. Set back to false after recording.
-  CAPTURE_MODE: true,
+  CAPTURE_MODE: false,
   DEBUG_SKIP_MENU: false,     // dev-only (gated): boot straight into DEBUG_START instead of MenuScene
   DEBUG_START: { world: 'alpha', levelIndex: 0 },
 };
