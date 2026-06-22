@@ -181,6 +181,23 @@ export class BootScene extends Phaser.Scene {
     g.generateTexture('scanline', 2, 2);
 
     g.destroy();
+
+    // Soft radial glow (white center → transparent) — tinted at runtime to give the black void an
+    // ambient "deep space" presence in the chapter color, instead of reading as an empty rectangle.
+    if (!this.textures.exists('glow_soft')) {
+      let gv;
+      try { gv = this.textures.createCanvas('glow_soft', 256, 256); } catch (_) { gv = null; }
+      if (gv) {
+        const ctx = gv.getContext();
+        const grd = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+        grd.addColorStop(0, 'rgba(255,255,255,0.9)');
+        grd.addColorStop(0.45, 'rgba(255,255,255,0.28)');
+        grd.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, 256, 256);
+        gv.refresh();
+      }
+    }
   }
 
   // Radial red vignette (danger glow as the corruption wall closes in) — canvas gradient texture

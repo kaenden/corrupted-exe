@@ -35,6 +35,17 @@ export class GameScene extends Phaser.Scene {
 
     // Pure-black backdrop + faint neon grid in the chapter color (clean line-art look)
     this.cameras.main.setBackgroundColor(0x02030a);
+    // Soft ambient glow in the chapter color (screen-fixed, ADD) — the large black gaps in the wide
+    // levels read as deep, lit space instead of an empty void. Kept faint so the line-art stays clean.
+    if (this.textures.exists('glow_soft')) {
+      this.ambGlow = this.add.image(CONFIG.WIDTH / 2, CONFIG.HEIGHT * 0.6, 'glow_soft')
+        .setScrollFactor(0).setDepth(-14).setTint(this.chapterColor).setAlpha(0.1).setBlendMode('ADD')
+        .setDisplaySize(CONFIG.WIDTH * 1.35, CONFIG.HEIGHT * 1.5);
+      this.tweens.add({ targets: this.ambGlow, alpha: 0.17, duration: 2600, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    }
+    // Distant parallax grid (bigger cells, slower drift, fainter) behind the near grid → depth.
+    this.gridFar = this.add.tileSprite(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, 'grid')
+      .setOrigin(0, 0).setDepth(-13).setTint(this.chapterColor).setAlpha(0.12).setTileScale(1.3, 1.3);
     // Screen-fixed animated grid: repositioned each frame to cover the camera view, with
     // parallax + constant drift → always the same moving backdrop, never "shifts" with progress.
     this.grid = this.add.tileSprite(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT, 'grid')
@@ -99,9 +110,10 @@ export class GameScene extends Phaser.Scene {
       this.cameras.main.centerOn(CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + lift);
     }
 
-    // HUD (parallel scene) — flush the level/first-trick hint once UIScene is up
+    // HUD (parallel scene) — flush the level/first-trick hint once UIScene is up. On chase levels,
+    // wait for the BREACH-DETECTED stinger to clear so the hint never stacks on it in the top band.
     this.scene.launch('UIScene', { gameScene: this });
-    this.time.delayedCall(350, () => {
+    this.time.delayedCall(lvl.noChase ? 350 : 1850, () => {
       const ui = this.scene.get('UIScene');
       if (lvl.hint) ui?.showHint?.(lvl.hint);
       else if (this._pendingHints.length) ui?.showHint?.(this._pendingHints[0]);
@@ -154,12 +166,18 @@ export class GameScene extends Phaser.Scene {
       this._wallProx = Phaser.Math.Clamp(1 - gap / 280, 0, 1); // 1 = wall on top of you
     }
 
-    // keep the grid covering the camera view; parallax-scroll its texture + constant drift
+    // keep the grids covering the camera view; parallax-scroll their textures + constant drift.
+    // The distant grid scrolls slower (less parallax) so it reads as further away → depth.
     if (this.grid) {
       const v = this.cameras.main.worldView;
       this.grid.setPosition(v.x, v.y).setSize(v.width, v.height);
       this.grid.tilePositionX = v.x * 0.5 + time * 0.012;
       this.grid.tilePositionY = time * 0.006;
+      if (this.gridFar) {
+        this.gridFar.setPosition(v.x, v.y).setSize(v.width, v.height);
+        this.gridFar.tilePositionX = v.x * 0.18 + time * 0.004;
+        this.gridFar.tilePositionY = time * 0.002;
+      }
     }
 
     // shift_exit — slide the real exit on approach (non-lethal)
@@ -397,12 +415,19 @@ export class GameScene extends Phaser.Scene {
     const warn = this.add.text(cx, cy - 28, '⚠  W A R N I N G  ⚠', { fontFamily: 'monospace', fontSize: '16px', color: '#ff5a44', resolution: 3 }).setOrigin(0.5).setDepth(60);
     const r = big('#ff2a55', 0.55), bl = big('#2affff', 0.55), main = big('#ff3344', 1);
     const objs = [warn, r, bl, main];
-    const ev = this.time.addEvent({ delay: 55, loop: true, callback: () => {
+    // Jitter the chromatic split for ~500ms, then SETTLE into a clean solid readout — reads as an
+    // alarm resolving, not sustained garble that a reviewer mistakes for a render bug.
+    const ev = this.time.addEvent({ delay: 55, repeat: 8, callback: () => {
       const o = Phaser.Math.Between(-7, 7);
       r.setX(cx - 4 + o); bl.setX(cx + 4 - o); main.setX(cx + Phaser.Math.Between(-2, 2));
       warn.setAlpha(Phaser.Math.Between(0, 10) > 2 ? 1 : 0.3);
     } });
-    this.time.delayedCall((this.chaseDelay || 1100) + 200, () => {
+    this.time.delayedCall(8 * 55 + 40, () => {
+      r.setX(cx).setAlpha(0.16); bl.setX(cx).setAlpha(0.16); main.setX(cx); warn.setAlpha(1);
+    });
+    // Brief, punchy stinger regardless of how long the wall stays parked (chaseDelay can be 4s+).
+    const hold = Math.min(this.chaseDelay || 1100, 1300);
+    this.time.delayedCall(hold + 200, () => {
       ev.remove();
       this.tweens.add({ targets: objs, alpha: 0, duration: 280, onComplete: () => objs.forEach((o) => o.destroy()) });
     });
