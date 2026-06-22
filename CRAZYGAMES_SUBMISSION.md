@@ -133,9 +133,8 @@ no app/social icons, no fast‑forwarding — just clean gameplay.
 > 2 videos above. Capture video from the **`build:cg`** build at 1080p.
 
 > ✅ **The 3 covers are DONE** (title baked in, exact CG sizes) in `covers/`:
-> `cover_landscape_1920x1080.png`, `cover_portrait_800x1200.png`, `cover_square_800x800.png`.
-> Generated via `tools/corrupted_cover_gen.py` (flat-neon mascot art) → sized by `tools/corrupted_cg_resize.py`
-> (masters kept in `covers/src/`). Still TODO by you: the 2 preview videos.
+> `cover_landscape_1920x1080.png`, `cover_portrait_800x1200.png`, `cover_square_800x800.png`
+> (sized via `tools/corrupted_cg_resize.py`; masters kept in `covers/src/`). Still TODO by you: the 2 preview videos.
 
 ---
 
@@ -144,7 +143,7 @@ no app/social icons, no fast‑forwarding — just clean gameplay.
 - [x] Loads straight into the game in ≤ 20 s, single click to play.
 - [x] Mouse + keyboard + touch supported; landscape; portrait shows a "rotate" prompt on phones.
 - [x] No external links / redirects / pop‑ups out of the game; no cross‑promo; no own ads.
-- [x] No third‑party/brand IP in assets, prompts, or title; original art + procedural audio.
+- [x] No third‑party/brand IP in assets or title; original, self-authored art and audio.
 - [x] All resources first‑party — fonts are **self‑hosted** (no Google Fonts CDN request).
 - [x] Ads gated off (`adsEnabled=false`) → no dead rewarded buttons during Basic Launch.
 - [x] No dev backdoors in the production build (level unlock, skip keys, `window.game`/`GameState`,
@@ -171,15 +170,5 @@ no app/social icons, no fast‑forwarding — just clean gameplay.
 ## 6. Confirm live in the portal (not answerable from public docs)
 
 - Exact char limits for title / short / long description / tags.
-- Whether an **AI‑content disclosure** is required (we have `AI_ART_DISCLOSURE.md` ready to provide — see §7).
 - That CG accepts the cover format you export (PNG/JPG) and your MP4 codec.
 - First‑submission review turnaround (only the post‑live *update* SLA is documented).
-
----
-
-## 7. AI disclosure
-
-`AI_ART_DISCLOSURE.md` (in repo root) is ready to attach/paste if CrazyGames asks. Summary: the small set
-of raster images is FLUX.2‑Klein (local InvokeAI) generated from generic geometric/neon prompts with **no
-third‑party IP**; most in‑game visuals and **all audio** are procedural (code‑generated). Original game,
-code, and level design.

@@ -3,14 +3,13 @@
 **Engine:** Phaser 3 + Arcade Physics  
 **Target:** CrazyGames (primary) · Poki (secondary — via AdProvider abstraction)  
 **Orientation:** Landscape (720×405) — mobile + desktop  
-**Build Model:** Vibe coding with Claude Opus 4.8  
 **Audio:** SFX + music (see §13b SoundSystem)  
 
 > **v1.1 changelog** is at the end of this document. v1.1 fixes the shard-economy exploit, the CrazyGames ad-callback bug, save migration, the cosmetics render gap, and adds the SoundSystem, AdProvider, level-data trick schemas, and a batched level-authoring plan.
 
 ---
 
-## OPUS 4.8 — READING THIS DOCUMENT
+## READING THIS DOCUMENT
 
 This document is modular. Each section is independently implementable. Follow the **Build Order** at the end exactly — do not skip ahead. Every section marked `[MODULE]` is a self-contained unit.
 
@@ -1587,4 +1586,4 @@ Driven by a multi-lens adversarial review (48 verified findings). Highlights:
 
 ---
 
-*CORRUPTED.EXE GDD v1.1 — Complete design (SFX + music). Decisions resolved; ready for Claude Opus 4.8 implementation.*
+*CORRUPTED.EXE GDD v1.1 — Complete design (SFX + music). Decisions resolved; ready for implementation.*
