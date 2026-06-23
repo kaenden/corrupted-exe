@@ -12,11 +12,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="icon" type="image/png" href="./assets/images/robot.png" />
     <title>CORRUPTED.EXE</title>
-    <!-- CrazyGames HTML5 SDK v3 — loaded STATICALLY in <head> per the docs' prescribed integration
-         (docs.crazygames.com/sdk/intro) so CrazyGames detects it at page load (the ad provider awaits
-         window.CrazyGames.SDK + calls init()). Harmless off-CrazyGames: environment reports 'disabled'
-         and the game never calls it (non-portal builds use the no-op provider). -->
-    <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+    <!-- Portal SDK is injected here per BUILD by vite.config.js (transformIndexHtml):
+           build:cg       → CrazyGames SDK v3   · build:playgama → Playgama Bridge
+           plain build    → CrazyGames SDK (harmless off-portal) · build:poki → none (injected at runtime)
+         A single static <head> tag per platform — no extra external scripts (keeps each portal's CSP/QA clean). -->
+    <!--PLATFORM_SDK-->
     <style>
       /* Self-hosted Chakra Petch (latin subset, English-only UI) — NO external font-CDN request,
          so every shipped resource is first-party (CrazyGames QA prefers no uncontrolled fetches).

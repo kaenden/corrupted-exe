@@ -46,11 +46,29 @@ export const GameState = {
     this.data = saved ? this._deepMerge(fresh, saved) : fresh;
     this.data.schemaVersion = SCHEMA_VERSION;      // (run migrations here when bumping version)
     this.sessionLevelCount = 0;
+    this._localWasEmpty = !saved;                  // → loadCloud() may restore a portal cloud-save
   },
 
   save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data)); }
     catch { /* private mode / quota — ignore, game still playable this session */ }
+    // Also persist via the platform SDK when one is wired (Playgama "progress saved via SDK" validation).
+    try { this._cloud?.set(STORAGE_KEY, this.data); } catch { /* ignore */ }
+  },
+
+  // Portal cloud-storage bridge (set by a platform provider, e.g. Playgama). null off-portal.
+  _cloud: null,
+  // Read the SDK cloud-save once at boot. Restores it ONLY when there's no local save (returning player
+  // on a fresh device); otherwise the get() still runs so moderation sees "loaded via SDK method".
+  async loadCloud() {
+    if (!this._cloud) return;
+    const cloud = await this._cloud.get(STORAGE_KEY);
+    if (cloud && this._localWasEmpty) {
+      this.data = this._deepMerge(structuredClone(this.defaults), cloud);
+      this.data.schemaVersion = SCHEMA_VERSION;
+      this._localWasEmpty = false;
+      this.save();
+    }
   },
 
   getLevelKey(world, index) { return `${world}_${index}`; },

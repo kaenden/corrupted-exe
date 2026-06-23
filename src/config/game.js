@@ -6,7 +6,9 @@
 // So the public GitHub Pages site keeps full unlock/skip/window.game for testing; only the CrazyGames
 // upload is clean. (build:cg bakes VITE_AD_PROVIDER='crazygames'; plain build leaves it unset.)
 export const RELEASE_BUILD =
-  import.meta.env.VITE_AD_PROVIDER === 'crazygames' || import.meta.env.VITE_AD_PROVIDER === 'poki';
+  import.meta.env.VITE_AD_PROVIDER === 'crazygames' ||
+  import.meta.env.VITE_AD_PROVIDER === 'poki' ||
+  import.meta.env.VITE_AD_PROVIDER === 'playgama';
 
 export const CONFIG = {
   // Canvas — logical coords stay 720×405; the canvas is rendered at RENDER_SCALE× (HD)

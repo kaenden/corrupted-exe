@@ -1,0 +1,12 @@
+{
+  "_README": "PLACEHOLDER — replace with the JSON exported from https://playgama.github.io/bridge-config-editor/ (your real game-id + interstitial & rewarded placement IDs) BEFORE submitting. See Platforms/Playgama/PLAYGAMA_GUIDE.md §3. Local mock-mode works without real IDs; the Bridge auto-fetches this file from the build root.",
+  "platforms": {
+    "playgama": {
+      "gameId": "REPLACE_WITH_GAME_ID",
+      "advertisement": {
+        "interstitial": { "id": "REPLACE_WITH_INTERSTITIAL_PLACEMENT_ID" },
+        "rewarded": { "id": "REPLACE_WITH_REWARDED_PLACEMENT_ID" }
+      }
+    }
+  }
+}

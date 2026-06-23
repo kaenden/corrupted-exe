@@ -9,6 +9,7 @@
     "build": "vite build",
     "build:cg": "vite build --mode crazygames",
     "build:poki": "vite build --mode poki",
+    "build:playgama": "vite build --mode playgama",
     "preview": "vite preview"
   },
   "dependencies": {

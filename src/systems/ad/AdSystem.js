@@ -1,6 +1,7 @@
 import { AdProvider } from './AdProvider.js';
 import { CrazyGamesProvider } from './CrazyGamesProvider.js';
 import { PokiProvider } from './PokiProvider.js';
+import { PlaygamaProvider } from './PlaygamaProvider.js';
 
 // Dev fallback: simulate ads locally so the 2× / interstitial flows are testable
 // without a real SDK. Never used in a production build.
@@ -23,18 +24,21 @@ export const AdSystem = {
   // Flip to true ONLY after CrazyGames approves the game for FULL LAUNCH.
   adsEnabled: false,
 
-  async init(sound) {
-    this.sound = sound;
-    // Only load a portal SDK when explicitly built for it (VITE_AD_PROVIDER=crazygames|poki).
+  async init(sound, game) {
+    this.sound = sound; this.game = game;
+    // Only load a portal SDK when explicitly built for it (VITE_AD_PROVIDER=crazygames|poki|playgama).
     // Otherwise (GitHub Pages test build, local dev) stay ad-free so no SDK errors fire off-portal.
     const choice = import.meta.env?.VITE_AD_PROVIDER ?? 'none';
-    if (choice !== 'crazygames' && choice !== 'poki') {
+    if (choice !== 'crazygames' && choice !== 'poki' && choice !== 'playgama') {
       this.provider = import.meta.env?.DEV ? new DevProvider() : new AdProvider();
       return;
     }
-    const P = choice === 'poki' ? PokiProvider : CrazyGamesProvider;
+    // Playgama & Poki run ads from launch (their review REQUIRES a live interstitial/rewarded).
+    // CrazyGames stays ads-OFF until Full Launch (Basic Launch force-disables them).
+    this.adsEnabled = (choice === 'playgama' || choice === 'poki');
+    const P = choice === 'poki' ? PokiProvider : choice === 'playgama' ? PlaygamaProvider : CrazyGamesProvider;
     try {
-      const p = new P(sound);
+      const p = new P(sound, game);
       await p.init();
       this.provider = p;
       // The SDK loads async — a level (gameplayStart) may have begun BEFORE the provider was ready,

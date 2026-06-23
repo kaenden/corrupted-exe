@@ -31,7 +31,7 @@ export class BootScene extends Phaser.Scene {
 
     // Ad SDK init (provider-agnostic). The provider fires loadingStart once the SDK is live;
     // we fire loadingStop here when init resolves and the boot scene is ready to hand off.
-    AdSystem.init(SoundSystem).then(() => AdSystem.loadingStop());
+    AdSystem.init(SoundSystem, this.sys.game).then(() => AdSystem.loadingStop());
 
     if (import.meta.env.DEV && CONFIG.DEBUG_SKIP_MENU) {
       const { world, levelIndex } = CONFIG.DEBUG_START;
