@@ -1,12 +1,9 @@
 {
-  "_README": "PLACEHOLDER — replace with the JSON exported from https://playgama.github.io/bridge-config-editor/ (your real game-id + interstitial & rewarded placement IDs) BEFORE submitting. See Platforms/Playgama/PLAYGAMA_GUIDE.md §3. Local mock-mode works without real IDs; the Bridge auto-fetches this file from the build root.",
+  "_TODO": "PLACEHOLDER (Swing Wreck'te çalışan şema). Create Game sonrası gerçeğini üret: https://playgama.github.io/bridge-config-editor/ (game-id + interstitial/rewarded placement'larını gir) → çıkan JSON'u buraya yapıştır → npm run build:playgama. Boş playgama{} ile platform game-id'yi kendisi sağlar; init bunu istemez.",
   "platforms": {
-    "playgama": {
-      "gameId": "REPLACE_WITH_GAME_ID",
-      "advertisement": {
-        "interstitial": { "id": "REPLACE_WITH_INTERSTITIAL_PLACEMENT_ID" },
-        "rewarded": { "id": "REPLACE_WITH_REWARDED_PLACEMENT_ID" }
-      }
-    }
+    "playgama": {}
+  },
+  "advertisement": {
+    "interstitial": { "minimumDelayBetweenAdsSeconds": 60 }
   }
 }

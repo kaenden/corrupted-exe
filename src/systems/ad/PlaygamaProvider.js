@@ -25,16 +25,16 @@ export class PlaygamaProvider {
     try { await Promise.race([Promise.resolve(b.initialize()), new Promise((r) => setTimeout(r, 4000))]); } catch {}
     const EN = b.EVENT_NAME || {};
 
+    // (C) game_ready — the FIRST call after initialize (matches the proven-working Swing Wreck order).
+    // Drops the platform loader. NEVER gate it behind listeners or storage I/O — a slow/hanging
+    // storage.get (or a stalled handshake) must not delay it, or the "Game Ready signal check" times out.
+    try { b.platform.sendMessage('game_ready'); } catch {}
+
     // (A) Platform MUTE — required (else "Platform mute signal ignored"). Mute on audio-off, restore on on.
     try { b.platform.on(EN.AUDIO_STATE_CHANGED, (isEnabled) => { try { this.sound?.muteForAd(!isEnabled); } catch {} }); } catch {}
     // (B) Platform PAUSE — pause + mute the game during an overlay/ad; resume after.
     try { b.platform.on(EN.PAUSE_STATE_CHANGED, (isPaused) => { isPaused ? this._pause() : this._resume(); }); } catch {}
     try { if (b.platform.isAudioEnabled === false) this.sound?.muteForAd(true); } catch {}   // honour the initial state
-
-    // (C) game_ready — send IMMEDIATELY (resources are already loaded by now). This tells the platform to
-    // drop its loader. NEVER gate it behind storage I/O — a slow/hanging storage.get must not delay it,
-    // or Playgama's "Game Ready signal check" times out.
-    try { b.platform.sendMessage('game_ready'); } catch {}
 
     // (D) SDK storage — wired AFTER readiness, FIRE-AND-FORGET (no await). save → storage.set,
     // one storage.get at boot → "progress saved/loaded via SDK" validation + cloud restore on a fresh device.
