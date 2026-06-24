@@ -47,18 +47,16 @@ const config = {
   scene: [BootScene, MenuScene, SettingsScene, WorldSelectScene, LevelSelectScene, ShopScene, GameScene, UIScene, BackdoorScene, EscapeScene, EscapeOverScene, ControlsScene],
 };
 
-// Boot once the display font is ready (fallback timer if it fails) so text never renders in the
-// fallback face and gets stuck there (Phaser doesn't re-render text on late font load).
 let _started = false;
 let game = null; // module-scoped so the fullscreen/resize handlers below reach it without a global
 const startGame = () => {
   if (_started) return; _started = true;
   game = new Phaser.Game(config);
-  // Drop the static first-paint loader once Phaser has booted (its in-engine boot curtain takes over).
-  game.events.once('ready', () => {
-    const el = document.getElementById('boot');
-    if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 450); }
-  });
+  // Drop the static first-paint loader once Phaser has booted (its in-engine boot curtain takes over),
+  // with a hard fallback timer so the loader can NEVER stick on a portal harness even if 'ready' is late.
+  const dropLoader = () => { const el = document.getElementById('boot'); if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 450); } };
+  game.events.once('ready', dropLoader);
+  setTimeout(dropLoader, 3500);
   // Debug/test handles exist everywhere EXCEPT the portal release build (build:cg) — so the GitHub
   // Pages QA mirror keeps window.game (Playwright tests) + window.GameState, while the CrazyGames
   // upload exposes neither (tree-shaken out → no console level-skipping / save-cheating).
@@ -67,10 +65,14 @@ const startGame = () => {
     import('./state/GameState.js').then((m) => { window.GameState = m.GameState; });
   }
 };
-if (document.fonts?.load) {
-  document.fonts.load("600 16px 'Chakra Petch'").then(startGame).catch(startGame);
-  setTimeout(startGame, 1400);
-} else { startGame(); }
+// Boot Phaser IMMEDIATELY — never gate the boot on a font load / setTimeout. On a portal harness
+// (Playgama/CrazyGames) the game iframe can load hidden/backgrounded, where setTimeout + fonts.load are
+// THROTTLED for seconds — that delayed the boot, so the platform's "game ready" signal missed its
+// window and the game appeared stuck on the loader. The self-hosted display font is warmed in parallel
+// (non-blocking) and is in place well before the menu text renders (after the ~1s boot curtain).
+// Warm the display font in parallel (never blocking / throwing — a thrown warm-up must not stop boot).
+try { document.fonts?.load?.("600 16px 'Chakra Petch'")?.catch?.(() => {}); } catch { /* ignore */ }
+startGame();
 
 // Mobile: on the first tap, enter fullscreen + lock landscape (Android Chrome). iOS blocks
 // fullscreen / orientation lock → it gracefully falls back to the rotate prompt + FIT.

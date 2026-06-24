@@ -26,9 +26,12 @@ export class PlaygamaProvider {
     const EN = b.EVENT_NAME || {};
 
     // (C) game_ready — the FIRST call after initialize (matches the proven-working Swing Wreck order).
-    // Drops the platform loader. NEVER gate it behind listeners or storage I/O — a slow/hanging
-    // storage.get (or a stalled handshake) must not delay it, or the "Game Ready signal check" times out.
-    try { b.platform.sendMessage('game_ready'); } catch {}
+    // Drops the platform loader. NEVER gate it behind listeners or storage I/O. Send now + a couple of
+    // retries (idempotent platform-side) so a not-quite-settled bridge on the harness still receives it.
+    const sendReady = () => { try { b.platform.sendMessage('game_ready'); } catch {} };
+    sendReady();
+    setTimeout(sendReady, 700);
+    setTimeout(sendReady, 1600);
 
     // (A) Platform MUTE — required (else "Platform mute signal ignored"). Mute on audio-off, restore on on.
     try { b.platform.on(EN.AUDIO_STATE_CHANGED, (isEnabled) => { try { this.sound?.muteForAd(!isEnabled); } catch {} }); } catch {}
