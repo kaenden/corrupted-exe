@@ -19,8 +19,10 @@ export class PlaygamaProvider {
       }, 50);
     });
     const b = window.bridge;
-    await b.initialize();          // MUST await — bridge unusable until initialized
     this.bridge = b;
+    // initialize MUST run before any bridge call — but never let a stalled handshake block readiness:
+    // race it against a timeout, and swallow a reject, so we always reach the game_ready signal below.
+    try { await Promise.race([Promise.resolve(b.initialize()), new Promise((r) => setTimeout(r, 4000))]); } catch {}
     const EN = b.EVENT_NAME || {};
 
     // (A) Platform MUTE — required (else "Platform mute signal ignored"). Mute on audio-off, restore on on.
@@ -29,18 +31,20 @@ export class PlaygamaProvider {
     try { b.platform.on(EN.PAUSE_STATE_CHANGED, (isPaused) => { isPaused ? this._pause() : this._resume(); }); } catch {}
     try { if (b.platform.isAudioEnabled === false) this.sound?.muteForAd(true); } catch {}   // honour the initial state
 
-    // (D) SDK storage — wire GameState to bridge.storage so progress is saved/loaded VIA THE SDK
-    // (moderation looks for storage.set on save + storage.get on load). localStorage stays primary.
+    // (C) game_ready — send IMMEDIATELY (resources are already loaded by now). This tells the platform to
+    // drop its loader. NEVER gate it behind storage I/O — a slow/hanging storage.get must not delay it,
+    // or Playgama's "Game Ready signal check" times out.
+    try { b.platform.sendMessage('game_ready'); } catch {}
+
+    // (D) SDK storage — wired AFTER readiness, FIRE-AND-FORGET (no await). save → storage.set,
+    // one storage.get at boot → "progress saved/loaded via SDK" validation + cloud restore on a fresh device.
     try {
       GameState._cloud = {
         set: (k, d) => { try { b.storage.set(k, JSON.stringify(d)); } catch {} },
         get: async (k) => { try { const v = await b.storage.get(k); return v ? JSON.parse(v) : null; } catch { return null; } },
       };
-      await GameState.loadCloud();   // one get() at boot → "loaded via SDK method" + cloud restore on a fresh device
+      GameState.loadCloud().catch(() => {});
     } catch {}
-
-    // (C) game_ready — required, AFTER init + storage loaded (tells the platform to drop its loader).
-    try { b.platform.sendMessage('game_ready'); } catch {}
   }
 
   // Playgama has no separate loading/gameplay events (game_ready covers readiness) → no-ops.
