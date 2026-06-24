@@ -59,11 +59,15 @@ export class PlaygamaProvider {
   _pause() {
     if (this._paused) return; this._paused = true;
     try { this.sound?.muteForAd(true); } catch {}
-    try { this.game?.scene?.getScenes(true).forEach((s) => { if (s.scene.key !== 'BootScene') s.scene.pause(); }); } catch {}
+    // STORE the scenes we pause — a paused scene is no longer "active", so getScenes(true) at resume
+    // time would NOT return them and they'd stay frozen forever (this froze the menu on the harness).
+    this._pausedScenes = [];
+    try { this.game?.scene?.getScenes(true).forEach((s) => { if (s.scene.key !== 'BootScene') { this._pausedScenes.push(s); s.scene.pause(); } }); } catch {}
   }
   _resume() {
     if (!this._paused) return; this._paused = false;
-    try { this.game?.scene?.getScenes(true).forEach((s) => s.scene.resume()); } catch {}
+    try { (this._pausedScenes || []).forEach((s) => s.scene.resume()); } catch {}
+    this._pausedScenes = [];
     try { this.sound?.muteForAd(this.bridge?.platform.isAudioEnabled === false); } catch {}
   }
 
