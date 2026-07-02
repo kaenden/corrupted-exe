@@ -43,25 +43,31 @@ const lvl = (o) => {
 
 export const LEVELS_ALPHA = [
   // ── CHAPTER 1 (cyan) ── single trick, gaps near the jump limit (~170px); forgiving floors
-  // 1 — pure: real ~175px jumps; the full floor catches misses
-  lvl({ name: 'BOOT_SEQUENCE', par: 0, hint: 'TRUST NOTHING', exit: { x: 660, y: 256 }, noChase: true,
+  // 1 — THE HONEST LIE + a guaranteed first win: the obvious low step is FAKE, the real one sits just
+  //     above. The catch-floor makes the first lie NON-LETHAL — identity delivered ~15s in, wordlessly.
+  lvl({ name: 'BOOT_SEQUENCE', par: 1, exit: { x: 660, y: 256 }, noChase: true,
     platforms: [floor(),
-      plat(200, 338, 'solid', 54), plat(378, 300, 'solid', 50), plat(556, 300, 'solid', 50), plat(626, 256, 'solid', 70)] }),
-  // 2 — VERTICAL climb: alternate long-flat and steep-up jumps to a high exit (still no wall — learning)
-  lvl({ name: 'WARM_RESET', par: 1, hint: 'CLIMB', exit: { x: 335, y: 130 }, noChase: true,
+      plat(190, 336, 'solid', 58),
+      plat(360, 330, 'fake', 56), plat(360, 294, 'solid', 56),   // running-line step is fake → shatters → drop to floor → read the real one above
+      plat(510, 294, 'solid', 54),
+      plat(626, 256, 'solid', 70)] }),
+  // 2 — VERTICAL climb (still no wall — learning) + a taste of the 2nd deception axis: 3 deadly-LOOKING
+  //     spikes on the ground that are actually SAFE ("I survived spikes?!"). Forced-safe lesson waits for L6.
+  lvl({ name: 'WARM_RESET', par: 1, exit: { x: 335, y: 130 }, noChase: true,
     platforms: [floor(),
       plat(170, 338, 'solid', 56), plat(345, 302, 'solid', 50), plat(440, 246, 'solid', 48),
-      plat(575, 212, 'solid', 60), plat(455, 162, 'solid', 48), plat(300, 130, 'solid', 70)] }),
+      plat(575, 212, 'solid', 60), plat(455, 162, 'solid', 48), plat(300, 130, 'solid', 70)],
+    hazards: [ss(100), ss(125), ss(150)] }),
   // 3 — FAKE (single): the obvious low step is fake; the real sits just above. The wall AWAKENS here —
   // VERY gentle (big head start + long delay) so the player learns the fake-platform trick before any time pressure.
-  lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'FALSE FLOOR :: DO NOT TRUST', exit: { x: 660, y: 258 },
+  lvl({ name: 'FALSE_FOOTING', par: 1, hint: 'CORRUPTION WAKES :: KEEP MOVING', exit: { x: 660, y: 258 },
     chase: { speed: 60, headStart: 420, delay: 4200 },
     platforms: [floor(),
       plat(180, 336, 'solid', 52), plat(340, 326, 'fake', 50), plat(340, 290, 'solid', 50),
       plat(505, 290, 'solid', 50), plat(625, 258, 'solid', 64)] }),
   // 4 — FAKE gauntlet (WIDE): at each stop the LOW platform is fake, the higher one real — read & climb-right
   lvl({ name: 'MIRAGE', par: 2, hint: 'THE HIGHER ONE IS REAL', bounds: { width: 1260, height: 405 },
-    spawn: { x: 56, y: 330 }, exit: { x: 1210, y: 330 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1210, y: 330 }, chase: { speed: 68, rush: 0.45, headStart: 340, delay: 1800 },
     platforms: [floor(0, 250),
       plat(330, 326, 'fake', 56), plat(330, 292, 'solid', 56),
       plat(500, 300, 'solid', 60),
@@ -70,7 +76,7 @@ export const LEVELS_ALPHA = [
       floor(1010, 250)] }),
   // 5 — BOSS (falling, WIDE): a collapsing-platform sprint over a long death pit — no rest
   lvl({ name: 'COLLAPSE', par: 3, hint: 'FLOOR COLLAPSING :: FAST', bounds: { width: 1420, height: 405 },
-    spawn: { x: 56, y: 330 }, exit: { x: 1370, y: 330 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1370, y: 330 }, chase: { speed: 80, rush: 0.5, headStart: 300, delay: 1500 },
     platforms: [floor(0, 200),
       plat(280, 330, 'falling', 60), plat(440, 316, 'falling', 60), plat(600, 330, 'falling', 60),
       plat(760, 316, 'falling', 60), plat(920, 330, 'falling', 60),
@@ -79,24 +85,24 @@ export const LEVELS_ALPHA = [
   // ── CHAPTER 2 (magenta) ── single trick, medium-wide gaps, less forgiving (pits)
   // 6 — SPIKE_SAFE field (WIDE): walk the deadly-LOOKING safe spikes, jump the few real ones
   lvl({ name: 'RED_HERRING', par: 1, hint: 'NOT EVERY SPIKE KILLS', bounds: { width: 1220, height: 405 },
-    spawn: { x: 56, y: 330 }, exit: { x: 1170, y: 390 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1170, y: 390 }, chase: { speed: 78, rush: 0.45, headStart: 330, delay: 1400 },
     platforms: [floor(0, 1220)],
     hazards: [ss(250), ss(274), ss(298), sr(430), ss(560), ss(584), ss(608), sr(740), ss(900), ss(924), ss(948)] }),
   // 7 — SPIKE read + gaps (WIDE): read the real spike among the safe, then platform gaps with more reads
   lvl({ name: 'SHARP_LIES', par: 2, hint: 'WHICH ONE IS REAL?', bounds: { width: 1320, height: 405 },
-    spawn: { x: 56, y: 330 }, exit: { x: 1270, y: 330 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1270, y: 330 }, chase: { speed: 86, rush: 0.5, headStart: 280, delay: 1300 },
     platforms: [floor(0, 300), plat(380, 322, 'solid', 64), plat(560, 300, 'solid', 60), floor(720, 220),
       plat(990, 316, 'solid', 64), floor(1130, 190)],
     hazards: [sr(150, 374), ss(180, 374), sr(210, 374), sr(770, 374), ss(800, 374), sr(830, 374)] }),
   // 8 — SIDE-SCROLL falling (single): time the collapsing platforms across the gap
   lvl({ name: 'TIMING', par: 2, hint: 'FLOOR COLLAPSING :: BE QUICK', bounds: { width: 1120, height: 405 },
-    spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1070, y: 390 }, chase: { speed: 90, rush: 0.5, headStart: 270, delay: 1200 },
     platforms: [floor(0, 230),
       plat(310, 322, 'falling', 56), plat(470, 312, 'falling', 56), plat(630, 322, 'falling', 56),
       floor(740, 380)] }),
   // 9 — SIDE-SCROLL falling chain (single): longer, no rest
   lvl({ name: 'FREEFALL', par: 3, bounds: { width: 1280, height: 405 },
-    spawn: { x: 56, y: 330 }, exit: { x: 1230, y: 390 },
+    spawn: { x: 56, y: 330 }, exit: { x: 1230, y: 390 }, chase: { speed: 93, rush: 0.5, headStart: 260, delay: 1100 },
     platforms: [floor(0, 200),
       plat(290, 320, 'falling', 54), plat(450, 306, 'falling', 54), plat(610, 320, 'falling', 54), plat(770, 306, 'falling', 54),
       floor(880, 400)] }),

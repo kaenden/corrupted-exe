@@ -56,7 +56,10 @@ export const CONFIG = {
   STAR_TWO_MARGIN: 5,
 
   // Onboarding / fairness off-ramp
-  HINT_ON_FIRST_TRICK: true,
+  // OFF: mechanics teach by design now (L1 honest-lie, spike telegraphs, self-evident wall), and the
+  // auto-hint would fire on L1's fake and spoil the game's whole first "aha". Levels that still want a
+  // one-liner set their own `hint`. The help-when-stuck purchase off-ramp (below) is untouched.
+  HINT_ON_FIRST_TRICK: false,
   HINT_PURCHASE_AFTER_DEATHS: 10,
   HINT_PURCHASE_COST: 25,     // help-when-stuck off-ramp — kept cheap vs the leaner economy
   MOCKERY_SOFTEN_AFTER: 8,
